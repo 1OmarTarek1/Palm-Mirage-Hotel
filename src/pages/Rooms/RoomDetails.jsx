@@ -29,6 +29,8 @@ import {
   Droplets,
   Table,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -164,6 +166,37 @@ export default function RoomDetails() {
   const [wifiSg, setWifiSg] = useState(true);
   const [wifiSgCount, setWifiSgCount] = useState("1");
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleDateClick = (dateStr) => {
+    if (!checkIn || (checkIn && checkOut)) {
+      setCheckIn(dateStr);
+      setCheckOut("");
+    } else {
+      if (new Date(dateStr) < new Date(checkIn)) {
+        setCheckIn(dateStr);
+      } else {
+        setCheckOut(dateStr);
+      }
+    }
+  };
+
+  const getDayClass = (dateStr) => {
+    if (!checkIn) return "text-gray-500 hover:bg-gray-50 cursor-pointer";
+
+    const current = new Date(dateStr);
+    const start = new Date(checkIn);
+
+    if (dateStr === checkIn) return "bg-[#8c9e8d] text-white shadow-sm";
+
+    if (checkOut) {
+      const end = new Date(checkOut);
+      if (dateStr === checkOut) return "bg-[#8c9e8d] text-white shadow-sm";
+      if (current > start && current < end) return "bg-[#f0f3ef] text-[#8c9e8d]";
+    }
+
+    if (current < new Date("2026/02/23")) return "text-gray-300 pointer-events-none";
+    return "text-gray-500 hover:bg-gray-50 cursor-pointer";
+  };
 
   const handleBooking = async () => {
     setIsLoading(true);
@@ -329,11 +362,89 @@ export default function RoomDetails() {
               ))}
             </div>
           </section>
+
+          {/* Rates & Availability */}
+          <section className="mt-16">
+            <h2 className="text-xl font-bold mb-8 text-[#1a1a1a]">Rates & Availability</h2>
+            <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+              {/* Calendar Header with Navigation */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex-1 text-center font-bold text-gray-700 text-lg uppercase tracking-tight">February 2026</div>
+                <div className="flex-1 text-center font-bold text-gray-700 text-lg uppercase tracking-tight relative">
+                  March 2026
+                  <button className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1a1a]">
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Dual Month Calendar Grid */}
+              <div className="grid grid-cols-2 gap-12">
+                {/* February 2026 */}
+                <div>
+                  <div className="grid grid-cols-7 mb-4 text-center">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                      <span key={day} className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{day}</span>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-y-1 text-center">
+                    {/* Feb 1 2026 is Sunday. Oh wait, it starts on standard gregorian calculation. Let's just follow image look. */}
+                    {/* In image, Monday starts on some column. Feb 1 2026 is Sunday. So Mon-Sat empty. */}
+                    {[...Array(6)].map((_, i) => <div key={`p-${i}`} className="h-10" />)}
+                    {[...Array(28)].map((_, i) => {
+                      const day = i + 1;
+                      const isSelected = day === 23 || day === 24;
+                      const isPast = day < 23;
+                      return (
+                        <div
+                          key={day}
+                          className={`h-10 flex items-center justify-center text-sm font-medium rounded-lg transition-colors
+                            ${isSelected ? 'bg-[#8c9e8d] text-white shadow-sm' : isPast ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50 cursor-pointer'}
+                            ${day === 1 ? 'bg-[#f7f8f7]' : ''}
+                          `}
+                        >
+                          {day}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* March 2026 */}
+                <div>
+                  <div className="grid grid-cols-7 mb-4 text-center">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                      <span key={day} className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{day}</span>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-y-1 text-center">
+                    {/* March 1 is Sunday. */}
+                    {[...Array(6)].map((_, i) => <div key={`p2-${i}`} className="h-10" />)}
+                    {[...Array(31)].map((_, i) => (
+                      <div key={i + 1} className="h-10 flex items-center justify-center text-sm font-medium text-gray-500 hover:bg-gray-50 cursor-pointer rounded-lg">
+                        {i + 1}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-4 mt-8">
+              <button className="h-12 px-8 rounded-full border border-gray-300 text-[#1a1a1a] font-bold text-sm hover:bg-gray-50 transition-colors uppercase tracking-wide">
+                Cancel
+              </button>
+              <button className="h-12 px-10 rounded-full bg-[#8c9e8d] text-white font-bold text-sm hover:bg-[#7a8c7b] transition-colors uppercase tracking-wide shadow-sm">
+                Apply
+              </button>
+            </div>
+          </section>
         </div>
 
         {/* Right Column: Booking Sidebar */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 space-y-6">
+          <div className="top-16 space-y-6">
             {/* Booking Card */}
             <div className="bg-[#f0f3ef] p-6 rounded-xl border border-transparent">
               <h2 className="text-xl font-bold mb-4 text-[#1a1a1a]">Book This Room</h2>
