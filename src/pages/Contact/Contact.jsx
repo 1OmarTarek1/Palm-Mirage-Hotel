@@ -1,3 +1,7 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,16 +10,38 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { NavLink } from "react-router-dom";
 
+import { contactSchema } from "./contactSchema";
 
 export default function Contact() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm({
+    defaultValues: { name: "", email: "", subject: "", message: "" },
+    resolver: zodResolver(contactSchema),
+  });
+
+  const onSubmit = async (data) => {
+    try {
+      // TODO: connect to API
+      console.log("Contact form data:", data);
+      reset();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
-      <section className="container  mt-16   text-center">
-        {/* Header  */}
+      <section className="container bg-background mt-16 text-center">
+        {/* Header */}
         <div className="flex flex-col items-center py-16 justify-center">
-          <h1 className="text-5xl font-serif font-medium mb-6">Contact Us</h1>
+          <h1 className="text-5xl font-header text-foreground font-medium mb-6">
+            Contact Us
+          </h1>
 
           <Breadcrumb>
             <BreadcrumbList className="text-lg">
@@ -24,7 +50,9 @@ export default function Contact() {
                   <NavLink
                     to="/"
                     className={({ isActive }) =>
-                      isActive ? "text-primary" : "text-muted-foreground hover:text-primary transition-colors"
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-primary transition-colors"
                     }
                   >
                     Home
@@ -35,13 +63,16 @@ export default function Contact() {
               <BreadcrumbSeparator />
 
               <BreadcrumbItem>
-                <BreadcrumbPage className="font-medium text-foreground">Contact Us</BreadcrumbPage>
+                <BreadcrumbPage className="font-medium text-foreground">
+                  Contact Us
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        {/* map  */}
-        <div className=" w-full h-112.5 relative overflow-hidden">
+
+        {/* Map */}
+        <div className="w-full h-112.5 relative overflow-hidden">
           <div className="absolute inset-0 grayscale invert opacity-80 contrast-125">
             <iframe
               src="https://www.google.com/maps/embed?pb=..."
@@ -54,22 +85,25 @@ export default function Contact() {
             ></iframe>
           </div>
         </div>
-        {/* Contact section  */}
+
+        {/* Contact Section */}
         <div className="container p-6 md:p-10 lg:px-24 text-left flex flex-col lg:flex-row justify-center items-center gap-10 lg:gap-16">
+          {/* Left — Info */}
           <div className="w-full lg:w-1/2">
-            {/* header */}
             <div className="space-y-4">
-              <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Get in touch</p>
-              <h2 className="text-3xl md:text-5xl font-serif leading-tight text-foreground">
+              <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+                Get in touch
+              </p>
+              <h2 className="text-3xl md:text-5xl leading-tight text-foreground font-header">
                 We Are Always Ready To Help You And Answer Your Questions
               </h2>
               <p className="text-muted-foreground leading-relaxed max-w-lg">
-                Pacific hake false trevally queen parrotfish black prickleback mosshead warbonnet sweeper! Greenling
-                sleeper.
+                Pacific hake false trevally queen parrotfish black prickleback
+                mosshead warbonnet sweeper! Greenling sleeper.
               </p>
             </div>
 
-            {/* contact details */}
+            {/* Contact Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-4 mt-10">
               {/* Hotline */}
               <div className="space-y-3">
@@ -79,6 +113,7 @@ export default function Contact() {
                   <p>+ (123) 1800 666 6789</p>
                 </div>
               </div>
+
               {/* Location */}
               <div className="space-y-3">
                 <h3 className="text-xl font-serif font-semibold">Location</h3>
@@ -91,75 +126,132 @@ export default function Contact() {
               {/* Email */}
               <div className="space-y-3">
                 <h3 className="text-xl font-serif font-semibold">Email</h3>
-                <p className="text-muted-foreground">moutain.sailing@gmail.com</p>
+                <p className="text-muted-foreground">
+                  moutain.sailing@gmail.com
+                </p>
               </div>
 
               {/* Social Network */}
               <div className="space-y-3">
-                <h3 className="text-xl font-serif font-semibold">Social Network</h3>
+                <h3 className="text-xl font-serif font-semibold">
+                  Social Network
+                </h3>
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                    <i className="fa-brands fa-facebook-f text-sm"></i>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                    <i className="fa-brands fa-twitter text-sm"></i>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                    <i className="fa-brands fa-linkedin-in text-sm"></i>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                    <i className="fa-brands fa-instagram text-sm"></i>
-                  </div>
+                  {[Facebook, Twitter, Linkedin, Instagram].map(
+                    (Icon, index) => (
+                      <div
+                        key={index}
+                        className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Icon size={18} />
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Right — Form */}
           <div className="w-full lg:w-1/2 relative">
             <div className="static lg:absolute lg:-bottom-70 left-0 w-full bg-[#f9fbfb] p-6 md:p-12 rounded-2xl shadow-sm border border-gray-50">
-              <form className="space-y-6">
-                <div className="">
-                  <h1 className="text-3xl py-3">Get in touch</h1>
-                  {/* input Name */}
-                  <div className="space-y-2 ">
-                    <label className="text-sm font-semibold text-gray-700">Name*</label>
-                    <input
-                      type="text"
-                      placeholder="Enter your name"
-                      className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8da399]/20 focus:border-[#8da399] transition-all"
-                    />
-                  </div>
-                  {/* input Email */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Email*</label>
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8da399]/20 focus:border-[#8da399] transition-all"
-                    />
-                  </div>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <h2 className="text-3xl py-3 font-header">Get in touch</h2>
+
+                {/* Name */}
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Name*
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your name"
+                    {...register("name")}
+                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      errors.name
+                        ? "border-red-400 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                    }`}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
-                {/* input Subject */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Subject</label>
+
+                {/* Email */}
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Email*
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your email"
+                    {...register("email")}
+                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      errors.email
+                        ? "border-red-400 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                    }`}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Subject */}
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Subject
+                  </label>
                   <input
                     type="text"
                     placeholder="Subject"
-                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8da399]/20 focus:border-[#8da399] transition-all"
+                    {...register("subject")}
+                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      errors.subject
+                        ? "border-red-400 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                    }`}
                   />
+                  {errors.subject && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.subject.message}
+                    </p>
+                  )}
                 </div>
-                {/* input Message */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Message</label>
+
+                {/* Message */}
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Message
+                  </label>
                   <textarea
                     rows="4"
                     placeholder="Enter your message"
-                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8da399]/20 focus:border-[#8da399] transition-all resize-none"
-                  ></textarea>
+                    {...register("message")}
+                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
+                      errors.message
+                        ? "border-red-400 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                    }`}
+                  />
+                  {errors.message && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.message.message}
+                    </p>
+                  )}
                 </div>
 
-                <button className="w-full bg-[#8da399] text-white px-12 py-4 rounded-full font-bold hover:bg-[#768b82] transition-all transform hover:-translate-y-1 shadow-md active:scale-95">
-                  Send A Message
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#8da399] text-white px-12 py-4 rounded-full font-bold hover:bg-[#768b82] transition-all transform hover:-translate-y-1 shadow-md active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isSubmitting ? "Sending..." : "Send A Message"}
                 </button>
               </form>
             </div>
