@@ -17,7 +17,7 @@ export const passwordValidator = z
   .max(50, { message: "Password is too long" })
   .regex(
     /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+]{6,}$/,
-    "Password must contain at least one letter and one number"
+    "Password must contain at least one letter and one number",
   );
 
 // -------------------
@@ -45,7 +45,10 @@ export const registerSchema = z
       .trim()
       .min(10, { message: "Phone Number is required" })
       .max(15, { message: "Phone Number is too long" })
-      .regex(/^\+?\d+$/, "Phone Number must contain only numbers and optional +"),
+      .regex(
+        /^\+?\d+$/,
+        "Phone Number must contain only numbers and optional +",
+      ),
 
     country: z
       .string()
@@ -55,7 +58,28 @@ export const registerSchema = z
 
     email: emailValidator,
     password: passwordValidator,
-    confirmPassword: z.string().min(1, { message: "Confirm Password is required" }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Confirm Password is required" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+// Reset Password Schema
+export const resetPasswordSchema = z
+  .object({
+    otp: z
+      .string()
+      .min(6, { message: "OTP must be 6 digits" })
+      .max(6, { message: "OTP must be 6 digits" }),
+
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+
+    confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
