@@ -7,7 +7,8 @@ export default function NavDropdown({ links, isOpen, onMouseEnter, onMouseLeave,
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
-      animate={isOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

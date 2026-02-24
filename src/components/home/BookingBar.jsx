@@ -76,10 +76,10 @@ export default function BookingBar() {
       initial={{ y: 50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.8, duration: 0.6 }}
-      className="w-full max-w-7xl mx-auto px-4 absolute bottom-6 md:bottom-23 left-1/2 -translate-x-1/2 z-30"
+      className="w-full max-w-7xl mx-auto px-4 absolute bottom-6 md:bottom-16 left-1/2 -translate-x-1/2 z-30"
       ref={barRef}
     >
-      <div className="bg-card/95 dark:bg-card/80 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-3 shadow-2xl flex flex-col lg:flex-row items-stretch lg:items-center gap-4 lg:gap-0 relative">
+      <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-3 shadow-2xl flex flex-col lg:flex-row items-stretch lg:items-center gap-4 lg:gap-0 relative">
         <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center">
           {segments.map((segment, index) => (
             <div 

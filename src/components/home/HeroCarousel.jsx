@@ -121,8 +121,8 @@ export default function HeroCarousel() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Buttons */}
-      <div className="absolute bottom-8 right-8 flex gap-4 z-20">
+      {/* Navigation Buttons (commented out for now) */}
+      {/* <div className="absolute bottom-8 right-8 flex gap-4 z-20">
         <Button
           variant="secondary"
           size="icon"
@@ -141,7 +141,7 @@ export default function HeroCarousel() {
         >
           <ChevronRight size={24} />
         </Button>
-      </div>
+      </div> */}
 
       {/* Indicators (Hidden on mobile when BookingBar is visible to save space) */}
       <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 gap-3 z-20">
