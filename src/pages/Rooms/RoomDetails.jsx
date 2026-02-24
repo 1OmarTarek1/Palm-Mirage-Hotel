@@ -493,12 +493,65 @@ export default function RoomDetails() {
               ))}
             </div>
           </section>
+
+          {/* Reviews Section */}
+          <section className="mt-16">
+            <h2 className="text-xl font-bold mb-8 text-[#1a1a1a]">Reviews</h2>
+
+            <div className="bg-[#f8f9f8] rounded-2xl p-8 mb-10 flex flex-col md:flex-row items-center gap-12">
+              <div className="text-center md:text-left">
+                <div className="text-5xl font-bold text-[#1a1a1a] mb-2 tracking-tight">0/5</div>
+                <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">0 Reviews</div>
+              </div>
+
+              <div className="flex-1 w-full space-y-3">
+                {[5, 4, 3, 2, 1].map((star) => (
+                  <div key={star} className="flex items-center gap-4 group">
+                    <span className="text-[13px] font-medium text-gray-500 w-12">{star} stars</span>
+                    <div className="flex-1 h-1.5 bg-white rounded-full overflow-hidden border border-gray-100">
+                      <div className="h-full bg-[#8c9e8d] w-0 transition-all duration-500" />
+                    </div>
+                    <span className="text-[13px] font-medium text-gray-400 w-4 text-right">0</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+              <div className="flex items-center gap-4">
+                <button className="h-10 px-6 rounded-full bg-[#8c9e8d] text-white text-[13px] font-bold shadow-sm transition-all hover:bg-[#7a8c7b]">
+                  All
+                </button>
+                <button className="h-10 px-6 rounded-full border border-gray-200 text-gray-500 text-[13px] font-bold transition-all hover:bg-gray-50 hover:text-[#1a1a1a] hover:border-gray-300">
+                  With Photos Only
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[13px] font-medium text-gray-400">Sort by</span>
+                <div className="relative group">
+                  <select className="appearance-none bg-[#f8f9f8] border-none h-11 pl-5 pr-12 rounded-xl text-[13px] font-bold text-[#1a1a1a] cursor-pointer focus:ring-0">
+                    <option>Oldest</option>
+                    <option>Newest</option>
+                    <option>Highest Rating</option>
+                    <option>Lowest Rating</option>
+                  </select>
+                  <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none rotate-90" />
+                </div>
+              </div>
+            </div>
+
+            <div className="py-12 border-t border-gray-100">
+              <p className="text-[15px] text-gray-500 mb-2">There are no reviews yet.</p>
+              <p className="text-[14px] text-gray-400 leading-relaxed italic">
+                Only logged in customers who have purchased this product may leave a review.
+              </p>
+            </div>
+          </section>
         </div>
 
-        {/* Right Column: Booking Sidebar */}
         <div className="lg:col-span-1">
           <div className="top-16 space-y-6">
-            {/* Booking Card */}
             <div className="bg-[#f0f3ef] p-6 rounded-xl border border-transparent">
               <h2 className="text-xl font-bold mb-4 text-[#1a1a1a]">Book This Room</h2>
 
@@ -509,7 +562,6 @@ export default function RoomDetails() {
               </div>
 
               <div className="space-y-4">
-                {/* Date Selection */}
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Check-in Date</label>
                   <Input
