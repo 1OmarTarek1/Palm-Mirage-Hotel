@@ -55,8 +55,6 @@ export default function CartSidebar() {
                 )}
               </div>
               <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
                 onClick={() => dispatch(closeCart())}
                 className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
               >
@@ -77,8 +75,6 @@ export default function CartSidebar() {
                     <ShoppingCart size={48} strokeWidth={1.2} className="opacity-30" />
                     <p className="text-sm font-medium">Your cart is empty</p>
                     <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
                       onClick={() => dispatch(closeCart())}
                       className="text-primary text-sm font-semibold hover:underline"
                     >
@@ -112,8 +108,6 @@ export default function CartSidebar() {
                             {item.name}
                           </p>
                           <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
                             onClick={() => dispatch(removeItem(item.id))}
                             className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
                           >
@@ -131,7 +125,6 @@ export default function CartSidebar() {
                           {/* Quantity Controls */}
                           <div className="flex items-center gap-2 bg-background/60 rounded-full px-2 py-1 border border-border/40">
                             <motion.button
-                              whileTap={{ scale: 0.85 }}
                               onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}
                               className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors text-foreground/70"
                             >
@@ -139,7 +132,6 @@ export default function CartSidebar() {
                             </motion.button>
                             <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
                             <motion.button
-                              whileTap={{ scale: 0.85 }}
                               onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
                               className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors text-foreground/70"
                             >
@@ -173,8 +165,6 @@ export default function CartSidebar() {
                 {/* Clear + Checkout */}
                 <div className="flex gap-3">
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
                     onClick={() => dispatch(clearCart())}
                     className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border/50
                                text-foreground/70 hover:bg-muted transition-colors"
@@ -182,7 +172,7 @@ export default function CartSidebar() {
                     Clear All
                   </motion.button>
 
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="flex-2">
+                  <motion.div className="flex-2">
                     <Link
                       to="/checkout"
                       onClick={() => dispatch(closeCart())}

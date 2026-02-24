@@ -14,10 +14,7 @@ export default function LoginButton() {
           ${isActive ? "text-primary bg-primary/20 shadow-inner" : "text-[#fefefea9] bg-primary/5"}
         `}
       >
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
+        <motion.div>
           <LogIn size={18} />
         </motion.div>
       </NavLink>

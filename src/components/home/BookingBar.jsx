@@ -162,7 +162,7 @@ export default function BookingBar() {
 
         <div className="px-3 py-2 lg:py-0">
           <Button 
-            className="w-full lg:w-auto px-10 h-14 text-sm font-bold uppercase tracking-widest shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
+            className="w-full lg:w-auto px-10 h-14 text-sm font-bold uppercase tracking-widest shadow-xl hover:shadow-primary/20 transition-all"
             onClick={() => {
               if (!bookingState.checkIn || !bookingState.checkOut) {
                 alert("Please select both check-in and check-out dates.");

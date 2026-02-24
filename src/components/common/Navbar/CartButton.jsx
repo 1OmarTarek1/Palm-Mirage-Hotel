@@ -14,8 +14,6 @@ export default function CartButton({ itemCount: propCount }) {
   return (
     <NavTooltip label="Cart">
       <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
         onClick={() => dispatch(toggleCart())}
         aria-label="Shopping Cart"
         className={`

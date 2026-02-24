@@ -62,8 +62,6 @@ export default function LanguageToggle({
     >
       <NavTooltip label="Language">
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
           className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-[#fefefea9] border border-[#fefefe11] cursor-pointer"
           aria-label="Toggle Language"
         >

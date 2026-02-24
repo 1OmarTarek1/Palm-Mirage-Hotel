@@ -80,16 +80,16 @@ export default function ActivitiesTestimonials() {
           ].map((img, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              initial={{ opacity: 0, y: 60 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 * idx }}
-              className={`shrink-0 ${img.style}`}
+              className={`shrink-0 overflow-hidden rounded-3xl group cursor-pointer ${img.style}`}
             >
               <img
                 src={`${img.src}?auto=format&fit=crop&q=80&w=800`}
                 alt={img.alt}
-                className="w-full h-full object-cover rounded-3xl"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
             </motion.div>
           ))}

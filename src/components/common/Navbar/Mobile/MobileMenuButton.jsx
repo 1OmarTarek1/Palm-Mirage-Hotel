@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 export default function MobileMenuButton({ isOpen, onToggle }) {
   return (
     <motion.button
-      whileTap={{ scale: 0.9 }}
       onClick={onToggle}
       className="md:hidden flex items-center justify-center w-10 h-10 text-white rounded-full bg-white/10 border border-white/10 relative"
       aria-label="Toggle menu"

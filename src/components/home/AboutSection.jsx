@@ -62,7 +62,7 @@ export default function AboutSection() {
 
         <div className="flex flex-col gap-6 mt-20">
           
-          <div className="flex flex-col md:flex-row gap-6 h-auto md:h-80">
+          <div className="flex flex-col md:flex-row gap-6 h-auto md:h-85">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}

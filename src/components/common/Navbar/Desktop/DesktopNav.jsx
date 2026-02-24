@@ -57,7 +57,7 @@ function NavItem({ link, activeMenu, onHover, onLeave }) {
              }`
           }
         >
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <motion.div>
             {link.icon}
           </motion.div>
         </NavLink>

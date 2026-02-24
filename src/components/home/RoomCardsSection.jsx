@@ -199,7 +199,6 @@ export default function RoomCardsSection() {
         <div className="flex items-center justify-center gap-2 mt-8">
           {/* Prev arrow (mobile) */}
           <motion.button
-            whileTap={{ scale: 0.9 }}
             onClick={prev}
             disabled={current === 0}
             className="sm:hidden w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-foreground"
@@ -226,7 +225,6 @@ export default function RoomCardsSection() {
 
           {/* Next arrow (mobile) */}
           <motion.button
-            whileTap={{ scale: 0.9 }}
             onClick={next}
             disabled={current >= maxIndex}
             className="sm:hidden w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-foreground"

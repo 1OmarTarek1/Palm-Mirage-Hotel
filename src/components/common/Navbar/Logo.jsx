@@ -7,8 +7,7 @@ export default function Logo() {
       {({ isActive }) => (
         <>
           <motion.div
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ rotate: 5 }}
             className={`
               w-10 h-10 rounded-full transition-all duration-500
               flex items-center justify-center cursor-pointer overflow-hidden

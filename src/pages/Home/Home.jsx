@@ -3,6 +3,7 @@ import AboutSection from "../../components/home/AboutSection";
 import RoomCardsSection from "../../components/home/RoomCardsSection";
 import RoomsPlatformsSection from "../../components/home/RoomsPlatformsSection";
 import HomeExperience from "../../components/home/HomeExperience";
+import ActivitiesSection from "../../components/home/ActivitiesSection";
 import ActivitiesTestimonials from "../../components/about/ActivitiesTestimonials";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
       <RoomCardsSection />
       <RoomsPlatformsSection />
       <HomeExperience />
+      <ActivitiesSection />
       <ActivitiesTestimonials />
     </div>
   )
