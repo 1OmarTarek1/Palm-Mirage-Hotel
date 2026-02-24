@@ -176,6 +176,36 @@ const faqs = [
   }
 ];
 
+const similarRooms = [
+  {
+    id: 101,
+    name: "Convent Peak Junior Suite",
+    price: 261.00,
+    category: "DOUBLE ROOM",
+    image: "https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=2074&auto=format&fit=crop",
+    size: 50,
+    adults: 3
+  },
+  {
+    id: 102,
+    name: "Deluxe Alpine Terrace Suite",
+    price: 420.00,
+    category: "DELUXE ROOM",
+    image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=2070&auto=format&fit=crop",
+    size: 50,
+    adults: 4
+  },
+  {
+    id: 103,
+    name: "Terrace Panorama Summit",
+    price: 330.00,
+    category: "SINGLE ROOM",
+    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070&auto=format&fit=crop",
+    size: 50,
+    adults: 2
+  }
+];
+
 export default function RoomDetails() {
   const { id } = useParams();
   const room = mockRoomData;
@@ -677,6 +707,49 @@ export default function RoomDetails() {
           </div>
         </div>
       </div>
+
+      {/* Similar Rooms Section */}
+      <section className="mt-24 mb-16">
+        <h2 className="text-3xl font-bold text-center mb-12 text-[#1a1a1a] font-header tracking-tight">Similar Rooms</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {similarRooms.map((room) => (
+            <div key={room.id} className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={room.image}
+                  alt={room.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-[#8c9e8d]/90 text-white text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-wider backdrop-blur-sm">
+                  {room.category}
+                </div>
+                <div className="absolute bottom-0 left-0">
+                  <div className="bg-white px-6 py-3 rounded-tr-2xl shadow-lg">
+                    <span className="text-xl font-bold text-[#1a1a1a]">${room.price.toFixed(2)}</span>
+                    <span className="text-xs text-gray-400 ml-1">/night</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 pt-8">
+                <h3 className="text-lg font-bold text-[#1a1a1a] mb-4 group-hover:text-[#018058] transition-colors">
+                  {room.name}
+                </h3>
+                <div className="flex items-center gap-6 text-[13px] text-gray-500 font-medium">
+                  <div className="flex items-center gap-2">
+                    <Maximize2 className="w-4 h-4 text-gray-300" />
+                    <span>{room.size} m²</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-300" />
+                    <span>{room.adults} Adults</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
