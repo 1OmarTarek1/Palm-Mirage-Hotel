@@ -153,6 +153,29 @@ const policies = [
   }
 ];
 
+const faqs = [
+  {
+    question: "Will I be able to update my subscription details another time?",
+    answer: "Yes, you can update your subscription details at any time from your account settings. Simply log in to your dashboard and navigate to the subscription section."
+  },
+  {
+    question: "How many Tours are available on TravelWP?",
+    answer: "TravelWP offers hundreds of curated tours across various destinations. Our catalog is constantly growing to provide you with more options."
+  },
+  {
+    question: "What are the most popular Tours?",
+    answer: "Our most popular tours include the Summit Peak trek, the Crystal Cave exploration, and the Aurora Borealis night tour."
+  },
+  {
+    question: "What are the top-rated Tours?",
+    answer: "Top-rated tours are determined by guest reviews. Currently, our Alpine Lodge experience and the Deep Sea Diving tour hold the highest ratings."
+  },
+  {
+    question: "What are the most affordable Tours?",
+    answer: "We offer a range of budget-friendly options, including half-day city walks and local nature hikes starting from $25 per person."
+  }
+];
+
 export default function RoomDetails() {
   const { id } = useParams();
   const room = mockRoomData;
@@ -166,6 +189,7 @@ export default function RoomDetails() {
   const [wifiSg, setWifiSg] = useState(true);
   const [wifiSgCount, setWifiSgCount] = useState("1");
   const [isLoading, setIsLoading] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   const handleDateClick = (dateStr) => {
     if (!checkIn || (checkIn && checkOut)) {
@@ -438,6 +462,35 @@ export default function RoomDetails() {
               <button className="h-12 px-10 rounded-full bg-[#8c9e8d] text-white font-bold text-sm hover:bg-[#7a8c7b] transition-colors uppercase tracking-wide shadow-sm">
                 Apply
               </button>
+            </div>
+          </section>
+
+          {/* FAQ Section */}
+          <section className="mt-16">
+            <h2 className="text-xl font-bold mb-8 text-[#1a1a1a]">Frequently Asked Questions</h2>
+            <div className="space-y-0">
+              {faqs.map((faq, idx) => (
+                <div key={idx} className="border-t border-gray-100 last:border-b">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
+                    className="w-full py-5 flex items-center justify-between text-left group transition-colors"
+                  >
+                    <span className={`text-[15px] font-medium transition-colors ${openFaqIndex === idx ? 'text-[#018058]' : 'text-gray-700 group-hover:text-[#1a1a1a]'}`}>
+                      {faq.question}
+                    </span>
+                    <div className="p-1 rounded-full group-hover:bg-gray-50 transition-colors">
+                      <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${openFaqIndex === idx ? 'rotate-90 text-[#018058]' : ''}`} />
+                    </div>
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === idx ? 'max-h-40 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}
+                  >
+                    <p className="text-[14px] text-gray-500 leading-relaxed pl-1 pr-8">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         </div>
