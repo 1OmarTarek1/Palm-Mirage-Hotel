@@ -1,14 +1,12 @@
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import AuthButton from "../../components/auth/AuthButton";
-import { resetPasswordSchema } from "./authSchema";
 import AuthHeader from "../../components/auth/AuthHeader";
-import PasswordField from "../../components/auth/PasswordField";
 import FormInputField from "../../components/auth/FormInputField";
+import PasswordField from "../../components/auth/PasswordField";
+import { resetPasswordSchema } from "./authSchema";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
