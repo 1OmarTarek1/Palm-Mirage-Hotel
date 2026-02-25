@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+import AuthButton from "../../components/auth/AuthButton";
 import { resetPasswordSchema } from "./authSchema";
 
 export default function ResetPassword() {
@@ -127,13 +127,7 @@ export default function ResetPassword() {
         </Field>
 
         {/*  ---------- Submit Button  ---------- */}
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-primary text-primary-foreground py-2.5 rounded-lg hover:bg-secondary transition-all duration-300 shadow-sm hover:shadow-md"
-        >
-          Reset
-        </Button>
+        <AuthButton isSubmitting={isSubmitting}>Reset</AuthButton>
       </form>
     </section>
   );

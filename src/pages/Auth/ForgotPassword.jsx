@@ -1,12 +1,12 @@
 import z from "zod";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { emailValidator } from "./authSchema";
+import AuthButton from "../../components/auth/AuthButton";
 
 const emailSchema = z.object({
   email: emailValidator
@@ -71,13 +71,7 @@ export default function ForgotPassword() {
         </Field>
 
         {/*  ---------- Submit Button  ---------- */}
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-primary text-primary-foreground py-2.5 rounded-lg hover:bg-secondary transition-all duration-300 shadow-sm hover:shadow-md"
-        >
-          Send mail
-        </Button>
+         <AuthButton isSubmitting={isSubmitting}>Send mail</AuthButton>
       </form>
     </section>
   );

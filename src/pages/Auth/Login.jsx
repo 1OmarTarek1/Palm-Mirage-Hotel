@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 
-import {loginSchema} from "./authSchema";
+import { loginSchema } from "./authSchema";
+import AuthButton from "../../components/auth/AuthButton";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -106,13 +106,7 @@ export default function Login() {
         </Link>
 
         {/*  ---------- Submit Button  ---------- */}
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-primary text-primary-foreground py-2.5 rounded-lg hover:bg-secondary transition-all duration-300 shadow-sm hover:shadow-md"
-        >
-          Sign In
-        </Button>
+          <AuthButton isSubmitting={isSubmitting}>Login</AuthButton>
       </form>
     </section>
   );
