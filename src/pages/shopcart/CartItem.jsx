@@ -3,7 +3,7 @@ import { Trash2, Plus, Minus, BedDouble } from "lucide-react";
 export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
   return (
     <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden flex flex-col sm:flex-row hover:shadow-md dark:hover:shadow-black/30 transition-shadow">
-      {/* Image */}
+
       <div className="sm:w-44 w-full h-44 sm:h-auto flex-shrink-0 overflow-hidden">
         {item.image ? (
           <img
