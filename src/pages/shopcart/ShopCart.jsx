@@ -1,4 +1,3 @@
-cartshop
 import { useState } from "react";
 import { mockCartItems } from "./mockData";
 import CartHeader from "./CartHeader";
