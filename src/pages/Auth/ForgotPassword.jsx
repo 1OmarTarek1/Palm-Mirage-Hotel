@@ -1,19 +1,20 @@
-import z from "zod";
-import { useForm } from "react-hook-form";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import z from "zod";
 
-import { emailValidator } from "./authSchema";
 import AuthButton from "../../components/auth/AuthButton";
 import AuthHeader from "../../components/auth/AuthHeader";
 import FormInputField from "../../components/auth/FormInputField";
+import { emailValidator } from "./authSchema";
 
 const emailSchema = z.object({
   email: emailValidator,
 });
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -26,6 +27,7 @@ export default function ForgotPassword() {
   const onSubmit = (data) => {
     try {
       console.log(data);
+      navigate("/auth/reset-password");
     } catch (error) {
       console.log(error);
     }
@@ -45,10 +47,7 @@ export default function ForgotPassword() {
       {/* -------------------- Forgot Password Form --------------------  */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* ---------- Email Input Field ---------- */}
-        <FormInputField
-          register={register("email")}
-          error={errors.email}
-        />
+        <FormInputField register={register("email")} error={errors.email} />
 
         {/*  ---------- Submit Button  ---------- */}
         <AuthButton isSubmitting={isSubmitting}>Send mail</AuthButton>

@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { registerSchema } from "./authSchema";
@@ -8,6 +9,8 @@ import PasswordField from "../../components/auth/PasswordField";
 import FormInputField from "../../components/auth/FormInputField";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -27,6 +30,7 @@ export default function Register() {
   const onSubmit = (data) => {
     try {
       console.log(data);
+      navigate("/auth/login");
     } catch (error) {
       console.log(error);
     }

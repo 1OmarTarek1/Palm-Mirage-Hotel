@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -9,6 +9,8 @@ import PasswordField from "../../components/auth/PasswordField";
 import FormInputField from "../../components/auth/FormInputField";
 
 export default function Login() {
+  const navigate = useNavigate()
+  
   const {
     register,
     handleSubmit,
@@ -21,6 +23,7 @@ export default function Login() {
   const onSubmit = (data) => {
     try {
       console.log(data);
+      navigate("/")
     } catch (error) {
       console.log(error);
     }
