@@ -48,7 +48,7 @@ export default function ResetPassword() {
             id="otp"
             type="text"
             placeholder="Enter 6-digit code"
-            className="bg-background border-border focus:ring-2 focus:ring-primary"
+            className="bg-background border-border focus:ring-2 focus:ring-primary py-6"
             {...register("otp")}
           />
           {errors.otp && (

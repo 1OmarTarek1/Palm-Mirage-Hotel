@@ -1,17 +1,14 @@
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 
 import { loginSchema } from "./authSchema";
 import AuthButton from "../../components/auth/AuthButton";
 import AuthHeader from "../../components/auth/AuthHeader";
 import PasswordField from "../../components/auth/PasswordField";
+import FormInputField from "../../components/auth/FormInputField";
 
 export default function Login() {
-  
-
   const {
     register,
     handleSubmit,
@@ -43,23 +40,10 @@ export default function Login() {
       {/* -------------------- Login Form --------------------  */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* ---------- Email Input Field ---------- */}
-        <Field>
-          <FieldLabel htmlFor="email" className="text-foreground">
-            Email
-          </FieldLabel>
-          <Input
-            id="email"
-            type="text"
-            placeholder="Enter your email"
-            className="bg-background border-border focus:ring-2 focus:ring-primary"
-            {...register("email")}
-          />
-          {errors.email && (
-            <FieldDescription className="text-red-400">
-              {errors.email.message}
-            </FieldDescription>
-          )}
-        </Field>
+        <FormInputField
+          register={register("email")}
+          error={errors.email}
+        />
 
         {/* ----------  Password Input Field  ---------- */}
         <PasswordField

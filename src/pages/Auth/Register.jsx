@@ -7,6 +7,7 @@ import { registerSchema } from "./authSchema";
 import AuthButton from "../../components/auth/AuthButton";
 import AuthHeader from "../../components/auth/AuthHeader";
 import PasswordField from "../../components/auth/PasswordField";
+import FormInputField from "../../components/auth/FormInputField";
 
 export default function Register() {
   const {
@@ -55,7 +56,7 @@ export default function Register() {
             id="userName"
             type="text"
             placeholder="Enter your Name"
-            className="bg-background border-border focus:ring-2 focus:ring-primary"
+            className="bg-background border-border focus:ring-2 focus:ring-primary py-6"
             {...register("userName")}
           />
           {errors.userName && (
@@ -76,7 +77,7 @@ export default function Register() {
               id="phoneNumber"
               type="text"
               placeholder="Enter your phone"
-              className="bg-background border-border focus:ring-2 focus:ring-primary"
+              className="bg-background border-border focus:ring-2 focus:ring-primary py-6"
               {...register("phoneNumber")}
             />
             {errors.phoneNumber && (
@@ -95,7 +96,7 @@ export default function Register() {
               id="country"
               type="text"
               placeholder="Enter your Country"
-              className="bg-background border-border focus:ring-2 focus:ring-primary"
+              className="bg-background border-border focus:ring-2 focus:ring-primary py-6"
               {...register("country")}
             />
             {errors.country && (
@@ -107,23 +108,10 @@ export default function Register() {
         </div>
 
         {/* ---------- Email Input Field ---------- */}
-        <Field>
-          <FieldLabel htmlFor="email" className="text-foreground">
-            Email
-          </FieldLabel>
-          <Input
-            id="email"
-            type="text"
-            placeholder="Enter your email"
-            className="bg-background border-border focus:ring-2 focus:ring-primary"
-            {...register("email")}
-          />
-          {errors.email && (
-            <FieldDescription className="text-red-400">
-              {errors.email.message}
-            </FieldDescription>
-          )}
-        </Field>
+        <FormInputField
+          register={register("email")}
+          error={errors.email}
+        />
 
         {/* ----------  Password Input Field  ---------- */}
         <PasswordField

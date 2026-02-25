@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { emailValidator } from "./authSchema";
 import AuthButton from "../../components/auth/AuthButton";
 import AuthHeader from "../../components/auth/AuthHeader";
+import FormInputField from "../../components/auth/FormInputField";
 
 const emailSchema = z.object({
   email: emailValidator,
@@ -44,23 +45,10 @@ export default function ForgotPassword() {
       {/* -------------------- Forgot Password Form --------------------  */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* ---------- Email Input Field ---------- */}
-        <Field>
-          <FieldLabel htmlFor="email" className="text-foreground">
-            Email
-          </FieldLabel>
-          <Input
-            id="email"
-            type="text"
-            placeholder="Enter your email"
-            className="bg-background border-border focus:ring-2 focus:ring-primary"
-            {...register("email")}
-          />
-          {errors.email && (
-            <FieldDescription className="text-red-400">
-              {errors.email.message}
-            </FieldDescription>
-          )}
-        </Field>
+        <FormInputField
+          register={register("email")}
+          error={errors.email}
+        />
 
         {/*  ---------- Submit Button  ---------- */}
         <AuthButton isSubmitting={isSubmitting}>Send mail</AuthButton>
