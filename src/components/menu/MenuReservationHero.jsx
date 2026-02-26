@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function MenuReservationHero({ activeCategory }) {
   return (
-    <div className="px-4 md:px-6 py-10">
+    <div className="py-10">
       <div className="relative w-full rounded-3xl overflow-hidden min-h-[500px] sm:min-h-[540px] md:min-h-[580px] lg:min-h-[620px]">
 
         <AnimatePresence mode="wait">

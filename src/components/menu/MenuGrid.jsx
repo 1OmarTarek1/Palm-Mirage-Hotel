@@ -66,7 +66,7 @@ function MenuItem({ item }) {
 
 export default function MenuGrid({ activeIndex, categoryLabel, items }) {
   return (
-    <div className="px-4 max-w-5xl mx-auto pb-4">
+    <div className="pb-4">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeIndex}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import MenuHeader from "../../components/menu/MenuHeader";
+// import MenuHeader from "../../components/menu/MenuHeader";
 import MenuTabs from "../../components/menu/MenuTabs";
 import MenuGrid from "../../components/menu/MenuGrid";
 import MenuReservationHero from "../../components/menu/MenuReservationHero";
@@ -12,7 +12,7 @@ export default function MenuPage() {
 
   return (
     <div className="bg-background w-full font-main transition-colors duration-300">
-      <MenuHeader />
+      {/* <MenuHeader /> */}
       <MenuTabs activeIndex={activeIndex} onSelect={setActiveIndex} />
       <MenuGrid
         activeIndex={activeIndex}

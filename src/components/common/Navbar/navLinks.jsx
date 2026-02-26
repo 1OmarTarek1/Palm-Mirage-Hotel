@@ -13,7 +13,8 @@ import {
   ShoppingBag,
   // change this links for demo
   ShieldCheck ,
-  MessageCircleMore    
+  MessageCircleMore,    
+  Heater
 } from "lucide-react";
 
 export const navLinks = [
@@ -42,7 +43,7 @@ export const navLinks = [
       links: [
         {
           label: "Restaurant",
-          href: "/services/menu",
+          href: "/services/restaurant",
           description: "Savor exquisite cuisines from around the world.",
           icon: <Utensils size={20} />,
         },
@@ -53,29 +54,29 @@ export const navLinks = [
           icon: <Dumbbell size={20} />,
         },
         {
-          label: "Relax",
-          href: "/services/spa",
-          description: "Relax and rejuvenate your body and mind.",
-          icon: <Waves size={20} />,
+          label: "Menu",
+          href: "/services/menu",
+          description: "Personalized assistance for all your needs.",
+          icon: <Heater size={20} />,
         },
+        // {
+        //   label: "Relax",
+        //   href: "/services/spa",
+        //   description: "Relax and rejuvenate your body and mind.",
+        //   icon: <Waves size={20} />,
+        // },
         {
           label: "Events, Meetings",
           href: "/services/Meetings",
           description: "Host memorable events in stunning spaces.",
           icon: <CalendarDays size={20} />,
         },
-        {
-          label: "Amenities",
-          href: "/services/concierge",
-          description: "Personalized assistance for all your needs.",
-          icon: <Bell size={20} />,
-        },
-        {
-          label: "Our Products",
-          href: "/services/room-service",
-          description: "Curated luxury products for your stay.",
-          icon: <ShoppingBag size={20} />,
-        },
+        // {
+        //   label: "Our Products",
+        //   href: "/services/room-service",
+        //   description: "Curated luxury products for your stay.",
+        //   icon: <ShoppingBag size={20} />,
+        // },
       ],
     },
   },

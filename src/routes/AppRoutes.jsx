@@ -39,8 +39,9 @@ export const routes = createBrowserRouter([
       // { path: 'services', element: <Services /> }, //changed for demo
       { path: 'services', element: <Wellness /> },
       { path: 'services/wellness', element: <Wellness /> },
-      { path: 'services/menu', element: <Menu /> },
       { path: 'services/Meetings', element: <Meetings /> },
+      { path: 'services/menu', element: <Menu /> },
+      { path: 'services/restaurant', element: <Restaurant /> },
       { path: 'blog', element: <Blog /> },
       { path: 'blog/:id', element: <BlogDetails /> },
       { path: 'about', element: <About /> },

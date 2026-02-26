@@ -4,7 +4,7 @@ import { categories } from "./menuData";
 export default function MenuTabs({ activeIndex, onSelect }) {
   return (
     <motion.div
-      className="px-4 max-w-5xl mx-auto mt-2 mb-8"
+      className="mt-2 mb-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, delay: 0.3, ease: "easeOut" }}

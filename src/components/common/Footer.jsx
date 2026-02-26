@@ -38,7 +38,7 @@ export default function Footer() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="bg-[#1a1f1a] text-white relative overflow-hidden">
+    <footer className="bg-[#1a1f1a] text-white relative overflow-hidden mt-15">
       {/* ── subtle background texture ── */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_20%_50%,#8a9d8a_0%,transparent_60%)]" />
 
