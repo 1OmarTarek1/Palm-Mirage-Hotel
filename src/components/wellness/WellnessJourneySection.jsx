@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
+  import Sauna from '../../assets/wellness/LuxurySauna.jpg'
+  import Fitness from '../../assets/wellness/Fitness.jpg' 
+  import Treatment from '../../assets/wellness/spaTreatment.jpg'
 const SLIDES = [
   {
-    image:
-      'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/06e2dc24df4e521fc73e8af4e0c01cb49afaf675-1536x1025.jpg',
-    title: 'Spa And Sauna',
+    // صورة الساونا الخشبية
+    image: Sauna, 
+    title: 'Luxury Sauna',
   },
   {
-    image:
-      'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/b4936f5062d4eda7f652d5ab25d89c23e5def68d-1536x1024.jpg',
+    // صورة الجيم (Dumbbells)
+    image: Fitness,
     title: 'Fitness Center',
   },
   {
-    image:
-      'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/ada18ed3d7af2cf71cf1a6344389cc5b9890ebc3-1536x1024.jpg',
+    // صورة ماسك الوجه (Treatment)
+    image: Treatment,
     title: 'Spa Treatment',
   },
 ];
-
 function WellnessCarousel() {
   const [current, setCurrent] = useState(0);
   const total = SLIDES.length;

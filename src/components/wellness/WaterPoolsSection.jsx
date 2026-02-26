@@ -1,6 +1,6 @@
 import { Wifi, Waves, Wind, Droplets, RefreshCw, Cloud, Flame, Snowflake } from 'lucide-react';
 import { Fade } from './WellnessFade';
-
+import wellnessImg from '../../assets/wellness/pool.jpg'
 const AMENITIES = [
   { label: 'Indoor Pool (29° C)', icon: 'wifi' },
   { label: "Children's Pool (34° C)", icon: 'pool' },
@@ -12,8 +12,7 @@ const AMENITIES = [
   { label: 'Ice Fountain (12° C)', icon: 'ice' },
 ];
 
-const POOL_HERO =
-  'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/Wellness.png';
+const POOL_HERO = wellnessImg;
 
 function AmenityIcon({ type }) {
   const iconProps = {

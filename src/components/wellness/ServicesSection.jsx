@@ -1,26 +1,28 @@
 import { Fade } from './WellnessFade';
-
+import spaImg from "../../assets/wellness/spa.jpg";
+import trainingImg from "../../assets/wellness/training.jpg";
+import steamImg from "../../assets/wellness/steam.jpg";
 const SERVICES = [
   {
     tag: 'SOOTHE YOUR SOUL',
     title: 'Spa Treatment',
     desc: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa penatibus et...',
     hours: '10 am – 8 pm',
-    img: 'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/ada18ed3d7af2cf71cf1a6344389cc5b9890ebc3-1536x1024.jpg',
-  },
+    img: spaImg,
+    },
   {
     tag: 'KEEP UP YOUR HEALTHY ROUTINE',
     title: 'Personal Training',
     desc: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa penatibus et...',
     hours: '10 am – 8 pm',
-    img: 'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/d6e2808f199cd27ba29cbee2e8dabccbc96c831f-1536x1024.jpg',
+    img: trainingImg,
   },
   {
     tag: 'SOOTHE YOUR SOUL',
     title: 'Steam Baths',
     desc: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa penatibus et...',
     hours: '10 am – 8 pm',
-    img: 'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/46299c1cbfbbb09a76dee1c02f7872aade58cb3e-1536x864.jpg',
+    img: steamImg,
   },
 ];
 
