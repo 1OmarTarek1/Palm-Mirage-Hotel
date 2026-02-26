@@ -22,7 +22,7 @@ export default function MenuReservationHero({ activeCategory }) {
           />
         </AnimatePresence>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/90 dark:from-black/20 dark:via-black/60 dark:to-black/95" />
+        <div className="absolute inset-0 bg-linear-gradient-to-b from-black/10 via-black/40 to-black/90 dark:from-black/20 dark:via-black/60 dark:to-black/95" />
 
         {/* Badge */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2">

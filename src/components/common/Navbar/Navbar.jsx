@@ -92,8 +92,8 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-5 py-3">
-      <div className="max-w-7xl mx-auto relative px-2">
+    <header className="fixed top-0 left-0 right-0 z-50 px-1 sm:px-2 md:px-3! lg:px-5 py-3 ">
+      <div className="px-2 md:px-0 lg:max-w-7xl mx-auto relative lg:px-2">
         <div className="flex justify-center">
         <motion.nav
           variants={introStage !== "done" ? introVariants : scrollVariants}

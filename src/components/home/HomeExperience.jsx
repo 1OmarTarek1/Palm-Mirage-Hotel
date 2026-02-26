@@ -90,7 +90,7 @@ export default function HomeExperience() {
       </AnimatePresence>
 
       {/* Gradient Overlay for Legibility */}
-      <div className="absolute inset-0 bg-linear-to-t from-[#687E69] via-[#687E69]/50 to-black/20 md:via-[#687E69]/40 md:to-black/10 transition-colors duration-700" />
+      <div className="absolute inset-0 bg-linear-to-t from-primary via-primary/50 to-black/20 md:via-primary/40 md:to-black/10 transition-colors duration-700" />
 
       {/* Content Container */}
       <div className="relative h-full min-h-screen w-full flex flex-col justify-end pt-32 pb-12 md:pb-20 max-w-[1400px] mx-auto px-4 md:px-10">

@@ -168,9 +168,9 @@ export default function BookingBar({ className, variant = "overlay" }) {
           ))}
         </div>
 
-        <div className="px-3 py-2 lg:py-0">
+        <div className="py-2 lg:py-0">
           <Button 
-            className="w-full lg:w-auto px-10 h-14 text-sm font-bold uppercase tracking-widest shadow-xl hover:shadow-primary/20 transition-all"
+            className="w-full lg:w-auto px-5 h-12 text-xs font-bold uppercase tracking-widest transition-all"
             onClick={() => {
               if (!bookingState.checkIn || !bookingState.checkOut) {
                 alert("Please select both check-in and check-out dates.");

@@ -11,7 +11,7 @@ const MainContainer = ({ children, className = "", showBreadcrumb = true, title:
 
   return (
     <div className={cn(
-      `w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-2 ${!isHomePage && "pt-30"}`,
+      `w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-4 lg:px-5 xl:px-2 ${!isHomePage && "pt-30"}`,
       className
     )}>
       {!isHomePage && (

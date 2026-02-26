@@ -21,7 +21,7 @@ export default function MenuTabs({ activeIndex, onSelect }) {
               }`}
             >
               <span
-                className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 ${
                   isActive
                     ? "bg-secondary text-white  ring-2 ring-primary shadow-md"
                     : "bg-muted text-muted-foreground"

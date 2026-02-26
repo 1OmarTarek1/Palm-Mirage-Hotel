@@ -41,7 +41,7 @@ const Checkout = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-12">
+    <div className="bg-background">
       {orderReceived ? (
         <OrderReceived orderReceived={orderReceived} />
       ) : (

@@ -36,7 +36,6 @@ export const routes = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'rooms', element: <Rooms /> },
       { path: 'rooms/:id', element: <RoomDetails /> },
-      // { path: 'services', element: <Services /> }, //changed for demo
       { path: 'services', element: <Wellness /> },
       { path: 'services/wellness', element: <Wellness /> },
       { path: 'services/Meetings', element: <Meetings /> },
@@ -47,7 +46,7 @@ export const routes = createBrowserRouter([
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
       { path: 'cart', element: <ShopCart /> },
-      { path: 'checkout', element: <Checkout /> },
+      { path: 'cart/checkout', element: <Checkout /> },
     ],
   },
 
