@@ -1,13 +1,15 @@
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils"
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 
 export default function FormInputField({
-  id="email",
-  label="Email",
+  id = "email",
+  label = "Email",
   type = "text",
-  placeholder="Enter your email",
+  placeholder = "Enter your email",
   register,
   error,
+  className,
 }) {
   return (
     <Field>
@@ -21,7 +23,10 @@ export default function FormInputField({
         id={id}
         type={type}
         placeholder={placeholder}
-        className="bg-background border-border focus:ring-2 focus:ring-primary md:py-6"
+        className={cn(
+          "bg-background border-border focus:ring-2 focus:ring-primary md:py-6",
+          className,
+        )}
         {...register}
       />
 
