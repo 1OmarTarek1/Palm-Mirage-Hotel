@@ -1,10 +1,24 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
-import AuthLayout from '@/layouts//AuthLayout';
-import MainLayout from '@/layouts/MainLayout.jsx';
-import NotFound from '@/pages/NotFound/NotFound';
+import AuthLayout from "@/layouts//AuthLayout";
+import MainLayout from "@/layouts/MainLayout.jsx";
+import NotFound from "@/pages/NotFound/NotFound";
 
 // Public Pages
+<<<<<<< HEAD
+import About from "@/pages/About/About";
+import Blog from "@/pages/Blog/Blog";
+import BlogDetails from "@/pages/Blog/BlogDetails";
+import Contact from "@/pages/Contact/Contact";
+import Home from "@/pages/Home/Home";
+import RoomDetails from "@/pages/Rooms/RoomDetails";
+import Rooms from "@/pages/Rooms/Rooms";
+import Services from "@/pages/Services/Services";
+import Wellness from "@/pages/Services/Wellness";
+import Menu from "@/pages/menu/Menu";
+import ShopCart from "@/pages/shopcart/ShopCart";
+import Checkout from "@/pages/Checkout/Checkout";
+=======
 import About from '@/pages/About/About';
 import Blog from '@/pages/Blog/Blog';
 import BlogDetails from '@/pages/Blog/BlogDetails';
@@ -17,17 +31,19 @@ import Wellness from '@/pages/Services/Wellness';
 import Menu from '@/pages/menu/Menu';
 import ShopCart from '@/pages/shopcart/ShopCart';
 import Checkout from '@/pages/Checkout/Checkout';
+>>>>>>> 3ef96f269851b3678e88533a7b992c4798caf19e
 
 // Auth Pages
-import ForgotPassword from '@/pages/Auth/ForgotPassword';
-import Login from '@/pages/Auth/Login';
-import Register from '@/pages/Auth/Register';
-import ResetPassword from '@/pages/Auth/ResetPassword';
+import ForgotPassword from "@/pages/Auth/ForgotPassword";
+import Login from "@/pages/Auth/Login";
+import Register from "@/pages/Auth/Register";
+import ResetPassword from "@/pages/Auth/ResetPassword";
+import Restaurant from "../pages/Services/Restaurant.jsx";
 // import ProtectedRoute from './ProtectedRoute'
 
 export const routes = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     errorElement: <NotFound />,
     children: [
@@ -48,14 +64,14 @@ export const routes = createBrowserRouter([
   },
 
   {
-    path: '/auth',
+    path: "/auth",
     element: <AuthLayout />,
     errorElement: <NotFound />,
     children: [
-      { path: 'login', element: <Login /> },
-      { path: 'register', element: <Register /> },
-      { path: 'forgot-password', element: <ForgotPassword /> },
-      { path: 'reset-password', element: <ResetPassword /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
     ],
   },
 

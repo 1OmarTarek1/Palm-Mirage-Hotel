@@ -56,7 +56,7 @@ export default function Footer() {
             <div className="w-12 h-12 rounded-full border border-[#8a9d8a]/50 flex items-center justify-center bg-[#8a9d8a]/10 group-hover:bg-[#8a9d8a]/20 transition-colors">
               <Hotel size={22} className="text-[#8a9d8a]" />
             </div>
-            <span className="text-2xl font-header font-semibold tracking-wide text-white">Balm Mirage Hotel</span>
+            <span className="text-2xl font-header font-semibold tracking-wide text-white">Palm Mirage Hotel</span>
           </NavLink>
 
           {/* Tagline */}
