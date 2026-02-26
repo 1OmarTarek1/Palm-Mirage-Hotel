@@ -277,3 +277,60 @@ export const GUEST_COUNT_OPTIONS = [
   "50 - 100",
   "100+",
 ];
+
+export const RESTAURANT_MENU_ITEMS = [
+  {
+    id: 1,
+    image:
+      "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/fresh-shrimp-rolls-blue-ceramic-plate-isolated-white-background-1.png",
+    imageAlt: "Image food",
+    title: "Salted Caramel Tart",
+    desc: "Salted caramel custard tart, vanilla ice-cream.",
+    price: "$16",
+  },
+  {
+    id: 2,
+    image:
+      "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/fresh-shrimp-rolls-blue-ceramic-plate-isolated-white-background-1-1.png",
+    imageAlt: "Image food",
+    title: "Salted Caramel Tart",
+    desc: "Salted caramel custard tart, vanilla ice-cream.",
+    price: "$16",
+  },
+  {
+    id: 3,
+    image:
+      "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/fresh-shrimp-rolls-blue-ceramic-plate-isolated-white-background-1-2.png",
+    imageAlt: "Image food",
+    title: "Salted Caramel Tart",
+    desc: "Salted caramel custard tart, vanilla ice-cream.",
+    price: "$16",
+  },
+  {
+    id: 4,
+    image:
+      "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/fresh-shrimp-rolls-blue-ceramic-plate-isolated-white-background-1-3.png",
+    imageAlt: "Image food",
+    title: "Salted Caramel Tart",
+    desc: "Salted caramel custard tart, vanilla ice-cream.",
+    price: "$16",
+  },
+  {
+    id: 5,
+    image:
+      "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/fresh-shrimp-rolls-blue-ceramic-plate-isolated-white-background-1.png",
+    imageAlt: "Image food",
+    title: "Salted Caramel Tart",
+    desc: "Salted caramel custard tart, vanilla ice-cream.",
+    price: "$16",
+  },
+  {
+    id: 6,
+    image:
+      "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/fresh-shrimp-rolls-blue-ceramic-plate-isolated-white-background-1-1.png",
+    imageAlt: "Image food",
+    title: "Salted Caramel Tart",
+    desc: "Salted caramel custard tart, vanilla ice-cream.",
+    price: "$16",
+  },
+];

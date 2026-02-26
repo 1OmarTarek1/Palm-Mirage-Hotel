@@ -10,41 +10,27 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  MEETINGS_HERO_IMAGE,
+  MEETINGS_CAROUSEL_IMAGES,
+  MEETINGS_AMENITIES,
+  EVENT_TYPES,
+  GUEST_COUNT_OPTIONS,
+} from "@/utils/constants";
 
-const HERO_IMAGE =
-  "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/58c6981fd8826441d3b9cbef2ee5c60b0c3485ef-scaled.jpg";
-
-const CAROUSEL_IMAGES = [
-  {
-    src: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1470&auto=format&fit=crop",
-    alt: "Conference room with blue chairs",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1469&auto=format&fit=crop",
-    alt: "Meeting room with projector screen",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1469&auto=format&fit=crop",
-    alt: "Boardroom setup",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1470&auto=format&fit=crop",
-    alt: "Conference presentation hall",
-  },
-];
 
 export default function Meetings() {
   const [current, setCurrent] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const total = CAROUSEL_IMAGES.length;
+  const total = MEETINGS_CAROUSEL_IMAGES.length;
 
   const prev = () => setCurrent((c) => (c - 1 + total) % total);
   const next = () => setCurrent((c) => (c + 1) % total);
 
   // Show 2 images side-by-side at a time
   const visible = [
-    CAROUSEL_IMAGES[current % total],
-    CAROUSEL_IMAGES[(current + 1) % total],
+    MEETINGS_CAROUSEL_IMAGES[current % total],
+    MEETINGS_CAROUSEL_IMAGES[(current + 1) % total],
   ];
 
   const handleSubmit = async (e) => {
@@ -71,7 +57,7 @@ export default function Meetings() {
       {/* Hero */}
       <section className="relative w-full h-[55vh] sm:h-[65vh] lg:h-[75vh] overflow-hidden">
         <img
-          src={HERO_IMAGE}
+          src={MEETINGS_HERO_IMAGE}
           alt="Meeting & Events"
           className="w-full h-full object-cover object-center"
         />
@@ -176,49 +162,33 @@ export default function Meetings() {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            {
-              icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12 20.25h.008v.008H12v-.008z" />
-                </svg>
-              ),
-              title: "High-Speed Wi-Fi",
-              desc: "Seamless internet connection for presentations, video calls, and real-time collaboration.",
-            },
-            {
-              icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m0 0h17.25m-17.25 0h17.25m0 0c.621 0 1.125.504 1.125 1.125m0 0v1.5m-1.125-1.5c.621 0 1.125.504 1.125 1.125m0 0v1.5" />
-                </svg>
-              ),
-              title: "Projector & Screen",
-              desc: "High-definition projection system for impactful visual presentations.",
-            },
-            {
-              icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-                </svg>
-              ),
-              title: "Microphone & Sound System",
-              desc: "Clear audio support for speeches, hybrid meetings, and larger audiences.",
-            },
-            {
-              icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                </svg>
-              ),
-              title: "On-Site Catering",
-              desc: "Coffee breaks, lunch, or full-service dining tailored to your event schedule.",
-            },
-          ].map(({ icon, title, desc }) => (
+          {MEETINGS_AMENITIES.map(({ id, title, desc }) => (
             <div
-              key={title}
+              key={id}
               className="border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-5 hover:shadow-md transition-shadow duration-300 bg-card"
             >
-              <div>{icon}</div>
+              <div>
+                {id === "wifi" && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12 20.25h.008v.008H12v-.008z" />
+                  </svg>
+                )}
+                {id === "projector" && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m0 0h17.25m-17.25 0h17.25m0 0c.621 0 1.125.504 1.125 1.125m0 0v1.5m-1.125-1.5c.621 0 1.125.504 1.125 1.125m0 0v1.5" />
+                  </svg>
+                )}
+                {id === "audio" && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                  </svg>
+                )}
+                {id === "catering" && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-[#8c9e8d]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                )}
+              </div>
               <h3 className="font-bold text-[15px] text-foreground">{title}</h3>
               <p className="text-[13px] text-muted-foreground leading-relaxed">{desc}</p>
             </div>
@@ -294,21 +264,22 @@ export default function Meetings() {
                 <label className="block text-[12px] font-bold text-muted-foreground">Type of Event*</label>
                 <select className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none text-muted-foreground">
                   <option>—Please choose an option—</option>
-                  <option>Meeting</option>
-                  <option>Conference</option>
-                  <option>Wedding</option>
-                  <option>Private Party</option>
-                  <option>Other</option>
+                  {EVENT_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Estimated Number of Guests*</label>
                 <select className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none text-muted-foreground">
                   <option>—Please choose an option—</option>
-                  <option>Less than 20</option>
-                  <option>20 - 50</option>
-                  <option>50 - 100</option>
-                  <option>100+</option>
+                  {GUEST_COUNT_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -344,6 +315,3 @@ export default function Meetings() {
     </div>
   );
 }
-
-
-
