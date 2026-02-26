@@ -1,6 +1,6 @@
 import { Wifi, Waves, Wind, Droplets, RefreshCw, Cloud, Flame, Snowflake } from 'lucide-react';
 import { Fade } from './WellnessFade';
-
+import wellnessImg from '../../assets/wellness/pool.jpg'
 const AMENITIES = [
   { label: 'Indoor Pool (29° C)', icon: 'wifi' },
   { label: "Children's Pool (34° C)", icon: 'pool' },
@@ -12,8 +12,7 @@ const AMENITIES = [
   { label: 'Ice Fountain (12° C)', icon: 'ice' },
 ];
 
-const POOL_HERO =
-  'https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/Wellness.png';
+const POOL_HERO = wellnessImg;
 
 function AmenityIcon({ type }) {
   const iconProps = {
@@ -39,27 +38,27 @@ export default function WaterPoolsSection() {
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           <Fade>
-            <div className="bg-foreground/5 rounded-[15px] p-[52px_48px] h-full box-border">
-              <p className="text-[14px] tracking-wide uppercase text-[#777] mb-3">
+            <div className="bg-card rounded-[15px] p-[52px_48px] h-full box-border">
+              <p className="text-[14px] tracking-wide uppercase text-muted-foreground mb-3">
                 Water Pools
               </p>
-              <h2 className="font-header text-[clamp(26px,2.5vw,36px)] font-bold text-primaryDark leading-[1.15] mb-[20px]">
+              <h2 className="font-[family-name:var(--font-header)] text-[clamp(26px,2.5vw,36px)] font-bold text-foreground leading-[1.15] mb-[20px]">
                 Wellness At Mountain Hotel
               </h2>
-              <p className="text-[16px] text-foreground/70 leading-[1.8]">
+              <p className="text-[16px] text-muted-foreground leading-[1.8]">
                 Step in and enjoy life with all your senses. In a fast paced
                 world, the luxurious 2000m2 Kulm Spa St. Moritz presents itself
                 as a haven and ideal hideaway for those seeking ultimate
                 relaxation, comfort and harmony.
               </p>
-              <h3 className="text-[20px] font-bold text-primaryDark mt-[36px] mb-[20px]">
+              <h3 className="text-[20px] font-bold text-foreground mt-[36px] mb-[20px]">
                 Amenities
               </h3>
               <div className="grid grid-cols-2 gap-y-[15px] gap-x-[12px]">
                 {AMENITIES.map((a) => (
                   <div
                     key={a.label}
-                    className="flex items-start gap-[9px] text-[15px] text-foreground/50"
+                    className="flex items-start gap-[9px] text-[15px] text-muted-foreground"
                   >
                     <AmenityIcon type={a.icon} />
                     {a.label}
@@ -73,7 +72,7 @@ export default function WaterPoolsSection() {
               <img
                 src={POOL_HERO}
                 alt="Pool"
-                className="w-full h-full object-cover block"
+                className="w-full h-full object-cover object-top block"
               />
             </div>
           </Fade>
