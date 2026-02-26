@@ -1,3 +1,166 @@
+export const CALENDAR_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+export const MOCK_ROOM_DATA = {
+  id: 1,
+  name: "Alpine King Deluxe",
+  type: "DELUXE ROOM",
+  price: 180,
+  rating: 4.8,
+  beds: 1,
+  bedType: "King Bed",
+  size: 50,
+  adults: 2,
+  description:
+    "Experience the pinnacle of alpine luxury in our Alpine King Deluxe room. Perched high in the mountains, this exquisite retreat offers breathtaking panoramic views of snow-capped peaks and pristine valleys. The room features floor-to-ceiling windows that frame the spectacular scenery, a plush king-sized bed with premium linens, and a private balcony where you can sip your morning coffee while watching the sunrise paint the mountains in golden hues.",
+  images: [
+    "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=1470&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1470&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1470&auto=format&fit=crop",
+  ],
+};
+
+export const ROOM_AMENITIES = [
+  { iconName: "Wifi", label: "Free Wi-Fi" },
+  { iconName: "Waves", label: "Swimming Pool" },
+  { iconName: "Dumbbell", label: "Fitness Center" },
+  { iconName: "Car", label: "Free Parking" },
+  { iconName: "Coffee", label: "Breakfast Included" },
+  { iconName: "Utensils", label: "Restaurant" },
+  { iconName: "Ban", label: "Non-Smoking" },
+  { iconName: "Umbrella", label: "Concierge" },
+  { iconName: "Wind", label: "Air Conditioning" },
+];
+
+export const ROOM_FEATURES = [
+  { iconName: "Bed", label: "King-size Bed" },
+  { iconName: "Tv", label: "Smart TV" },
+  { iconName: "Lock", label: "Electronic Safe" },
+  { iconName: "GlassWater", label: "Minibar" },
+  { iconName: "Phone", label: "Direct Phone" },
+  { iconName: "Monitor", label: "Work Desk" },
+  { iconName: "Refrigerator", label: "Refrigerator" },
+  { iconName: "Usb", label: "USB Charging" },
+  { iconName: "Gift", label: "Welcome Amenities" },
+  { iconName: "Table", label: "Sitting Area" },
+  { iconName: "CheckCircle2", label: "Daily Housekeeping" },
+];
+
+export const ROOM_BATHROOM = [
+  { iconName: "Bath", label: "Bathtub" },
+  { iconName: "Droplets", label: "Rainfall Shower" },
+  { iconName: "Shirt", label: "Bathrobes" },
+  { iconName: "Footprints", label: "Slippers" },
+  { iconName: "GlassWater", label: "Toiletries" },
+];
+
+export const BOOKING_POLICIES = [
+  {
+    icon: "✓",
+    title: "Check-in / Check-out",
+    type: "text",
+    content: "Check-in: from 3:00 PM\nCheck-out: until 12:00 PM\n\nEarly check-in and late check-out are subject to availability and may incur additional charges.",
+  },
+  {
+    icon: "↩",
+    title: "Cancellation Policy",
+    type: "list",
+    items: [
+      "Free cancellation up to 48 hours before check-in.",
+      "Cancellations within 48 hours will be charged one night's stay.",
+      "No-shows will be charged the full reservation amount.",
+    ],
+  },
+  {
+    icon: "⚑",
+    title: "House Rules",
+    type: "house-rules",
+    items: [
+      "No smoking inside the room or on the balcony.",
+      "Pets are not allowed.",
+      "Parties or events are not permitted.",
+      "Quiet hours: 10:00 PM – 8:00 AM.",
+    ],
+    note: "Violation of house rules may result in additional charges.",
+  },
+  {
+    icon: "$",
+    title: "Payment",
+    type: "text",
+    content: "We accept all major credit cards, debit cards, and online payment methods. Full payment is required at the time of booking.",
+  },
+];
+
+export const ROOM_FAQS = [
+  {
+    question: "Is breakfast included in the room rate?",
+    answer: "Yes, our Alpine King Deluxe room includes a complimentary full breakfast for two guests served at our mountain-view restaurant from 7:00 AM to 10:30 AM.",
+  },
+  {
+    question: "Do you offer airport transfers?",
+    answer: "Yes, we offer private airport transfer services. Please contact our concierge team at least 24 hours in advance to arrange your transfer.",
+  },
+  {
+    question: "Is there parking available?",
+    answer: "Complimentary covered parking is available for all guests on a first-come, first-served basis. Valet parking is also available for an additional fee.",
+  },
+  {
+    question: "Can I request a late checkout?",
+    answer: "Late checkout until 2:00 PM can be requested and is subject to availability. Please contact the front desk on the morning of your departure.",
+  },
+  {
+    question: "Are pets allowed?",
+    answer: "Unfortunately, we do not allow pets in our rooms. However, we can recommend nearby pet-friendly accommodations if needed.",
+  },
+];
+
+export const SIMILAR_ROOMS = [
+  {
+    id: 2,
+    name: "Twin Peaks Tower",
+    category: "DELUXE ROOM",
+    price: 160,
+    size: 60,
+    adults: 2,
+    image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1470&auto=format&fit=crop",
+  },
+  {
+    id: 3,
+    name: "Mountain View Suite",
+    category: "SUITE",
+    price: 280,
+    size: 90,
+    adults: 3,
+    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1470&auto=format&fit=crop",
+  },
+  {
+    id: 4,
+    name: "Forest Retreat",
+    category: "JUNIOR SUITE",
+    price: 220,
+    size: 75,
+    adults: 2,
+    image: "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?q=80&w=1470&auto=format&fit=crop",
+  },
+];
+
+export const TRUSTED_PARTNERS = [
+  {
+    name: "Booking.com",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Booking.com_logo.svg/320px-Booking.com_logo.svg.png",
+    rounded: false,
+  },
+  {
+    name: "Airbnb",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/320px-Airbnb_Logo_B%C3%A9lo.svg.png",
+    rounded: true,
+  },
+  {
+    name: "Expedia",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Expedia_2012_logo.svg/320px-Expedia_2012_logo.svg.png",
+    rounded: true,
+  },
+];
+
 export const DUMMY_ROOMS = [
   {
     id: 1,
