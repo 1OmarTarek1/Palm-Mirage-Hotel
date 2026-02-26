@@ -14,6 +14,7 @@ import RoomDetails from '@/pages/Rooms/RoomDetails';
 import Rooms from '@/pages/Rooms/Rooms';
 // import Services from '@/pages/Services/Services';
 import Wellness from '@/pages/Services/Wellness';
+import Meetings from '@/pages/Services/Meetings';
 import Menu from '@/pages/menu/Menu';
 import ShopCart from '@/pages/shopcart/ShopCart';
 import Checkout from '@/pages/Checkout/Checkout';
@@ -39,6 +40,7 @@ export const routes = createBrowserRouter([
       { path: 'services', element: <Wellness /> },
       { path: 'services/wellness', element: <Wellness /> },
       { path: 'services/menu', element: <Menu /> },
+      { path: 'services/Meetings', element: <Meetings /> },
       { path: 'blog', element: <Blog /> },
       { path: 'blog/:id', element: <BlogDetails /> },
       { path: 'about', element: <About /> },

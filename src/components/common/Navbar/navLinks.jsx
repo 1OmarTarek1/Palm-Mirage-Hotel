@@ -60,7 +60,7 @@ export const navLinks = [
         },
         {
           label: "Events, Meetings",
-          href: "/services/events",
+          href: "/services/Meetings",
           description: "Host memorable events in stunning spaces.",
           icon: <CalendarDays size={20} />,
         },
