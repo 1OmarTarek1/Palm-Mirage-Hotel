@@ -1,12 +1,12 @@
+import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import z from "zod";
 
-import AuthButton from "../../components/auth/AuthButton";
-import AuthHeader from "../../components/auth/AuthHeader";
-import FormInputField from "../../components/auth/FormInputField";
-import { emailValidator } from "./authSchema";
+import AuthButton from "@/components/auth/AuthButton";
+import AuthHeader from "@/components/auth/AuthHeader";
+import FormInputField from "@/components/auth/FormInputField";
+import { emailValidator } from "@/features/auth/authSchema";
 
 const emailSchema = z.object({
   email: emailValidator,

@@ -2,11 +2,11 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { registerSchema } from "./authSchema";
-import AuthButton from "../../components/auth/AuthButton";
-import AuthHeader from "../../components/auth/AuthHeader";
-import PasswordField from "../../components/auth/PasswordField";
-import FormInputField from "../../components/auth/FormInputField";
+import AuthButton from "@/components/auth/AuthButton";
+import AuthHeader from "@/components/auth/AuthHeader";
+import PasswordField from "@/components/auth/PasswordField";
+import FormInputField from "@/components/auth/FormInputField";
+import { registerSchema } from "@/features/auth/authSchema";
 
 export default function Register() {
   const navigate = useNavigate();
