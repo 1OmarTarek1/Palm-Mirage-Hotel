@@ -1,29 +1,13 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
-import RoomCard from "../../components/rooms/RoomCard";
-import RoomFilter from "../../components/rooms/RoomFilter";
-import BookingBar from "../../components/rooms/BookingBar";
-import Sidebar from "../../components/common/Sidebar";
-import MobileDrawer from "../../components/common/MobileDrawer";
-// import AppBreadcrumb from "../../components/common/AppBreadcrumb";
 
-const mockRoom = {
-  id: 1,
-  type: "DOUBLE ROOM",
-  name: "Summit View King Room",
-  price: 100,
-  beds: 1,
-  size: 50,
-  guests: 6,
-  image: "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2024/04/cozy-cabin-with-view-mountains-1.png",
-  partners: [
-    {
-      name: "agoda.com",
-      logo: "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2024/04/agoda.png",
-      href: "#",
-    },
-  ],
-};
+import RoomCard from "@/components/rooms/RoomCard";
+import RoomFilter from "@/components/rooms/RoomFilter";
+import BookingBar from "@/components/rooms/BookingBar";
+import Sidebar from "@/components/common/Sidebar";
+import MobileDrawer from "@/components/common/MobileDrawer";
+import { DUMMY_ROOMS } from "@/utils/constants";
+// import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 
 export default function Rooms() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -57,8 +41,7 @@ export default function Rooms() {
         <div className="grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-9">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <RoomCard room={mockRoom} />
-            <RoomCard room={mockRoom} />
+            {DUMMY_ROOMS.map((room) => <RoomCard room={room} /> )}
           </div>
         </div>
 

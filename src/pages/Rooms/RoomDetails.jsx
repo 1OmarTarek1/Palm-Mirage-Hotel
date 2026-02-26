@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
@@ -202,6 +202,7 @@ const similarRooms = [
 ];
 
 export default function RoomDetails() {
+  const navigate = useNavigate()
   const { id } = useParams();
   const room = mockRoomData;
   const dispatch = useDispatch();
@@ -275,11 +276,12 @@ export default function RoomDetails() {
     );
     
     toast.success(`${room.name} added to cart`);
+    navigate("/cart")
     setIsLoading(false);
   };
 
   return (
-    <div className="container mx-auto px-4 pt-28 pb-8 max-w-6xl font-main">
+    <div className="container mx-auto px-4 max-w-6xl font-main">
       {/* Hero Section with Carousel */}
       <div className="relative group mb-12">
         <Carousel className="w-full">

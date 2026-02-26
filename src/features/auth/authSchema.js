@@ -71,9 +71,9 @@ export const registerSchema = z
 export const resetPasswordSchema = z
   .object({
     otp: z
-      .string()
-      .min(6, { message: "OTP must be 6 digits" })
-      .max(6, { message: "OTP must be 6 digits" }),
+      .string({ required_error: "OTP is required" })
+      .trim()
+      .regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
 
     password: z
       .string()

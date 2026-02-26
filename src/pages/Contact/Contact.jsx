@@ -1,7 +1,10 @@
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
-import { contactSchema } from "./contactSchema";
+
+import FormInputField from "@/components/auth/FormInputField";
+import { contactSchema } from "@/features/contact/contactSchema";
 
 export default function Contact() {
   const {
@@ -26,7 +29,7 @@ export default function Contact() {
 
   return (
     <>
-      <section className="container bg-background text-center">
+      <section className="container bg-background text-center my-10">
         {/* Header */}
         {/* <div className="flex flex-col items-center mb-16 justify-center">
           <h1 className="text-5xl font-header text-foreground font-medium mb-6">
@@ -114,52 +117,46 @@ export default function Contact() {
                 <h2 className="text-3xl py-3 font-header">Get in touch</h2>
 
                 {/* Name */}
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">Name*</label>
-                  <input
-                    type="text"
-                    placeholder="Enter your name"
-                    {...register("name")}
-                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                      errors.name
-                        ? "border-red-400 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
-                    }`}
-                  />
-                  {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
-                </div>
+                <FormInputField
+                  id="name"
+                  label="Name"
+                  placeholder="Enter your name"
+                  error={errors.name}
+                  {...register("name")}
+                  className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                    errors.name
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                  }`}
+                />
 
                 {/* Email */}
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">Email*</label>
-                  <input
-                    type="text"
-                    placeholder="Enter your email"
-                    {...register("email")}
-                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                      errors.email
-                        ? "border-red-400 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
-                    }`}
-                  />
-                  {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
-                </div>
+                <FormInputField
+                  id="email"
+                  label="Email"
+                  laceholder="Enter your email"
+                  {...register("email")}
+                  error={errors.email}
+                  className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                    errors.name
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                  }`}
+                />
 
                 {/* Subject */}
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">Subject</label>
-                  <input
-                    type="text"
-                    placeholder="Subject"
-                    {...register("subject")}
-                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                      errors.subject
-                        ? "border-red-400 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
-                    }`}
-                  />
-                  {errors.subject && <p className="text-sm text-red-500 mt-1">{errors.subject.message}</p>}
-                </div>
+                <FormInputField
+                  id="subject"
+                  label="Subject"
+                  laceholder="Enter your Subject"
+                  {...register("subject")}
+                  error={errors.subject}
+                  className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                    errors.name
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
+                  }`}
+                />
 
                 {/* Message */}
                 <div className="space-y-1">
@@ -177,13 +174,13 @@ export default function Contact() {
                   {errors.message && <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>}
                 </div>
 
-                <button
+                <Button
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full bg-[#8da399] text-white px-12 py-4 rounded-full font-bold hover:bg-[#768b82] transition-all transform hover:-translate-y-1 shadow-md active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {isSubmitting ? "Sending..." : "Send A Message"}
-                </button>
+                </Button>
               </form>
             </div>
           </div>

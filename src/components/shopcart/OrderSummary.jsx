@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export default function OrderSummary({ cartItems, totalPrice }) {
+  const navigate = useNavigate()
   return (
     <div className="bg-[#f0f3ef] dark:bg-[#1a1a1a] border border-transparent dark:border-white/10 rounded-2xl p-6 sticky top-24 space-y-5">
       <h2 className="text-lg font-bold text-[#1a1a1a] dark:text-white">
@@ -40,7 +41,7 @@ export default function OrderSummary({ cartItems, totalPrice }) {
         * Price is per night. Final total may vary based on stay duration.
       </p>
 
-      <Button className="w-full h-12 bg-[#8c9e8d] hover:bg-[#7a8c7b] text-white font-bold rounded-xl text-sm transition-colors shadow-sm">
+      <Button onClick={()=> navigate("/checkout")} className="w-full h-12 bg-[#8c9e8d] hover:bg-[#7a8c7b] text-white font-bold rounded-xl text-sm transition-colors shadow-sm">
         <Link to="/checkout">Proceed to Checkout</Link>
       </Button>
 
