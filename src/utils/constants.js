@@ -218,3 +218,62 @@ export const DUMMY_ROOMS = [
       "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1470&auto=format&fit=crop",
   },
 ];
+export const MEETINGS_HERO_IMAGE =
+  "https://sailing.thimpress.com/demo-mountain-hotel/wp-content/uploads/sites/27/2025/06/58c6981fd8826441d3b9cbef2ee5c60b0c3485ef-scaled.jpg";
+
+export const MEETINGS_CAROUSEL_IMAGES = [
+  {
+    src: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1470&auto=format&fit=crop",
+    alt: "Conference room with blue chairs",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1469&auto=format&fit=crop",
+    alt: "Meeting room with projector screen",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1469&auto=format&fit=crop",
+    alt: "Boardroom setup",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1470&auto=format&fit=crop",
+    alt: "Conference presentation hall",
+  },
+];
+
+export const MEETINGS_AMENITIES = [
+  {
+    id: "wifi",
+    title: "High-Speed Wi-Fi",
+    desc: "Seamless internet connection for presentations, video calls, and real-time collaboration.",
+  },
+  {
+    id: "projector",
+    title: "Projector & Screen",
+    desc: "High-definition projection system for impactful visual presentations.",
+  },
+  {
+    id: "audio",
+    title: "Microphone & Sound System",
+    desc: "Clear audio support for speeches, hybrid meetings, and larger audiences.",
+  },
+  {
+    id: "catering",
+    title: "On-Site Catering",
+    desc: "Coffee breaks, lunch, or full-service dining tailored to your event schedule.",
+  },
+];
+
+export const EVENT_TYPES = [
+  "Meeting",
+  "Conference",
+  "Wedding",
+  "Private Party",
+  "Other",
+];
+
+export const GUEST_COUNT_OPTIONS = [
+  "Less than 20",
+  "20 - 50",
+  "50 - 100",
+  "100+",
+];
