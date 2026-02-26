@@ -12,7 +12,7 @@ import Contact from '@/pages/Contact/Contact';
 import Home from '@/pages/Home/Home';
 import RoomDetails from '@/pages/Rooms/RoomDetails';
 import Rooms from '@/pages/Rooms/Rooms';
-import Services from '@/pages/Services/Services';
+// import Services from '@/pages/Services/Services';
 import Wellness from '@/pages/Services/Wellness';
 import Menu from '@/pages/menu/Menu';
 import ShopCart from '@/pages/shopcart/ShopCart';
@@ -34,7 +34,8 @@ export const routes = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'rooms', element: <Rooms /> },
       { path: 'rooms/:id', element: <RoomDetails /> },
-      { path: 'services', element: <Services /> },
+      // { path: 'services', element: <Services /> }, //changed for demo
+      { path: 'services', element: <Wellness /> },
       { path: 'services/wellness', element: <Wellness /> },
       { path: 'services/menu', element: <Menu /> },
       { path: 'blog', element: <Blog /> },
