@@ -14,8 +14,10 @@ import RoomDetails from '@/pages/Rooms/RoomDetails';
 import Rooms from '@/pages/Rooms/Rooms';
 import Services from '@/pages/Services/Services';
 import Wellness from '@/pages/Services/Wellness';
-import Menu from '../pages/menu/Menu';
-import ShopCart from '../pages/shopcart/ShopCart';
+import Menu from '@/pages/menu/Menu';
+import ShopCart from '@/pages/shopcart/ShopCart';
+import Checkout from '@/pages/Checkout/Checkout';
+
 // Auth Pages
 import ForgotPassword from '@/pages/Auth/ForgotPassword';
 import Login from '@/pages/Auth/Login';
@@ -40,7 +42,7 @@ export const routes = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'menu', element: <Menu /> },
       { path: 'shopcart', element: <ShopCart /> },
-
+      { path: 'checkout', element: <Checkout /> },
     ],
   },
 
