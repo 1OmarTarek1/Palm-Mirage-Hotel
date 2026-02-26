@@ -185,11 +185,7 @@ export default function Navbar() {
           )}
         </AnimatePresence>
 
-        <MobileNav
-          navLinks={navLinks}
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-        />
+        <MobileNav navLinks={navLinks} isOpen={isOpen} onClose={() => setIsOpen(false)} />
       </div>
     </header>
   );

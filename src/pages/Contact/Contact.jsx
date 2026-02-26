@@ -54,15 +54,13 @@ export default function Contact() {
           {/* Left — Info */}
           <div className="w-full lg:w-1/2">
             <div className="space-y-4">
-              <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                Get in touch
-              </p>
+              <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Get in touch</p>
               <h2 className="text-3xl md:text-5xl leading-tight text-foreground font-header">
                 We Are Always Ready To Help You And Answer Your Questions
               </h2>
               <p className="text-muted-foreground leading-relaxed max-w-lg">
-                Pacific hake false trevally queen parrotfish black prickleback
-                mosshead warbonnet sweeper! Greenling sleeper.
+                Pacific hake false trevally queen parrotfish black prickleback mosshead warbonnet sweeper! Greenling
+                sleeper.
               </p>
             </div>
 
@@ -70,7 +68,7 @@ export default function Contact() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-4 mt-10">
               {/* Hotline */}
               <div className="space-y-3">
-                <h3 className="text-xl font-serif font-semibold">Hotline</h3>
+                <h3 className="text-xl  leading-tight text-foreground font-header">Hotline</h3>
                 <div className="text-muted-foreground space-y-1">
                   <p>+ (123) 1800 234 5678</p>
                   <p>+ (123) 1800 666 6789</p>
@@ -79,7 +77,7 @@ export default function Contact() {
 
               {/* Location */}
               <div className="space-y-3">
-                <h3 className="text-xl font-serif font-semibold">Location</h3>
+                <h3 className="text-xl  font-header text-foreground">Location</h3>
                 <div className="text-muted-foreground space-y-1">
                   <p>USA, New York – 1060</p>
                   <p>Str. First Avenue 1</p>
@@ -88,28 +86,22 @@ export default function Contact() {
 
               {/* Email */}
               <div className="space-y-3">
-                <h3 className="text-xl font-serif font-semibold">Email</h3>
-                <p className="text-muted-foreground">
-                  moutain.sailing@gmail.com
-                </p>
+                <h3 className="text-xl  font-header text-foreground">Email</h3>
+                <p className="text-muted-foreground">moutain.sailing@gmail.com</p>
               </div>
 
               {/* Social Network */}
               <div className="space-y-3">
-                <h3 className="text-xl font-serif font-semibold">
-                  Social Network
-                </h3>
+                <h3 className="text-xl  font-header text-foreground">Social Network</h3>
                 <div className="flex gap-4">
-                  {[Facebook, Twitter, Linkedin, Instagram].map(
-                    (Icon, index) => (
-                      <div
-                        key={index}
-                        className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                      >
-                        <Icon size={18} />
-                      </div>
-                    )
-                  )}
+                  {[Facebook, Twitter, Linkedin, Instagram].map((Icon, index) => (
+                    <div
+                      key={index}
+                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                    >
+                      <Icon size={18} />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -123,9 +115,7 @@ export default function Contact() {
 
                 {/* Name */}
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Name*
-                  </label>
+                  <label className="text-sm font-semibold text-gray-700">Name*</label>
                   <input
                     type="text"
                     placeholder="Enter your name"
@@ -136,18 +126,12 @@ export default function Contact() {
                         : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
                     }`}
                   />
-                  {errors.name && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {errors.name.message}
-                    </p>
-                  )}
+                  {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
                 </div>
 
                 {/* Email */}
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Email*
-                  </label>
+                  <label className="text-sm font-semibold text-gray-700">Email*</label>
                   <input
                     type="text"
                     placeholder="Enter your email"
@@ -158,18 +142,12 @@ export default function Contact() {
                         : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
                     }`}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {errors.email.message}
-                    </p>
-                  )}
+                  {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
                 </div>
 
                 {/* Subject */}
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Subject
-                  </label>
+                  <label className="text-sm font-semibold text-gray-700">Subject</label>
                   <input
                     type="text"
                     placeholder="Subject"
@@ -180,18 +158,12 @@ export default function Contact() {
                         : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
                     }`}
                   />
-                  {errors.subject && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {errors.subject.message}
-                    </p>
-                  )}
+                  {errors.subject && <p className="text-sm text-red-500 mt-1">{errors.subject.message}</p>}
                 </div>
 
                 {/* Message */}
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Message
-                  </label>
+                  <label className="text-sm font-semibold text-gray-700">Message</label>
                   <textarea
                     rows="4"
                     placeholder="Enter your message"
@@ -202,11 +174,7 @@ export default function Contact() {
                         : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"
                     }`}
                   />
-                  {errors.message && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {errors.message.message}
-                    </p>
-                  )}
+                  {errors.message && <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>}
                 </div>
 
                 <button
