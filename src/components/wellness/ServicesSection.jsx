@@ -28,7 +28,7 @@ const SERVICES = [
 
 export default function ServicesSection() {
   return (
-    <section className="pt-20 pb-24">
+    <section className="pt-10 pb-24">
       <div className="">
         <Fade>
           <div className="text-center mb-[52px]">

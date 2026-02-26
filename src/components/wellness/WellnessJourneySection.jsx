@@ -5,17 +5,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
   import Treatment from '../../assets/wellness/spaTreatment.jpg'
 const SLIDES = [
   {
-    // صورة الساونا الخشبية
     image: Sauna, 
     title: 'Luxury Sauna',
   },
   {
-    // صورة الجيم (Dumbbells)
     image: Fitness,
     title: 'Fitness Center',
   },
   {
-    // صورة ماسك الوجه (Treatment)
+    
     image: Treatment,
     title: 'Spa Treatment',
   },
@@ -90,9 +88,8 @@ function WellnessCarousel() {
 
 export default function WellnessJourneySection() {
   return (
-    <section className="py-[100px] bg-background">
+    <section className="py-[55px] bg-background">
       <div className="container mx-auto max-w-[1280px] px-5 md:px-10">
-        {/* Header row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[60px] mb-[60px] items-start">
           <div>
             <div className="text-[13px] font-semibold tracking-[0.2em] uppercase text-foreground/50 mb-4">
@@ -113,7 +110,6 @@ export default function WellnessJourneySection() {
           </div>
         </div>
 
-        {/* Carousel */}
         <WellnessCarousel />
       </div>
     </section>

@@ -13,7 +13,7 @@ const POOL_STAIRS = sauna
 
 export default function GalleryHoursSection() {
   return (
-    <section className="pb-0 pt-12">
+    <section className="pb-10 pt-15">
       <div className="container mx-auto max-w-[1280px] px-5 md:px-10">
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-[30px] items-stretch">
           
@@ -33,7 +33,6 @@ export default function GalleryHoursSection() {
             />
           </div>
 
-          {/* التعديل هنا: أضفنا h-[350px] و flex flex-col لضمان مطابقة الارتفاع وتوزيع العناصر */}
           <div className="bg-card rounded-lg p-9 h-[350px] flex flex-col justify-between">
             <h3 className="font-[family-name:var(--font-header)] text-2xl font-bold mb-4 text-foreground">
               Opening Hours
