@@ -22,7 +22,7 @@ export default function OrderSummary({ cartItems, totalPrice }) {
                 ×{item.quantity}
               </span>
             </span>
-            <span className="font-medium text-[#1a1a1a] dark:text-white flex-shrink-0">
+            <span className="font-medium text-[#1a1a1a] dark:text-white shrink-0">
               ${(item.price * item.quantity).toFixed(2)}
             </span>
           </div>
