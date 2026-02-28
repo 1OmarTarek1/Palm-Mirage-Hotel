@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 export default function OrderSummary({ cartItems, totalPrice }) {
   const navigate = useNavigate()
   return (
-    <div className="bg-[#f0f3ef] dark:bg-[#1a1a1a] border border-transparent dark:border-white/10 rounded-2xl p-6 sticky top-24 space-y-5">
-      <h2 className="text-lg font-bold text-[#1a1a1a] dark:text-white">
+    <div className="bg-card shadow-sm border border-transparent dark:border-white/10 rounded-2xl p-6 sticky top-24 space-y-5">
+      <h2 className="text-lg font-bold text-foreground">
         Order Summary
       </h2>
 

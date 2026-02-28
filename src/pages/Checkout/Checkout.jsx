@@ -41,7 +41,7 @@ const Checkout = () => {
   });
 
   return (
-    <div className="bg-background">
+    <div className="">
       {orderReceived ? (
         <OrderReceived orderReceived={orderReceived} />
       ) : (
