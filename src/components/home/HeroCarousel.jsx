@@ -1,169 +1,255 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import BookingBar from "@/components/rooms/BookingBar";
+import { Button } from "@/components/ui/button";
 
-// Image data - using high quality Unsplash images
+
 const slides = [
   {
     id: 1,
-    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1470&auto=format&fit=crop",
-    title: "Experience Luxury",
-    subtitle: "Discover comfort and elegance in our premium suites"
+    image: "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?fm=webp&w=1920&q=75&auto=format&fit=crop",
+    title: "Royal Gastronomy",
+    subtitle: "A culinary journey through the finest flavors of the Nile.",
+    accent: "text-rose-200"
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=1470&auto=format&fit=crop",
-    title: "Relax & Rejuvenate",
-    subtitle: "Immerse yourself in our world-class amenities"
+    image: "https://images.unsplash.com/photo-1590073844006-33379778ae09?fm=webp&w=1920&q=75&auto=format&fit=crop",
+    title: "Sanctuary of Silence",
+    subtitle: "Find your peace in our sanctuary overlooking the eternal Nile.",
+    accent: "text-emerald-200"
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1470&auto=format&fit=crop",
-    title: "Exquisite Dining",
-    subtitle: "Savor culinary masterpieces crafted by top chefs"
+    image: "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?fm=webp&w=1920&q=75&auto=format&fit=crop",
+    title: "The Heritage of Luxor",
+    subtitle: "Step into a world where ancient majesty meets contemporary luxury.",
+    accent: "text-amber-200"
   }
 ];
 
 export default function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
+  const [showMobileBooking, setShowMobileBooking] = useState(false);
 
-  // Auto-play effect
+  const containerRef = useRef(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const rafRef = useRef(null);
+
+  // Optimized image preloading
   useEffect(() => {
-    const timer = setInterval(() => {
-      nextSlide();
-    }, 5000);
-
-    return () => clearInterval(timer);
+    const nextIndex = (currentIndex + 1) % slides.length;
+    const img = new Image();
+    img.src = slides[nextIndex].image;
   }, [currentIndex]);
 
-  const slideVariants = {
-    hidden: (direction) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 1.1 // Subtle zoom effect
-    }),
-    visible: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.5 }
-      }
-    },
-    exit: (direction) => ({
-      x: direction > 0 ? -1000 : 1000,
-      opacity: 0,
-      scale: 0.9,
-      transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.5 }
-      }
-    })
-  };
+  // Throttled parallax effect based on mouse
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (rafRef.current) return;
 
-  const nextSlide = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
-  };
+      rafRef.current = requestAnimationFrame(() => {
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
+        const x = (clientX / innerWidth - 0.5) * 20;
+        const y = (clientY / innerHeight - 0.5) * 20;
+        setMousePosition({ x, y });
+        rafRef.current = null;
+      });
+    };
 
-  const prevSlide = () => {
-    setDirection(-1);
-    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  // Auto-slide logic
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const smoothX = useSpring(mousePosition.x, { stiffness: 100, damping: 30 });
+  const smoothY = useSpring(mousePosition.y, { stiffness: 100, damping: 30 });
 
   return (
-    <div className="relative w-screen left-1/2 -translate-x-1/2 h-screen overflow-hidden bg-black">
-      <AnimatePresence initial={false} custom={direction}>
+    <div 
+      ref={containerRef}
+      id="hero"
+      className="relative w-screen left-1/2 -translate-x-1/2 h-screen  overflow-hidden bg-[#0a0a0a]"
+    >
+      <AnimatePresence initial={false}>
         <motion.div
           key={currentIndex}
-          custom={direction}
-          variants={slideVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0"
         >
-          {/* Background Image with Overlay */}
-          <div className="absolute inset-0">
-            <img
-              src={slides[currentIndex].image}
-              alt={slides[currentIndex].title}
-              className="absolute inset-0 w-full h-full object-cover"
-              crossOrigin="anonymous"
-            />
-            <div className="absolute inset-0 bg-black/40" /> {/* Dark overlay */}
-          </div>
+          {/* Layer 1: Background Ken Burns Image */}
+          <motion.div 
+            className="absolute inset-0 overflow-hidden"
+            initial={{ scale: 1 }}
+            animate={{ scale: 1.1 }}
+            transition={{ 
+              duration: 8,
+              ease: "linear"
+            }}
+            style={{ 
+              willChange: "transform"
+            }}
+          >
+            <div className="absolute inset-0">
+              <img
+                src={slides[currentIndex].image}
+                alt={slides[currentIndex].title}
+                className="w-full h-full object-cover transform-gpu"
+                crossOrigin="anonymous"
+              />
+            </div>
+            
+            {/* Elegant Vignette Overlay (Top, Bottom, Left, Right) */}
+            <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/80 z-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-r from-black/20 via-transparent to-black/20 z-10 pointer-events-none" />
+            
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] z-10 pointer-events-none" />
+          </motion.div>
 
+          {/* Layer 2: Architectural "Arch" Overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none z-20"
+            style={{
+              background: "linear-gradient(45deg, rgba(8,8,8,0.4) 0%, rgba(8,8,8,0) 100%)",
+              border: "1px solid rgba(255,255,255,0.05)"
+            }}
+          />
 
-          {/* Text Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4 pb-[35vh] md:pb-0">
-            <motion.h1 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-4xl md:text-6xl lg:text-7xl font-header mb-4 tracking-tight drop-shadow-lg"
-            >
-              {slides[currentIndex].title}
-            </motion.h1>
-            <motion.p 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="text-lg md:text-2xl text-white/90 max-w-2xl font-light drop-shadow-md"
-            >
-              {slides[currentIndex].subtitle}
-            </motion.p>
+          {/* Layer 3: Content Container */}
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-4">
+            <div className="max-w-4xl">
+              <motion.h1
+                className="text-4xl md:text-6xl lg:text-7xl font-header text-white mb-6 leading-[1.1] drop-shadow-2xl flex flex-wrap justify-center py-2"
+              >
+                {Array.from(slides[currentIndex].title).map((char, i) => (
+                  <motion.span
+                    key={i}
+                    initial={{ opacity: 0, filter: "blur(12px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    transition={{ 
+                      delay: 0.5 + (i * 0.03), 
+                      duration: 0.8, 
+                      ease: "easeOut" 
+                    }}
+                    className="inline-block"
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5, duration: 1 }}
+                className="text-base md:text-lg text-white/70 max-w-xl mx-auto font-light leading-relaxed mb-10"
+              >
+                {slides[currentIndex].subtitle}
+              </motion.p>
+
+              {/* Mobile Booking Trigger Button (Smaller & Integrated) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.8, duration: 0.8 }}
+                className="lg:hidden mt-6 flex justify-center"
+              >
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowMobileBooking(true)}
+                  className="px-8 h-12 rounded-full text-[11px] font-bold tracking-widest uppercase"
+                >
+                  Check Availability
+                </Button>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Buttons (commented out for now) */}
-      {/* <div className="absolute bottom-8 right-8 flex gap-4 z-20">
-        <Button
-          variant="secondary"
-          size="icon"
-          onClick={prevSlide}
-          aria-label="Previous Slide"
-          className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/30"
-        >
-          <ChevronLeft size={24} />
-        </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          onClick={nextSlide}
-          aria-label="Next Slide"
-          className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/30"
-        >
-          <ChevronRight size={24} />
-        </Button>
-      </div> */}
-
-      {/* Indicators (Hidden on mobile when BookingBar is visible to save space) */}
-      <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 gap-3 z-20">
+      {/* Slide Indicators - Architectural Style (Vertical stack, safe positioning) */}
+      <div className="absolute bottom-12 right-6 md:bottom-16 md:right-12 lg:right-12 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2 flex flex-col gap-4 z-30">
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => {
-              setDirection(index > currentIndex ? 1 : -1);
-              setCurrentIndex(index);
-            }}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentIndex 
-                ? "bg-primary w-8" 
-                : "bg-primary/40 hover:bg-primary/70"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
+            onClick={() => setCurrentIndex(index)}
+            className="group relative flex items-center justify-end w-32 pl-4 py-2 cursor-pointer"
+          >
+            <span className={`mr-4 text-xs lg:text-sm font-bold tracking-[0.2em] lg:tracking-widest uppercase transition-opacity duration-300 ${index === currentIndex ? "opacity-100 text-amber-200" : "opacity-0 group-hover:opacity-100 text-white/60"}`}>
+              0{index + 1}
+            </span>
+            <div className={`h-[2px] transition-all duration-500 rounded-full ${index === currentIndex ? "w-16 lg:w-20 bg-amber-200" : "w-10 lg:w-12 bg-white/30 group-hover:w-14 group-hover:bg-white/60"}`} />
+          </button>
         ))}
       </div>
 
-      {/* Booking Bar */}
-      <BookingBar variant="overlay" className="bottom-10 md:bottom-16" />
+      {/* Animated Scroll Indicator */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.5, duration: 1 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2"
+      >
+        <span className="text-[10px] tracking-[0.5em] uppercase text-white/40">Scroll</span>
+        <div className="w-px h-12 bg-linear-to-b from-white/40 to-transparent relative overflow-hidden">
+          <motion.div 
+            animate={{ y: [0, 48] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 left-0 w-full h-4 bg-amber-200"
+          />
+        </div>
+      </motion.div>
+
+
+
+      {/* Desktop Booking Bar Overlay */}
+      <div className="absolute bottom-24 md:bottom-20 left-0 w-full z-40 px-4 hidden lg:block">
+        <div className="max-w-7xl mx-auto">
+          <BookingBar />
+        </div>
+      </div>
+
+      {/* Mobile Booking Modal */}
+      <AnimatePresence>
+        {showMobileBooking && (
+            <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-100 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 lg:hidden"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full relative"
+            >
+              <button 
+                onClick={() => setShowMobileBooking(false)}
+                className="absolute -top-16 right-0 text-white/60 hover:text-white flex items-center gap-2 text-xs uppercase tracking-widest font-bold px-4 py-2"
+              >
+                Close ✕
+              </button>
+              <BookingBar className="relative bottom-0! left-0! translate-x-0! px-0!" variant="overlay" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

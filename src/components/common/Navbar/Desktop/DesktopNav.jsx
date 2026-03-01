@@ -53,7 +53,7 @@ function NavItem({ link, activeMenu, onHover, onLeave }) {
              transition-all duration-300 hover:bg-primary/20
              ${isActive
                ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
-               : "text-[#fefefea9]"
+               : "text-white/60"
              }`
           }
         >

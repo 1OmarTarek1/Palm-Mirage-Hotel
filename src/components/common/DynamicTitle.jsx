@@ -54,7 +54,7 @@ const DynamicTitle = ({ customTitle }) => {
   const displayTitle = getDynamicTitle();
 
   return (
-    <h1 className='text-5xl font-header text-foreground font-bold mb-0'>
+    <h1 className='text-3xl sm:text-4xl md:text-5xl font-header text-foreground font-bold mb-0'>
       {displayTitle}
     </h1>
   );

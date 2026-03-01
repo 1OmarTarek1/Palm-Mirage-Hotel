@@ -34,7 +34,7 @@ function AmenityIcon({ type }) {
 
 export default function WaterPoolsSection() {
   return (
-    <section className="pb-[28px] rounded-[10px]">
+    <section className="mb-20">
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           <Fade>
@@ -42,7 +42,7 @@ export default function WaterPoolsSection() {
               <p className="text-[14px] tracking-wide uppercase text-muted-foreground mb-3">
                 Water Pools
               </p>
-              <h2 className="font-[family-name:var(--font-header)] text-[clamp(26px,2.5vw,36px)] font-bold text-foreground leading-[1.15] mb-[20px]">
+              <h2 className="font-header text-[clamp(26px,2.5vw,36px)] font-bold text-foreground leading-[1.15] mb-[20px]">
                 Wellness At Mountain Hotel
               </h2>
               <p className="text-[16px] text-muted-foreground leading-[1.8]">

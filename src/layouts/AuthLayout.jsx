@@ -1,8 +1,10 @@
 import { Outlet } from "react-router-dom";
+import useScrollToTop from "@/hooks/useScrollToTop";
 
 import AuthImage from "../assets/auth/auth img.jpg";
 
 export default function AuthLayout() {
+  useScrollToTop();
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full grid grid-cols-1 lg:grid-cols-2">

@@ -13,7 +13,7 @@ export default function Rooms() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   return (
-      <section className="bg-background text-center">
+      <section className="text-center">
         {/* Header */}
         <div className="mb-10">
           {/* <h1 className="text-6xl font-header text-foreground font-medium">
@@ -41,7 +41,9 @@ export default function Rooms() {
         <div className="grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-9">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {DUMMY_ROOMS.map((room) => <RoomCard room={room} /> )}
+            {DUMMY_ROOMS.map((room) => (
+              <RoomCard key={room.id} room={room} />
+            ))}
           </div>
         </div>
 

@@ -21,7 +21,7 @@ export default function MobileAccordion({
 
   const containerClass = ({ isActive = false } = {}) => `
     flex-1 flex items-center gap-4 p-4 rounded-2xl transition-all
-    ${isActive ? "bg-white/20 text-white shadow-lg" : "text-[#fefefea9] hover:bg-white/10"}
+    ${isActive ? "bg-primary/20 text-primary shadow-lg" : "text-white/60 hover:bg-white/10 hover:text-white"}
   `;
 
   return (

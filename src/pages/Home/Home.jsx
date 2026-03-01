@@ -3,19 +3,23 @@ import AboutSection from "../../components/home/AboutSection";
 import RoomCardsSection from "../../components/home/RoomCardsSection";
 import RoomsPlatformsSection from "../../components/home/RoomsPlatformsSection";
 import HomeExperience from "../../components/home/HomeExperience";
+import AmenitiesSection from "../../components/home/AmenitiesSection";
 import ActivitiesSection from "../../components/home/ActivitiesSection";
 import ActivitiesTestimonials from "../../components/about/ActivitiesTestimonials";
+import SectionNavigator from "../../components/home/SectionNavigator";
 
 export default function Home() {
   return (
     <div className="relative min-h-screen">
+      <SectionNavigator />
       <HeroCarousel />
       <AboutSection />
       <RoomCardsSection />
-      <RoomsPlatformsSection />
+      <AmenitiesSection />
       <HomeExperience />
-      <ActivitiesSection />
       <ActivitiesTestimonials />
+      <ActivitiesSection />
+      <RoomsPlatformsSection />
     </div>
   )
 }

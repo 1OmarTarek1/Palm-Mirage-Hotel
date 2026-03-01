@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { MapPin, Phone, Mail, Facebook, Twitter, Linkedin, Instagram, Hotel, ChevronUp } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimatedScrollToTop from "./AnimatedScrollToTop";
+import logoImg from "@/assets/logo.png";
 
 // ─── Animation variants ────────────────────────────────────────────────────
 const fadeUp = {
@@ -35,16 +38,14 @@ const socials = [
 export default function Footer() {
   const [email, setEmail] = useState("");
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-
   return (
-    <footer className="bg-[#1a1f1a] text-white relative overflow-hidden mt-15">
+    <footer className="bg-[#1a1f1a] text-white relative overflow-hidden">
       {/* ── subtle background texture ── */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_20%_50%,#8a9d8a_0%,transparent_60%)]" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         {/* ═══ TOP — Logo + Description ══════════════════════════════════ */}
-        <div 
+        <motion.div 
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
@@ -53,8 +54,8 @@ export default function Footer() {
         >
           {/* Logo */}
           <NavLink to="/" className="flex items-center gap-3 mb-5 group">
-            <div className="w-12 h-12 rounded-full border border-[#8a9d8a]/50 flex items-center justify-center bg-[#8a9d8a]/10 group-hover:bg-[#8a9d8a]/20 transition-colors">
-              <Hotel size={22} className="text-[#8a9d8a]" />
+            <div className="w-14 h-14 flex items-center justify-center shrink-0">
+              <img src={logoImg} alt="Palm Mirage Logo" className="w-full h-full object-contain" />
             </div>
             <span className="text-2xl font-header font-semibold tracking-wide text-white">Palm Mirage Hotel</span>
           </NavLink>
@@ -65,12 +66,12 @@ export default function Footer() {
             tradition with modern luxury, following its renovation in 2022. Since 1965, the Sailing has epitomized a
             family atmosphere of well-being.
           </p>
-        </div>
+        </motion.div>
 
         {/* ═══ MIDDLE — 3 Columns ════════════════════════════════════════ */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-14 border-b border-white/10">
           {/* ── Col 1 : Information ── */}
-          <div variants={fadeUp} initial="hidden" whileInView="visible" custom={0} viewport={{ once: true }}>
+          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" custom={0} viewport={{ once: true }}>
             <h3 className="font-header text-lg font-semibold mb-6 text-white">Information</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-white/60 text-sm hover:text-white/90 transition-colors">
@@ -88,10 +89,10 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-          </div>
+          </motion.div>
 
           {/* ── Col 2 : Subscribe & Follow ── */}
-          <div
+          <motion.div
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
@@ -110,6 +111,9 @@ export default function Footer() {
               className="flex w-full max-w-sm rounded-full bg-white/10 border border-white/15 overflow-hidden mb-8"
             >
               <input
+                id="newsletter-email"
+                name="email"
+                autoComplete="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -128,7 +132,7 @@ export default function Footer() {
             {/* Social icons */}
             <div className="flex gap-3">
               {socials.map(({ icon: Icon, href, label }) => (
-                <a
+                <motion.a
                   key={label}
                   href={href}
                   aria-label={label}
@@ -137,13 +141,13 @@ export default function Footer() {
                   className="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white/70 hover:bg-[#8a9d8a] hover:text-white hover:border-[#8a9d8a] transition-colors"
                 >
                   <Icon size={16} />
-                </a>
+                </motion.a>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* ── Col 3 : Quick Links ── */}
-          <div
+          <motion.div
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
@@ -161,7 +165,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         </div>
 
         {/* ═══ BOTTOM — Copyright ═════════════════════════════════════════ */}
@@ -173,15 +177,7 @@ export default function Footer() {
       </div>
 
       {/* ── Scroll-to-top button ── */}
-      <button
-        onClick={scrollToTop}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        aria-label="Scroll to top"
-        className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-[#8a9d8a] hover:bg-[#738581] text-white flex items-center justify-center shadow-lg transition-colors"
-      >
-        <ChevronUp size={18} />
-      </button>
+      <AnimatedScrollToTop />
     </footer>
   );
 }

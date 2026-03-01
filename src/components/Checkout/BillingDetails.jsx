@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 const BillingDetails = ({ register, errors }) => {
   return (
     <div className="lg:col-span-8">
-      <h2 className="text-2xl font-serif text-foreground mb-8">Billing Details</h2>
+      <h2 className="text-2xl font-header text-foreground mb-8">Billing Details</h2>
       
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -150,7 +150,7 @@ const BillingDetails = ({ register, errors }) => {
         </div>
 
         <div className="space-y-4 pt-8 border-t border-border">
-          <h3 className="text-xl font-serif text-foreground">Additional Information</h3>
+          <h3 className="text-xl font-header text-foreground">Additional Information</h3>
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-muted-foreground">Order notes (optional)</Label>
             <textarea 

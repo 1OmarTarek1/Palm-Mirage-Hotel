@@ -13,8 +13,8 @@ const POOL_STAIRS = sauna
 
 export default function GalleryHoursSection() {
   return (
-    <section className="pb-10 pt-15">
-      <div className="container mx-auto max-w-[1280px] px-5 md:px-10">
+    <section className="mb-20">
+      <div className="">
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-[30px] items-stretch">
           
           <div className="rounded-lg overflow-hidden h-[350px]">
@@ -34,10 +34,10 @@ export default function GalleryHoursSection() {
           </div>
 
           <div className="bg-card rounded-lg p-9 h-[350px] flex flex-col justify-between">
-            <h3 className="font-[family-name:var(--font-header)] text-2xl font-bold mb-4 text-foreground">
+            <h3 className="font-header text-2xl font-bold mb-4 text-foreground">
               Opening Hours
             </h3>
-            <div className="flex-grow flex flex-col justify-center">
+            <div className="grow flex flex-col justify-center">
               {HOURS.map((h, i) => (
                 <div
                   key={h.label}

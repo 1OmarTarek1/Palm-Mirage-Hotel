@@ -17,6 +17,10 @@ import {
   Heater
 } from "lucide-react";
 
+export const AUTH_PATHS = {
+  login: "/auth/login",
+};
+
 export const navLinks = [
   { label: "Home", href: "/", icon: <Home size={20} /> },
   {

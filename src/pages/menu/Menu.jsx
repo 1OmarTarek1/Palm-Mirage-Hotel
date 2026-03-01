@@ -11,7 +11,7 @@ export default function MenuPage() {
   const items = categoryMenuItems[activeCategory.label];
 
   return (
-    <div className="bg-background w-full font-main transition-colors duration-300">
+    <div className="w-full transition-colors duration-300">
       {/* <MenuHeader /> */}
       <MenuTabs activeIndex={activeIndex} onSelect={setActiveIndex} />
       <MenuGrid

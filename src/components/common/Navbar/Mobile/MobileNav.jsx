@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { LogIn, ChevronDown } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AUTH_PATHS } from "../navLinks";
 import ThemeToggle from "../ThemeToggle";
 import LanguageToggle from "../LanguageToggle";
 import MobileAccordion from "./MobileAccordion";
@@ -23,7 +24,7 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="md:hidden absolute left-5 right-5 mt-4 overflow-hidden z-40"
         >
-          <div className="p-6 bg-primary/80 backdrop-blur-2xl border border-border/10 rounded-3xl shadow-2xl max-h-[70vh] overflow-y-auto no-scrollbar">
+          <div className="p-6 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-3xl shadow-2xl max-h-[70vh] overflow-y-auto no-scrollbar">
             <ul className="grid grid-cols-1 gap-3">
               {navLinks.map((link, idx) => {
                 const hasSubLinks = link.dropdown || link.megaMenu;
@@ -52,7 +53,7 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
                           onClick={onClose}
                           className={({ isActive }) => `
                             block p-3 rounded-xl text-sm transition-all
-                            ${isActive ? "text-white font-bold bg-white/10" : "text-white/60 hover:text-white hover:bg-white/5"}
+                            ${isActive ? "text-primary font-bold bg-primary/20" : "text-white/60 hover:text-white hover:bg-white/5"}
                           `}
                         >
                           {subLink.label}
@@ -69,7 +70,7 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 pt-6 border-t border-[#fefefe1a] space-y-1"
+              className="mt-6 pt-6 border-t border-white/10 space-y-1"
             >
               <LanguageToggle 
                 mobile 
@@ -81,11 +82,11 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
               <ThemeToggle mobile />
 
               <NavLink
-                to="/login"
+                to={AUTH_PATHS.login}
                 onClick={onClose}
                 className={({ isActive }) => `
                   flex items-center gap-4 p-4 rounded-2xl transition-all
-                  ${isActive ? "bg-white/20 text-white shadow-lg" : "text-[#fefefea9] hover:bg-white/10"}
+                  ${isActive ? "bg-primary/20 text-primary shadow-lg" : "text-white/60 hover:bg-white/10 hover:text-white"}
                 `}
               >
                 <div className="shrink-0">

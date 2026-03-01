@@ -33,15 +33,15 @@ function WellnessCarousel() {
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {SLIDES.map((slide, i) => (
-          <div key={i} className="min-w-full h-[420px] relative flex-shrink-0">
+          <div key={i} className="min-w-full h-[420px] relative shrink-0">
             <img
               src={slide.image}
               alt={slide.title}
               className="w-full h-full object-cover brightness-[0.82]"
             />
             {/* Gradient overlay + title */}
-            <div className="absolute bottom-0 left-0 w-full p-[70px_28px_24px] bg-gradient-to-t from-black/60 to-transparent">
-              <h3 className="font-[family-name:var(--font-header)] text-[22px] font-bold text-white m-0">
+            <div className="absolute bottom-0 left-0 w-full p-[70px_28px_24px] bg-linear-to-t from-black/60 to-transparent">
+              <h3 className="font-header text-[22px] font-bold text-white m-0">
                 {slide.title}
               </h3>
             </div>
@@ -53,7 +53,7 @@ function WellnessCarousel() {
       <button
         onClick={prev}
         aria-label="Previous"
-        className="absolute top-1/2 left-4 -translate-y-1/2 w-[46px] h-[46px] rounded-full border border-white/30 bg-white/20 backdrop-blur-[6px] flex items-center justify-center cursor-pointer text-white shadow-[0_2px_14px_rgba(0,0,0,0.18)] z-[3] hover:bg-white/40 transition-colors duration-200"
+        className="absolute top-1/2 left-4 -translate-y-1/2 w-[46px] h-[46px] rounded-full border border-white/30 bg-white/20 backdrop-blur-[6px] flex items-center justify-center cursor-pointer text-white shadow-[0_2px_14px_rgba(0,0,0,0.18)] z-3 hover:bg-white/40 transition-colors duration-200"
       >
         <ChevronLeft size={22} />
       </button>
@@ -62,13 +62,13 @@ function WellnessCarousel() {
       <button
         onClick={next}
         aria-label="Next"
-        className="absolute top-1/2 right-4 -translate-y-1/2 w-[46px] h-[46px] rounded-full border border-white/30 bg-white/20 backdrop-blur-[6px] flex items-center justify-center cursor-pointer text-white shadow-[0_2px_14px_rgba(0,0,0,0.18)] z-[3] hover:bg-white/40 transition-colors duration-200"
+        className="absolute top-1/2 right-4 -translate-y-1/2 w-[46px] h-[46px] rounded-full border border-white/30 bg-white/20 backdrop-blur-[6px] flex items-center justify-center cursor-pointer text-white shadow-[0_2px_14px_rgba(0,0,0,0.18)] z-3 hover:bg-white/40 transition-colors duration-200"
       >
         <ChevronRight size={22} />
       </button>
 
       {/* Dot indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-[8px] z-[4]">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-[8px] z-4">
         {SLIDES.map((_, i) => (
           <button
             key={i}
@@ -88,14 +88,14 @@ function WellnessCarousel() {
 
 export default function WellnessJourneySection() {
   return (
-    <section className="py-[55px] bg-background">
-      <div className="container mx-auto max-w-[1280px] px-5 md:px-10">
+    <section className="mb-20">
+      <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[60px] mb-[60px] items-start">
           <div>
             <div className="text-[13px] font-semibold tracking-[0.2em] uppercase text-foreground/50 mb-4">
               ENJOY YOUR WELLNESS JOURNEY
             </div>
-            <h2 className="font-[family-name:var(--font-header)] text-[clamp(36px,4vw,52px)] leading-[1.1] font-bold text-foreground">
+            <h2 className="font-header text-[clamp(36px,4vw,52px)] leading-[1.1] font-bold text-foreground">
               Enjoy Your Wellness
               <br />
               Journey

@@ -25,7 +25,7 @@ const OrderSummary = ({ selectedMethod, onMethodChange }) => {
 
   return (
     <div className="bg-card/50 p-6 rounded-2xl border border-border">
-      <h2 className="text-2xl font-serif text-foreground mb-6">Your Order</h2>
+      <h2 className="text-2xl font-header text-foreground mb-6">Your Order</h2>
       
       <div className="flex justify-between text-sm font-medium text-muted-foreground mb-4">
         <span>Product</span>

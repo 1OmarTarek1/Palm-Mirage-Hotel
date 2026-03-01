@@ -44,7 +44,7 @@ export default function LanguageToggle({
             }}
             className={`
               w-full text-left p-3 rounded-xl text-sm transition-all
-              ${currentLang === lang.code ? "text-white font-bold bg-white/10" : "text-white/60 hover:text-white hover:bg-white/5"}
+              ${currentLang === lang.code ? "text-primary font-bold bg-primary/20" : "text-white/60 hover:text-white hover:bg-white/5"}
             `}
           >
             {lang.label}
@@ -62,7 +62,7 @@ export default function LanguageToggle({
     >
       <NavTooltip label="Language">
         <motion.button
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-[#fefefea9] border border-[#fefefe11] cursor-pointer"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-white/60 border border-white/10 cursor-pointer"
           aria-label="Toggle Language"
         >
           {icon}

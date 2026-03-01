@@ -84,7 +84,7 @@ export default function MegaMenu({ content, isOpen, onMouseEnter, onMouseLeave, 
                     onClick={onItemClick}
                     className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary/20 hover:bg-primary/40 backdrop-blur-sm transition-colors duration-200"
                   >
-                    <ArrowRight size={16} className="text-[#fefefe]" />
+                    <ArrowRight size={16} className="text-white" />
                   </Link>
                 </div>
               )}

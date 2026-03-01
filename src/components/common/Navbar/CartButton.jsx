@@ -21,7 +21,7 @@ export default function CartButton({ itemCount: propCount }) {
           transition-all duration-300 hover:bg-primary/20 cursor-pointer
           ${isOpen
             ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
-            : "text-[#fefefea9] bg-primary/5 border border-[#fefefe11]"}
+            : "text-white/60 bg-primary/5 border border-white/10"}
         `}
       >
         <ShoppingCart size={18} />

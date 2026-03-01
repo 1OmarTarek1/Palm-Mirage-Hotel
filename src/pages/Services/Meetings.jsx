@@ -52,7 +52,7 @@ export default function Meetings() {
     }
   };
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300 font-main">
+    <div className="min-h-screen text-foreground transition-colors duration-300 font-main">
 
       {/* Hero */}
       <section className="relative w-full h-[55vh] sm:h-[65vh] lg:h-[75vh] overflow-hidden">
@@ -61,39 +61,7 @@ export default function Meetings() {
           alt="Meeting & Events"
           className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50" />
-
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90%] max-w-xl">
-          <div className="bg-card text-card-foreground rounded-t-2xl px-8 py-8 text-center shadow-xl transition-colors duration-300">
-            <h1 className="text-3xl sm:text-4xl font-header font-medium mb-3 text-foreground">
-              Meeting &amp; Events
-            </h1>
-            <Breadcrumb>
-              <BreadcrumbList className="justify-center text-sm">
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <NavLink
-                      to="/"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-primary transition-colors"
-                      }
-                    >
-                      Home
-                    </NavLink>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="text-border">/</BreadcrumbSeparator>
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="text-muted-foreground">
-                    Events, Meetings
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-linear-to-b from-black/30 via-black/10 to-black/50" />
       </section>
 
       <section className="container mx-auto px-4 max-w-6xl py-16 sm:py-20">
@@ -119,7 +87,7 @@ export default function Meetings() {
         <div className="relative">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-hidden">
             {visible.map((img, idx) => (
-              <div key={idx} className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+              <div key={idx} className="relative aspect-4/3 overflow-hidden rounded-2xl">
                 <img
                   src={img.src}
                   alt={img.alt}

@@ -29,7 +29,7 @@ export default function Contact() {
 
   return (
     <>
-      <section className="container bg-background text-center my-10">
+      <section className="container text-center my-10">
         {/* Header */}
         {/* <div className="flex flex-col items-center mb-16 justify-center">
           <h1 className="text-5xl font-header text-foreground font-medium mb-6">
@@ -100,7 +100,7 @@ export default function Contact() {
                   {[Facebook, Twitter, Linkedin, Instagram].map((Icon, index) => (
                     <div
                       key={index}
-                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                      className="w-10 h-10 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
                     >
                       <Icon size={18} />
                     </div>
@@ -112,9 +112,9 @@ export default function Contact() {
 
           {/* Right — Form */}
           <div className="w-full lg:w-1/2 relative">
-            <div className="static lg:absolute lg:-bottom-70 left-0 w-full bg-[#f9fbfb] p-6 md:p-12 rounded-2xl shadow-sm border border-gray-50">
+            <div className="static lg:absolute lg:-bottom-70 left-0 w-full bg-card p-6 md:p-12 rounded-2xl shadow-sm border border-border">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <h2 className="text-3xl py-3 font-header">Get in touch</h2>
+                <h2 className="text-3xl py-3 font-header text-foreground">Get in touch</h2>
 
                 {/* Name */}
                 <FormInputField
@@ -160,12 +160,12 @@ export default function Contact() {
 
                 {/* Message */}
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">Message</label>
+                  <label className="text-sm font-semibold">Message</label>
                   <textarea
                     rows="4"
                     placeholder="Enter your message"
                     {...register("message")}
-                    className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
+                    className={`w-full mt-3 placeholder:text-gray-400  p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
                       errors.message
                         ? "border-red-400 focus:ring-red-200"
                         : "border-gray-200 focus:ring-[#8da399]/20 focus:border-[#8da399]"

@@ -34,8 +34,8 @@ const headerVariants = {
 
 function MenuItem({ item }) {
   return (
-    <div className="group flex items-start gap-4 py-5 border-b border-border last:border-b-0 hover:bg-muted transition-colors duration-200 rounded-xl px-3 -mx-3">
-      <div className="flex-shrink-0 w-[68px] h-[68px] rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 bg-muted shadow-sm">
+    <div className="group mb-2 flex items-start gap-4 py-5 border-b border-border last:border-b-0 hover:bg-primary/10 transition-colors duration-200 rounded-xl px-3 -mx-3">
+      <div className="shrink-0 w-[68px] h-[68px] rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 bg-muted shadow-sm">
         <img
           src={item.img}
           alt={item.name}
@@ -51,7 +51,7 @@ function MenuItem({ item }) {
           <h3 className="text-[15px] font-semibold text-foreground leading-snug">
             {item.name}
           </h3>
-          <span className="text-[15px] font-bold text-primary flex-shrink-0 tabular-nums">
+          <span className="text-[15px] font-bold text-primary shrink-0 tabular-nums">
             {item.price}
           </span>
         </div>
@@ -66,7 +66,7 @@ function MenuItem({ item }) {
 
 export default function MenuGrid({ activeIndex, categoryLabel, items }) {
   return (
-    <div className="pb-4">
+    <div className="mb-20">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeIndex}
@@ -86,7 +86,7 @@ export default function MenuGrid({ activeIndex, categoryLabel, items }) {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-9 "
             variants={gridVariants}
           >
             <motion.div variants={colVariants} className="flex flex-col">

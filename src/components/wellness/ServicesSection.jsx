@@ -31,11 +31,11 @@ export default function ServicesSection() {
     <section className="pt-10 pb-24">
       <div className="">
         <Fade>
-          <div className="text-center mb-[52px]">
+          <div className="text-center mb-20">
             <p className="text-[12px] tracking-[0.18em] uppercase text-accentGreen mb-[14px] leading-none">
               Enjoy Your Wellness Journey
             </p>
-            <h2 className="font-[family-name:var(--font-header)] text-[clamp(28px,3vw,44px)] font-bold text-foreground leading-[1.12]">
+            <h2 className="font-header text-[clamp(28px,3vw,44px)] font-bold text-foreground leading-[1.12]">
               Enjoy Your Wellness Journey
             </h2>
           </div>
@@ -55,7 +55,7 @@ export default function ServicesSection() {
                   <p className="text-[11px] tracking-[0.18em] uppercase text-accentGreen mb-2">
                     {s.tag}
                   </p>
-                  <h3 className="font-[family-name:var(--font-header)] text-[clamp(22px,1.9vw,28px)] font-bold text-foreground leading-[1.15] mb-3">
+                  <h3 className="font-header text-[clamp(22px,1.9vw,28px)] font-bold text-foreground leading-[1.15] mb-3">
                     {s.title}
                   </h3>
                   <p className="text-[15px] text-muted-foreground leading-[1.78] mb-[14px]">{s.desc}</p>

@@ -130,14 +130,14 @@ export default function Restaurant() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
               {/* Column 1: Image + Title */}
               <div className="flex flex-col gap-6">
-                <div className="rounded-3xl overflow-hidden  ">
+                <div className="rounded-3xl overflow-hidden shadow-xl border border-border/10">
                   <img
                     src={secondSlideImg1.image}
                     alt={secondSlideImg1.imageAlt}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
-                <h1 className="text-4xl md:text-5xl font-serif leading-tight text-gray-900">
+                <h1 className="text-3xl md:text-5xl font-header leading-tight text-foreground font-bold">
                   Curious About Surfing? Discover Our San Diego Surf Lessons
                 </h1>
               </div>
@@ -154,40 +154,48 @@ export default function Restaurant() {
                 </div>
 
                 {/* Contact Info with Lucide Icons */}
-                <div className="space-y-5 text-gray-600">
-                  <div className="flex items-center gap-4">
-                    <Phone className="w-5 h-5 text-gray-400" />
-                    <p className="text-sm md:text-base">+1 2345 6789</p>
+                <div className="space-y-5 text-muted-foreground">
+                  <div className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                      <Phone className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm md:text-base font-medium">+1 2345 6789</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Mail className="w-5 h-5 text-gray-400" />
-                    <p className="text-sm md:text-base">mountain.hotel@gmail.com</p>
+                  <div className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm md:text-base font-medium">mountain.hotel@gmail.com</p>
                   </div>
-                  <div className="flex items-start gap-4">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
-                    <p className="text-sm md:text-base leading-relaxed">
+                  <div className="flex items-start gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-white shrink-0">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm md:text-base leading-relaxed font-medium">
                       Location: 269 Southwark Park Rd., London SE16 3TP, UK
                     </p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Clock className="w-5 h-5 text-gray-400" />
-                    <p className="text-sm md:text-base">Everyday: 0:30pm - 10:00pm</p>
+                  <div className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm md:text-base font-medium">Everyday: 0:30pm - 10:00pm</p>
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div className="flex flex-col gap-3 text-center">
+                <div className="flex flex-col gap-4 text-center mt-4">
                   <NavLink
-                    className="bg-[#8ba08e]  hover:bg-[#7a8d7d] text-white py-4 rounded-full font-medium transition-all shadow-sm"
+                    className="bg-primary hover:bg-primary/90 text-white py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-primary/20 tracking-wider uppercase text-sm"
                     to="/contact"
                   >
-                    <button className="">Book A Table</button>
+                    Book A Table
                   </NavLink>
                   <NavLink
-                    className="border border-gray-300 hover:bg-gray-50 text-gray-800 py-4 rounded-full font-medium transition-all"
+                    className="border-2 border-primary/20 hover:border-primary/40 text-foreground py-4 rounded-full font-bold transition-all bg-card/50 backdrop-blur-sm tracking-wider uppercase text-sm"
                     to="/services/menu"
                   >
-                    <button>Browse Menus</button>
+                    Browse Menus
                   </NavLink>
                 </div>
               </div>
@@ -212,11 +220,11 @@ export default function Restaurant() {
               {/* left part photo*/}
               <div className="    relative m-2 ">
                 {/*slide number*/}
-                <div className="absolute  top-0 right-0 rounded-bl-2xl   p-5  text-right   bg-white">
-                  <span className="text-[100px] md:text-[140px] font-serif leading-none text-[#8ba08e]/20 block">
+                <div className="absolute top-0 right-0 rounded-bl-3xl p-6 text-right bg-card/90 backdrop-blur-md border-b border-l border-border/20 z-10 shadow-xl">
+                  <span className="text-[80px] md:text-[120px] font-header leading-none text-primary/10 block font-bold">
                     01
                   </span>
-                  <h2 className="text-4xl md:text-5xl font-serif text-[#8ba08e] ">Desserts</h2>
+                  <h2 className="text-3xl md:text-5xl font-header text-foreground font-bold -mt-4">Desserts</h2>
                 </div>
 
                 {/*main img*/}
@@ -232,10 +240,10 @@ export default function Restaurant() {
                   {menuItems.map((item) => (
                     <div
                       key={item.id}
-                      className="group flex items-center gap-4 md:gap-4 p-4 border-b border-gray-100 last:border-0 transition-all"
+                      className="group flex items-center gap-4 md:gap-4 p-4 border-b border-border/50 last:border-0 transition-all hover:bg-primary/2 rounded-xl"
                     >
                       {/* food img*/}
-                      <div className="  shrink-0 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#8ba08e] transition-all">
+                      <div className="shrink-0 rounded-full overflow-hidden border-2 border-border/20 group-hover:border-primary transition-all w-16 h-16 md:w-20 md:h-20 shadow-sm">
                         <img
                           src={item.image}
                           alt={item.imageAlt}
@@ -246,24 +254,25 @@ export default function Restaurant() {
                       {/* desc*/}
                       <div className="grow">
                         <div className="flex justify-between items-baseline mb-1">
-                          <h3 className="text-xl md:text-2xl font-serif text-gray-800 group-hover:text-[#8ba08e] transition-colors">
+                          <h3 className="text-xl md:text-2xl font-header text-foreground group-hover:text-primary transition-colors font-bold">
                             {item.title}
                           </h3>
-                          <span className="text-lg md:text-xl font-serif text-[#8ba08e]">{item.price}</span>
+                          <span className="text-lg md:text-xl font-header text-primary font-bold">{item.price}</span>
                         </div>
-                        <p className="text-gray-500  text-sm md:text-base italic leading-relaxed">{item.desc}</p>
+                        <p className="text-muted-foreground text-sm md:text-base italic leading-relaxed">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* button*/}
-                <div className="mt-4 ">
+                <div className="mt-8 flex justify-center lg:justify-start">
                   <NavLink
-                    className="px-12 text-center py-4 rounded-full border-2 border-[#8ba08e] text-[#8ba08e] font-serif text-lg hover:bg-[#8ba08e] hover:text-white transition-all duration-300 shadow-sm"
+                    className="px-10 py-4 rounded-full border-2 border-primary/30 text-primary font-header font-bold text-lg hover:bg-primary hover:text-white transition-all duration-500 shadow-sm backdrop-blur-sm group overflow-hidden relative"
                     to="/contact"
                   >
-                    <button>Reserve Now</button>
+                    <span className="relative z-10">Reserve Now</span>
+                    <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   </NavLink>
                 </div>
               </div>
@@ -278,10 +287,10 @@ export default function Restaurant() {
                   {menuItems.map((item) => (
                     <div
                       key={item.id}
-                      className="group flex items-center gap-4 md:gap-4 p-4 border-b border-gray-100 last:border-0 transition-all"
+                      className="group flex items-center gap-4 md:gap-4 p-4 border-b border-border/50 last:border-0 transition-all hover:bg-primary/2 rounded-xl"
                     >
                       {/* food img*/}
-                      <div className="  shrink-0 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#8ba08e] transition-all">
+                      <div className="shrink-0 rounded-full overflow-hidden border-2 border-border/20 group-hover:border-primary transition-all w-16 h-16 md:w-20 md:h-20 shadow-sm">
                         <img
                           src={item.image}
                           alt={item.imageAlt}
@@ -292,24 +301,25 @@ export default function Restaurant() {
                       {/* desc*/}
                       <div className="grow">
                         <div className="flex justify-between items-baseline mb-1">
-                          <h3 className="text-xl md:text-2xl font-serif text-gray-800 group-hover:text-[#8ba08e] transition-colors">
+                          <h3 className="text-xl md:text-2xl font-header text-foreground group-hover:text-primary transition-colors font-bold">
                             {item.title}
                           </h3>
-                          <span className="text-lg md:text-xl font-serif text-[#8ba08e]">{item.price}</span>
+                          <span className="text-lg md:text-xl font-header text-primary font-bold">{item.price}</span>
                         </div>
-                        <p className="text-gray-500  text-sm md:text-base italic leading-relaxed">{item.desc}</p>
+                        <p className="text-muted-foreground text-sm md:text-base italic leading-relaxed">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* button*/}
-                <div className="mt-4">
+                <div className="mt-8 flex justify-center lg:justify-start">
                   <NavLink
-                    className="px-12 text-center py-4 rounded-full border-2 border-[#8ba08e] text-[#8ba08e] font-serif text-lg hover:bg-[#8ba08e] hover:text-white transition-all duration-300 shadow-sm"
+                    className="px-10 py-4 rounded-full border-2 border-primary/30 text-primary font-header font-bold text-lg hover:bg-primary hover:text-white transition-all duration-500 shadow-sm backdrop-blur-sm group overflow-hidden relative"
                     to="/contact"
                   >
-                    <button>Reserve Now</button>
+                    <span className="relative z-10">Reserve Now</span>
+                    <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   </NavLink>
                 </div>
               </div>
@@ -317,11 +327,11 @@ export default function Restaurant() {
               {/* right part photo*/}
               <div className="    relative m-2 ">
                 {/*slide number*/}
-                <div className="absolute  top-0 right-0 rounded-bl-2xl   p-5  text-right   bg-white">
-                  <span className="text-[100px] md:text-[140px] font-serif leading-none text-[#8ba08e]/20 block">
+                <div className="absolute top-0 right-0 rounded-bl-3xl p-6 text-right bg-card/90 backdrop-blur-md border-b border-l border-border/20 z-10 shadow-xl">
+                  <span className="text-[80px] md:text-[120px] font-header leading-none text-primary/10 block font-bold">
                     02
                   </span>
-                  <h2 className="text-4xl md:text-5xl font-serif text-[#8ba08e] ">Desserts</h2>
+                  <h2 className="text-3xl md:text-5xl font-header text-foreground font-bold -mt-4">Main Course</h2>
                 </div>
 
                 {/*main img*/}
@@ -337,11 +347,11 @@ export default function Restaurant() {
               {/* left part photo*/}
               <div className="    relative m-2 ">
                 {/*slide number*/}
-                <div className="absolute  top-0 right-0 rounded-bl-2xl   p-5  text-right   bg-white">
-                  <span className="text-[100px] md:text-[140px] font-serif leading-none text-[#8ba08e]/20 block">
+                <div className="absolute top-0 right-0 rounded-bl-3xl p-6 text-right bg-card/90 backdrop-blur-md border-b border-l border-border/20 z-10 shadow-xl">
+                  <span className="text-[80px] md:text-[120px] font-header leading-none text-primary/10 block font-bold">
                     03
                   </span>
-                  <h2 className="text-4xl md:text-5xl font-serif text-[#8ba08e] ">Desserts</h2>
+                  <h2 className="text-3xl md:text-5xl font-header text-foreground font-bold -mt-4">Drinks</h2>
                 </div>
 
                 {/*main img*/}
@@ -357,10 +367,10 @@ export default function Restaurant() {
                   {menuItems.map((item) => (
                     <div
                       key={item.id}
-                      className="group flex items-center gap-4 md:gap-4 p-4 border-b border-gray-100 last:border-0 transition-all"
+                      className="group flex items-center gap-4 md:gap-4 p-4 border-b border-border/50 last:border-0 transition-all hover:bg-primary/2 rounded-xl"
                     >
                       {/* food img*/}
-                      <div className="  shrink-0 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#8ba08e] transition-all">
+                      <div className="shrink-0 rounded-full overflow-hidden border-2 border-border/20 group-hover:border-primary transition-all w-16 h-16 md:w-20 md:h-20 shadow-sm">
                         <img
                           src={item.image}
                           alt={item.imageAlt}
@@ -371,24 +381,25 @@ export default function Restaurant() {
                       {/* desc*/}
                       <div className="grow">
                         <div className="flex justify-between items-baseline mb-1">
-                          <h3 className="text-xl md:text-2xl font-serif text-gray-800 group-hover:text-[#8ba08e] transition-colors">
+                          <h3 className="text-xl md:text-2xl font-header text-foreground group-hover:text-primary transition-colors font-bold">
                             {item.title}
                           </h3>
-                          <span className="text-lg md:text-xl font-serif text-[#8ba08e]">{item.price}</span>
+                          <span className="text-lg md:text-xl font-header text-primary font-bold">{item.price}</span>
                         </div>
-                        <p className="text-gray-500  text-sm md:text-base italic leading-relaxed">{item.desc}</p>
+                        <p className="text-muted-foreground text-sm md:text-base italic leading-relaxed">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* button*/}
-                <div className="mt-4">
+                <div className="mt-8 flex justify-center lg:justify-start">
                   <NavLink
-                    className="px-12 text-center py-4 rounded-full border-2 border-[#8ba08e] text-[#8ba08e] font-serif text-lg hover:bg-[#8ba08e] hover:text-white transition-all duration-300 shadow-sm"
+                    className="px-10 py-4 rounded-full border-2 border-primary/30 text-primary font-header font-bold text-lg hover:bg-primary hover:text-white transition-all duration-500 shadow-sm backdrop-blur-sm group overflow-hidden relative"
                     to="/contact"
                   >
-                    <button>Reserve Now</button>
+                    <span className="relative z-10">Reserve Now</span>
+                    <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   </NavLink>
                 </div>
               </div>
@@ -405,42 +416,45 @@ export default function Restaurant() {
             <div className="absolute inset-0 bg-black/10" />
             {/* Glassmorphism Card */}
             <div className="container mx-auto h-full flex items-center px-6 relative z-10">
-              <div className="w-full max-w-xl bg-black/40 backdrop-blur-md border border-white/20 p-8 md:p-12 rounded-[40px] text-white shadow-2xl">
-                <span className="block text-sm md:text-base tracking-[0.2em] uppercase mb-4 text-gray-200">
+              <div className="w-full max-w-xl bg-card/40 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[40px] text-foreground shadow-2xl">
+                <span className="block text-sm md:text-base tracking-[0.2em] uppercase mb-4 text-primary font-bold">
                   Dedicated Room Service
                 </span>
-                <h1 className="text-4xl md:text-6xl font-serif mb-8 leading-tight">In-Room Dining</h1>
+                <h1 className="text-4xl md:text-6xl font-header mb-8 leading-tight font-bold">In-Room Dining</h1>
                 <div className=" py-8">
-                  <p className="text-gray-200 text-sm md:text-lg leading-relaxed">
+                  <p className="text-muted-foreground text-sm md:text-lg leading-relaxed">
                     Refuel on your own schedule with seasonal, locally fresh items delivered to your door.
                   </p>
 
                   {/*Lucide Icons */}
-                  <ul className="px-4  text-gray-100">
+                  <ul className="px-4 py-4 space-y-3 text-muted-foreground">
                     <li className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                      <p className="text-sm md:text-base font-light">
-                        <span className="font-semibold">Serves:</span> Breakfast, Lunch, Dinner, Snacks
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                      <p className="text-sm md:text-base">
+                        <span className="font-bold text-foreground">Serves:</span> Breakfast, Lunch, Dinner, Snacks
                       </p>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                      <p className="text-sm md:text-base font-light">
-                        <span className="font-semibold">Phone:</span> +41 22 345 66 77
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                      <p className="text-sm md:text-base">
+                        <span className="font-bold text-foreground">Phone:</span> +41 22 345 66 77
                       </p>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                      <p className="text-sm md:text-base font-light">
-                        <span className="font-semibold">Hours:</span> 10:00 am - 10:00 pm
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                      <p className="text-sm md:text-base">
+                        <span className="font-bold text-foreground">Hours:</span> 10:00 am - 10:00 pm
                       </p>
                     </li>
                   </ul>
                 </div>
                 {/* زر الحجز الملون */}
-                <button className="bg-[#8ba08e] hover:bg-[#7a8d7d] text-white px-10 py-4 rounded-full transition-all duration-300 shadow-lg font-medium">
-                  <NavLink to="/contact">Reserve Now</NavLink>
-                </button>
+                <NavLink 
+                  to="/contact"
+                  className="inline-block bg-primary hover:bg-primary/90 text-white px-12 py-4 rounded-full transition-all duration-500 shadow-lg hover:shadow-primary/20 font-bold tracking-wider uppercase text-sm"
+                >
+                  Reserve Now
+                </NavLink>
               </div>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function AboutSection() {
   return (
-    <section className="py-20 bg-background overflow-hidden relative w-full">
+    <section id="about" className="py-20 overflow-hidden relative w-full">
       <div className="text-center">
         <motion.span 
           initial={{ opacity: 0, y: 20 }}
@@ -13,7 +13,7 @@ export default function AboutSection() {
           transition={{ duration: 0.6 }}
           className="text-sm uppercase tracking-widest text-muted-foreground font-medium mb-4 block"
         >
-          Sailing Moutain holtel
+          The Sailing Luxor Hotel
         </motion.span>
         
         <motion.h2 
@@ -23,7 +23,7 @@ export default function AboutSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-3xl md:text-4xl lg:text-5xl font-header text-foreground mb-8 leading-tight"
         >
-          Alpine Hideaway In The Engadin. The <br className="hidden md:block" />
+          Nile-side Sanctuary In Upper Egypt. The <br className="hidden md:block" />
           Deepest Relaxation, The Highest Comfort
         </motion.h2>
 
@@ -34,7 +34,7 @@ export default function AboutSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-base md:text-lg text-muted-foreground font-main leading-relaxed mb-12 max-w-3xl mx-auto"
         >
-          Nestled in the Swiss mountains like a hidden edelweiss, our 5-star superior hotel in Samnaun blends tradition with modern luxury, following its renovation in 2022. Since 1965, the Sailing has epitomized a family atmosphere of well-being. We promise our guests first-class service, exquisite cuisine, and profound relaxation, ensuring an authentic experience that harmonizes cherished traditions with a desire for innovation.
+          Nestled along the eternal river Nile like a blooming lotus, our 5-star superior hotel in Luxor blends ancient majesty with modern luxury. Since 1965, The Sailing has epitomized a family atmosphere of well-being. We promise our guests first-class service, authentic Egyptian cuisine, and profound relaxation, ensuring an experience that harmonizes cherished Pharaonic heritage with a desire for contemporary innovation.
         </motion.p>
 
         <motion.div 
@@ -71,8 +71,8 @@ export default function AboutSection() {
               className="md:flex-1 rounded-3xl overflow-hidden h-64 md:h-full shadow-lg"
             >
               <img 
-                src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1470&auto=format&fit=crop" 
-                alt="Hotel Path" 
+                src="https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?q=80&w=1470&auto=format&fit=crop" 
+                alt="Ancient Heritage" 
                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
               />
             </motion.div>
@@ -85,8 +85,8 @@ export default function AboutSection() {
               className="md:flex-2 rounded-3xl overflow-hidden h-64 md:h-full shadow-lg"
             >
               <img 
-                src="https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=1470&auto=format&fit=crop" 
-                alt="Outdoor Dining" 
+                src="https://images.unsplash.com/photo-1590073844006-33379778ae09?q=80&w=1470&auto=format&fit=crop" 
+                alt="Luxury Luxor Architecture" 
                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
               />
             </motion.div>
@@ -101,8 +101,8 @@ export default function AboutSection() {
               className="md:flex-2 rounded-3xl overflow-hidden h-64 md:h-full shadow-lg"
             >
               <img 
-                src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1470&auto=format&fit=crop" 
-                alt="Relaxing Hammock" 
+                src="https://images.unsplash.com/photo-1572252009286-268acec5ca0a?q=80&w=1470&auto=format&fit=crop" 
+                alt="Nile Felucca Relaxation" 
                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
               />
             </motion.div>
@@ -112,7 +112,7 @@ export default function AboutSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="md:flex-1 rounded-3xl overflow-hidden h-auto md:h-full shadow-lg bg-secondary p-8 flex flex-col justify-center"
+              className="md:flex-1 rounded-3xl overflow-hidden h-auto md:h-full shadow-lg bg-secondary/70 p-8 flex flex-col justify-center"
             >
               <ul className="space-y-6">
                 {[

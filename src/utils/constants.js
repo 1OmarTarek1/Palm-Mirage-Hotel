@@ -2,7 +2,7 @@ export const CALENDAR_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export const MOCK_ROOM_DATA = {
   id: 1,
-  name: "Alpine King Deluxe",
+  name: "Royal Nile King Deluxe",
   type: "DELUXE ROOM",
   price: 180,
   rating: 4.8,
@@ -11,7 +11,7 @@ export const MOCK_ROOM_DATA = {
   size: 50,
   adults: 2,
   description:
-    "Experience the pinnacle of alpine luxury in our Alpine King Deluxe room. Perched high in the mountains, this exquisite retreat offers breathtaking panoramic views of snow-capped peaks and pristine valleys. The room features floor-to-ceiling windows that frame the spectacular scenery, a plush king-sized bed with premium linens, and a private balcony where you can sip your morning coffee while watching the sunrise paint the mountains in golden hues.",
+    "Experience the pinnacle of Egyptian luxury in our Royal Nile King Deluxe room. Situated on the prime riverfront, this exquisite retreat offers breathtaking panoramic views of the eternal Nile and the majestic West Bank mountains. The room features floor-to-ceiling windows that frame the spectacular heritage scenery, a plush king-sized bed with premium Egyptian cotton linens, and a private balcony where you can sip your morning tea while watching traditional feluccas glide past.",
   images: [
     "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=1470&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1470&auto=format&fit=crop",
@@ -93,7 +93,7 @@ export const BOOKING_POLICIES = [
 export const ROOM_FAQS = [
   {
     question: "Is breakfast included in the room rate?",
-    answer: "Yes, our Alpine King Deluxe room includes a complimentary full breakfast for two guests served at our mountain-view restaurant from 7:00 AM to 10:30 AM.",
+    answer: "Yes, our Royal Nile King Deluxe room includes a complimentary full breakfast for two guests served at our river-view restaurant from 7:00 AM to 10:30 AM.",
   },
   {
     question: "Do you offer airport transfers?",
@@ -116,7 +116,7 @@ export const ROOM_FAQS = [
 export const SIMILAR_ROOMS = [
   {
     id: 2,
-    name: "Twin Peaks Tower",
+    name: "Theban View Room",
     category: "DELUXE ROOM",
     price: 160,
     size: 60,
@@ -125,7 +125,7 @@ export const SIMILAR_ROOMS = [
   },
   {
     id: 3,
-    name: "Mountain View Suite",
+    name: "Eternal Nile Suite",
     category: "SUITE",
     price: 280,
     size: 90,
@@ -134,7 +134,7 @@ export const SIMILAR_ROOMS = [
   },
   {
     id: 4,
-    name: "Forest Retreat",
+    name: "Palm Sanctuary",
     category: "JUNIOR SUITE",
     price: 220,
     size: 75,
@@ -165,7 +165,7 @@ export const DUMMY_ROOMS = [
   {
     id: 1,
     type: "DELUXE ROOM",
-    name: "Alpine King Deluxe",
+    name: "Royal Nile King Deluxe",
     price: 180,
     beds: 1,
     size: 50,
@@ -176,7 +176,7 @@ export const DUMMY_ROOMS = [
   {
     id: 2,
     type: "DELUXE ROOM",
-    name: "Twin Peaks Tower",
+    name: "Theban View Room",
     price: 160,
     beds: 1,
     size: 60,
@@ -187,7 +187,7 @@ export const DUMMY_ROOMS = [
   {
     id: 3,
     type: "SUITE",
-    name: "Mountain View Suite",
+    name: "Eternal Nile Suite",
     price: 280,
     beds: 2,
     size: 90,
@@ -198,7 +198,7 @@ export const DUMMY_ROOMS = [
   {
     id: 4,
     type: "JUNIOR SUITE",
-    name: "Forest Retreat",
+    name: "Palm Sanctuary",
     price: 220,
     beds: 1,
     size: 75,
@@ -209,7 +209,7 @@ export const DUMMY_ROOMS = [
   {
     id: 5,
     type: "PENTHOUSE",
-    name: "Summit Penthouse",
+    name: "Horizon Nile Penthouse",
     price: 450,
     beds: 3,
     size: 150,

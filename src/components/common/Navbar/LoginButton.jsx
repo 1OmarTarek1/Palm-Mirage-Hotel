@@ -9,9 +9,9 @@ export default function LoginButton() {
       <NavLink
         to="/auth/login"
         className={({ isActive }) => `
-          flex items-center justify-center w-10 h-10 rounded-full border border-[#fefefe11]
+          flex items-center justify-center w-10 h-10 rounded-full border border-white/10
           transition-all duration-300 hover:bg-primary/20
-          ${isActive ? "text-primary bg-primary/20 shadow-inner" : "text-[#fefefea9] bg-primary/5"}
+          ${isActive ? "text-primary bg-primary/20 shadow-inner" : "text-white/60 bg-primary/5"}
         `}
       >
         <motion.div>

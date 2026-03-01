@@ -145,7 +145,7 @@ export default function RoomDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="min-h-screen text-foreground transition-colors duration-300">
       <div className="container pb-8 font-main">
 
         {/* Hero Carousel */}
@@ -154,7 +154,7 @@ export default function RoomDetails() {
             <CarouselContent>
               {room.images.map((image, index) => (
                 <CarouselItem key={index}>
-                  <div className="relative aspect-[16/9] overflow-hidden rounded-xl shadow-xl">
+                  <div className="relative aspect-4/5 sm:aspect-video overflow-hidden rounded-xl shadow-xl">
                     <img src={image} alt={`${room.name} - image ${index + 1}`} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/5" />
                   </div>
@@ -165,26 +165,26 @@ export default function RoomDetails() {
             <CarouselNext className="right-6 bg-white/90 hover:bg-white hover:text-black text-gray-800 border-none shadow-md h-10 w-10 opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Room Summary Card */}
-            <div className="absolute bottom-0 left-0 w-full sm:w-auto sm:min-w-[550px]">
-              <div className="bg-background text-card-foreground p-6 sm:p-10 rounded-tr-xl relative z-20 transition-colors duration-300">
-                <h1 className="text-3xl sm:text-4xl font-bold mb-8 font-header leading-tight text-foreground">
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-auto sm:w-auto sm:min-w-[550px]">
+              <div className="text-card-foreground p-4 sm:p-10 rounded-2xl backdrop-blur-md border border-white/20 shadow-2xl bg-card/40 sm:bg-card/60 relative z-20 transition-all duration-300">
+                <h1 className="text-xl sm:text-4xl font-bold mb-4 sm:mb-8 font-header leading-tight text-foreground">
                   {room.name}
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-10 gap-y-4 text-[13px] sm:text-sm font-medium text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-10 sm:gap-y-4 text-[11px] sm:text-sm font-medium text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 fill-[#F5A623] text-[#F5A623]" />
+                    <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-[#F5A623] text-[#F5A623]" />
                     <span>{room.rating}/5</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Bed className="w-5 h-5 text-muted-foreground/60" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Bed className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/60" />
                     <span>{room.beds} {room.bedType}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Maximize2 className="w-5 h-5 text-muted-foreground/60" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/60" />
                     <span>{room.size}sqm m²</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-muted-foreground/60" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/60" />
                     <span>{room.adults} Adults</span>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function RoomDetails() {
             <section>
               <h2 className="text-xl font-bold mb-8 text-foreground">Booking Policies</h2>
               <div className="space-y-0 relative">
-                <div className="absolute left-[15px] top-4 bottom-4 w-[1px] bg-border" />
+                <div className="absolute left-[15px] top-4 bottom-4 w-px bg-border" />
                 {BOOKING_POLICIES.map((policy, idx) => (
                   <div key={idx} className="relative pl-12 pb-10 last:pb-0">
                     <div className="absolute left-0 top-0 w-8 h-8 rounded-full border border-border bg-card flex items-center justify-center text-sm text-muted-foreground font-medium z-10 transition-colors hover:border-foreground hover:text-foreground">
@@ -356,7 +356,7 @@ export default function RoomDetails() {
 
             <section className="mt-16">
               <h2 className="text-xl font-bold mb-8 text-foreground">Reviews</h2>
-              <div className="bg-muted rounded-2xl p-8 mb-10 flex flex-col md:flex-row items-center gap-12 transition-colors duration-300">
+              <div className="bg-card rounded-2xl p-8 mb-10 flex flex-col md:flex-row items-center gap-12 transition-colors duration-300">
                 <div className="text-center md:text-left">
                   <div className="text-5xl font-bold mb-2 tracking-tight text-foreground">0/5</div>
                   <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">0 Reviews</div>
@@ -406,7 +406,7 @@ export default function RoomDetails() {
 
           <div className="lg:col-span-1">
             <div className="top-16 space-y-6">
-              <div className="bg-muted p-6 rounded-xl transition-colors duration-300">
+              <div className="bg-card p-6 rounded-xl transition-colors duration-300">
                 <h2 className="text-xl font-bold mb-4 text-foreground">Book This Room</h2>
                 <div className="mb-6">
                   <span className="text-sm text-muted-foreground">From</span>
@@ -478,7 +478,7 @@ export default function RoomDetails() {
                 </div>
               </div>
 
-              <div className="bg-muted p-6 rounded-xl transition-colors duration-300">
+              <div className="bg-card p-6 rounded-xl transition-colors duration-300">
                 <h3 className="text-sm font-bold mb-4 text-foreground">Book through our trusted partners</h3>
                 <div className="flex items-center gap-4">
                   {TRUSTED_PARTNERS.map((partner) => (
@@ -499,7 +499,7 @@ export default function RoomDetails() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {SIMILAR_ROOMS.map((similarRoom) => (
               <div key={similarRoom.id} className="group cursor-pointer bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-4/3 overflow-hidden">
                   <img src={similarRoom.image} alt={similarRoom.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute top-4 left-4 bg-[#8c9e8d]/90 text-white text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-wider backdrop-blur-sm">

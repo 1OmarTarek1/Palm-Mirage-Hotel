@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 
 export default function HistoryDevelopmentSection() {
   return (
-    <div className="py-24 bg-background">
+    <div className="py-24">
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
           <div className="space-y-12">
