@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   Bed,
@@ -43,6 +43,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { addItem } from "@/store/slices/cartSlice";
 import {
   MOCK_ROOM_DATA,
   ROOM_AMENITIES,
@@ -105,6 +107,8 @@ function PolicyContent({ policy }) {
 
 export default function RoomDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const room = MOCK_ROOM_DATA;
 
   // Helper for dynamic dates
@@ -146,11 +150,30 @@ export default function RoomDetails() {
   const handleBooking = async () => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      toast.success("Room booked successfully! We'll send a confirmation email shortly.", {
+      // Calculate nights
+      const start = new Date(checkIn);
+      const end = new Date(checkOut);
+      const diffTime = Math.abs(end - start);
+      const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+
+      // Dispatch to Redux cart
+      dispatch(addItem({
+        id: room.id,
+        name: room.name,
+        image: room.images[0],
+        price: room.price,
+        quantity: 1,
+        nights: nights
+      }));
+
+      toast.success("Room added to cart! Redirecting...", {
         position: "top-right",
-        autoClose: 4000,
+        autoClose: 1500,
       });
+
+      setTimeout(() => {
+        navigate("/cart");
+      }, 1500);
     } catch (error) {
       toast.error("Booking failed. Please try again.", {
         position: "top-right",
