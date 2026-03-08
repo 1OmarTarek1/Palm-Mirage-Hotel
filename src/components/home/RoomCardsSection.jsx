@@ -48,7 +48,7 @@ export default function RoomCardsSection() {
   };
 
   return (
-    <section id="rooms" className="py-10 overflow-hidden">
+    <section id="rooms" className="py-10 overflow-hidden mb-25">
       <div className="">
         {/* Header */}
         <div className="flex flex-col mb-8">

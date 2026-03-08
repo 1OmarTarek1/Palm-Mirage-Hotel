@@ -78,25 +78,32 @@ export default function BookingBar({ className, variant = "overlay" }) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.8, duration: 0.6 }}
       className={cn(
-        "w-full max-w-7xl mx-auto px-4 z-30",
-        variant === "overlay" ? "absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2" : "relative py-4",
+        "w-full mx-auto px-4 z-30",
+        variant === "overlay" ? "max-w-sm md:max-w-md xl:max-w-7xl absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2" : "max-w-7xl relative py-4",
         className
       )}
       ref={barRef}
     >
       <div className={cn(
-        "border border-border/50 rounded-[2.5rem] p-3 flex flex-col lg:flex-row items-stretch lg:items-center gap-4 lg:gap-0 relative transition-all duration-300",
+        "border border-border/50 rounded-[2.5rem] p-3 flex flex-col items-stretch gap-4 relative transition-all duration-300",
+        variant === "overlay" ? "xl:flex-row xl:items-center xl:gap-0" : "lg:flex-row lg:items-center lg:gap-0",
         variant === "overlay" ? "dark:bg-background/50 bg-background/90 backdrop-blur-xl" : "bg-card"
       )}>
-        <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center">
+        <div className={cn(
+          "flex-1 flex flex-col items-stretch",
+          variant === "overlay" ? "xl:flex-row xl:items-center" : "md:flex-row md:items-center"
+        )}>
           {segments.map((segment, index) => (
             <div 
               key={segment.id} 
               onClick={() => setActivePopover(activePopover === segment.id ? null : segment.id)}
-              className={`flex flex-1 items-center gap-4 px-6 py-4 md:py-2 group cursor-pointer hover:bg-primary/5 transition-colors relative 
-                ${index === 0 ? 'rounded-l-[2rem] lg:rounded-l-[2rem]' : ''} 
-                ${activePopover === segment.id ? 'bg-primary/5' : ''}
-                ${index !== 0 ? 'rounded-3xl lg:rounded-none' : ''}`}
+              className={cn(
+                "flex flex-1 items-center gap-4 px-6 py-4 md:py-2 group cursor-pointer hover:bg-primary/5 transition-colors relative rounded-3xl",
+                variant === "overlay"
+                  ? (index === 0 ? "xl:rounded-l-[2rem] xl:rounded-r-none" : "xl:rounded-none")
+                  : (index === 0 ? "lg:rounded-l-[2rem] lg:rounded-r-none" : "lg:rounded-none"),
+                activePopover === segment.id && "bg-primary/5"
+              )}
             >
               <div className="text-primary/60 group-hover:text-primary transition-colors">
                 {segment.icon}
@@ -110,9 +117,11 @@ export default function BookingBar({ className, variant = "overlay" }) {
                 </span>
               </div>
               
-              {/* Divider for Desktop */}
               {index < segments.length - 1 && (
-                <div className="hidden lg:block absolute right-0 top-1/4 bottom-1/4 w-px bg-border/50" />
+                <div className={cn(
+                  "hidden absolute right-0 top-1/4 bottom-1/4 w-px bg-border/50",
+                  variant === "overlay" ? "xl:block" : "lg:block"
+                )} />
               )}
 
               {/* Popover */}
@@ -123,7 +132,12 @@ export default function BookingBar({ className, variant = "overlay" }) {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full mt-4 md:bottom-full md:mb-4 md:top-auto md:mt-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 lg:left-0 lg:right-auto bg-card border border-border shadow-2xl rounded-3xl overflow-hidden z-50 w-[95vw] md:w-auto"
+                    className={cn(
+                      "absolute bg-card border border-border shadow-2xl rounded-3xl overflow-hidden z-50",
+                      variant === "overlay"
+                        ? "top-full mt-4 left-1/2 -translate-x-1/2 w-[95vw] md:w-auto xl:bottom-full xl:mb-4 xl:top-auto xl:mt-0 xl:left-0 xl:translate-x-0"
+                        : "top-full mt-4 md:bottom-full md:mb-4 md:top-auto md:mt-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 lg:left-0 lg:right-auto w-[95vw] md:w-auto"
+                    )}
                     style={{ minWidth: segment.id === 'dates' ? 'min(320px, 90vw)' : 'min(260px, 90vw)' }}
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -168,9 +182,12 @@ export default function BookingBar({ className, variant = "overlay" }) {
           ))}
         </div>
 
-        <div className="py-2 lg:py-0">
+        <div className={cn("py-2", variant === "overlay" ? "xl:py-0" : "lg:py-0")}>
           <Button 
-            className="w-full lg:w-auto px-5 h-12 text-xs font-bold uppercase tracking-widest transition-all"
+            className={cn(
+              "w-full px-5 h-12 text-xs font-bold uppercase tracking-widest transition-all",
+              variant === "overlay" ? "xl:w-auto" : "lg:w-auto"
+            )}
             onClick={() => {
               if (!bookingState.checkIn || !bookingState.checkOut) {
                 alert("Please select both check-in and check-out dates.");

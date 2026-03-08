@@ -55,7 +55,7 @@ export default function HomeExperience() {
   return (
     <section 
       id="experience" 
-      className="relative flex items-center justify-center overflow-hidden py-5 h-svh mb-30"
+      className="relative flex items-center justify-center overflow-hidden py-10 h-svh mb-30"
       ref={sectionRef}
     >
       

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { NavLink, useMatch, useResolvedPath } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import NavTooltip from "../NavTooltip";
@@ -80,7 +81,7 @@ function NavItem({ link, activeMenu, onHover, onLeave }) {
   );
 }
 
-export default function DesktopNav({ navLinks, activeMenu, onHover, onLeave }) {
+function DesktopNav({ navLinks, activeMenu, onHover, onLeave }) {
   return (
     <ul className="hidden md:flex items-center gap-3 lg:gap-4 absolute left-1/2 -translate-x-1/2">
       {navLinks.map((link) => (
@@ -95,3 +96,5 @@ export default function DesktopNav({ navLinks, activeMenu, onHover, onLeave }) {
     </ul>
   );
 }
+
+export default memo(DesktopNav);

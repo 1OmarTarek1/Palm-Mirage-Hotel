@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import ThemeToggle from "../ThemeToggle";
 import LanguageToggle from "../LanguageToggle";
@@ -13,7 +14,7 @@ const actionVariants = {
   },
 };
 
-export default function NavActions({ activeMenu, onHover, onLeave }) {
+function NavActions({ activeMenu, onHover, onLeave }) {
   return (
     <div className="hidden md:flex items-center gap-2 lg:gap-3">
       <motion.div variants={actionVariants}><CartButton /></motion.div>
@@ -29,3 +30,5 @@ export default function NavActions({ activeMenu, onHover, onLeave }) {
     </div>
   );
 }
+
+export default memo(NavActions);

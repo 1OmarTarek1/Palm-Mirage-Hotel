@@ -97,8 +97,8 @@ export default function ActivitiesTestimonials() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center border border-[#687E69] text-[#687E69] hover:bg-[#687E69] hover:text-white transition-all bg-transparent shadow-none" />
-              <CarouselNext className="absolute right-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center border border-[#687E69] text-[#687E69] hover:bg-[#687E69] hover:text-white transition-all bg-transparent shadow-none" />
+              <CarouselPrevious className="absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center border border-primary text-primary hover:bg-primary hover:text-white transition-all bg-transparent shadow-none" />
+              <CarouselNext className="absolute right-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center border border-primary text-primary hover:bg-primary hover:text-white transition-all bg-transparent shadow-none" />
             </Carousel>
           </div>
         </motion.div>
@@ -110,8 +110,8 @@ export default function ActivitiesTestimonials() {
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Edge gradients for smooth fade in/out - increased width */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-linear-to-r from-card via-card/80 to-transparent z-20 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-linear-to-l from-card via-card/80 to-transparent z-20 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-20 md:w-64 bg-linear-to-r from-card to-transparent z-20 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 md:w-64 bg-linear-to-l from-card to-transparent z-20 pointer-events-none" />
 
           <motion.div 
             ref={containerRef}

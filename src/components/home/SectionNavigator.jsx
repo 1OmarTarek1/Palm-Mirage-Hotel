@@ -8,7 +8,7 @@ const sectionsData = [
   { id: "rooms", label: "Our Rooms" },
   { id: "platforms", label: "Global Reach" },
   { id: "experience", label: "The Experience" },
-  { id: "amenities", label: "Facilities" },
+  { id: "amenities", label: "Awards" },
   { id: "activities", label: "Activities" },
   { id: "testimonials", label: "Testimonials" },
 ];

@@ -1,54 +1,52 @@
 import { useRef } from "react";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { Waves, Flower2, UtensilsCrossed, Landmark, Anchor, UserCheck } from "lucide-react";
-
-// ... (amenities array remains the same above)
+import { motion, useScroll, useSpring } from "framer-motion";
+import { Star, Trophy, Users, CalendarDays, Leaf, Landmark } from "lucide-react";
 const amenities = [
   {
-    icon: <Waves className="w-8 h-8" />,
-    title: "Nile View Infinity Pool",
-    description: "Relax in our climate-controlled infinity pool overlooking the majestic Nile River and the West Bank mountains.",
+    icon: <Star className="w-8 h-8" />,
+    title: "Forbes 5-Star Certified",
+    description: "Consistently awarded the prestigious Forbes Travel Guide 5-Star rating, placing us among the finest luxury hotels in the Middle East & Africa region.",
     delay: 0.1,
-    image: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=800&auto=format&fit=crop&fm=webp"
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop&fm=webp"
   },
   {
-    icon: <Flower2 className="w-8 h-8" />,
-    title: "Royal Spa & Wellness",
-    description: "Indulge in ancient Egyptian-inspired treatments and modern therapy in our state-of-the-art wellness center.",
+    icon: <Trophy className="w-8 h-8" />,
+    title: "World Travel Awards Winner",
+    description: "Proud recipient of the World Travel Awards 'Egypt's Leading Luxury Hotel' for six consecutive years, recognized globally for authentic Egyptian hospitality.",
     delay: 0.2,
-    image: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?q=80&w=800&auto=format&fit=crop&fm=webp"
+    image: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?q=80&w=800&auto=format&fit=crop&fm=webp"
   },
   {
-    icon: <UtensilsCrossed className="w-8 h-8" />,
-    title: "Fine Dining Restaurant",
-    description: "Savor a fusion of local Egyptian flavors and international cuisine prepared by our award-winning chefs.",
+    icon: <CalendarDays className="w-8 h-8" />,
+    title: "60+ Years of Excellence",
+    description: "Founded in 1965, The Sailing Luxor Hotel has served generations of travelers for over six decades, building an unmatched legacy of Egyptian luxury hospitality.",
     delay: 0.3,
-    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800&auto=format&fit=crop&fm=webp"
+    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop&fm=webp"
+  },
+  {
+    icon: <Users className="w-8 h-8" />,
+    title: "500,000+ Happy Guests",
+    description: "Over half a million guests from 120+ countries have experienced our renowned Nile-side sanctuary, with a guest satisfaction score consistently above 9.4/10.",
+    delay: 0.4,
+    image: "https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=800&auto=format&fit=crop&fm=webp"
+  },
+  {
+    icon: <Leaf className="w-8 h-8" />,
+    title: "Green Globe Certified",
+    description: "Awarded the Green Globe sustainability certification for our commitment to eco-friendly operations, water conservation, and supporting the local Luxor community.",
+    delay: 0.5,
+    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=800&auto=format&fit=crop&fm=webp"
   },
   {
     icon: <Landmark className="w-8 h-8" />,
-    title: "Heritage Concierge",
-    description: "Exclusive access to private tours of Luxor's ancient wonders with our expert Egyptologists.",
-    delay: 0.4,
-    image: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=800&auto=format&fit=crop&fm=webp"
-  },
-  {
-    icon: <Anchor className="w-8 h-8" />,
-    title: "Private River Transport",
-    description: "Traditional feluccas and luxury motorboats available 24/7 for private crossings and sunset cruises.",
-    delay: 0.5,
-    image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?q=80&w=800&auto=format&fit=crop&fm=webp"
-  },
-  {
-    icon: <UserCheck className="w-8 h-8" />,
-    title: "24/7 Royal Butler",
-    description: "Personalized service tailored to your every need, ensuring a seamless and regal stay from check-in to check-out.",
+    title: "UNESCO Cultural Partner",
+    description: "An official cultural partner of UNESCO's World Heritage Site preservation program in Luxor, actively contributing to the protection of Egypt's Pharaonic legacy.",
     delay: 0.6,
-    image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=800&auto=format&fit=crop&fm=webp"
+    image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?q=80&w=800&auto=format&fit=crop&fm=webp"
   }
 ];
 
-export default function AmenitiesSection() {
+export default function AwardsSection() {
   const containerRef = useRef(null);
 
   // Track scroll progress within this specific section
@@ -74,7 +72,7 @@ export default function AmenitiesSection() {
             viewport={{ once: true }}
             className="text-secondary text-sm font-bold uppercase tracking-widest"
           >
-            World-Class Facilities
+            Awards & Recognition
           </motion.span>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -83,7 +81,7 @@ export default function AmenitiesSection() {
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-5xl font-header font-bold text-foreground"
           >
-            Elevate Your Experience
+            A Legacy of Excellence
           </motion.h2>
           <motion.div 
             initial={{ scaleX: 0 }}
@@ -114,13 +112,11 @@ export default function AmenitiesSection() {
                 <motion.div
                   initial={{ 
                     opacity: 0, 
-                    x: index % 2 === 0 ? -40 : 40,
-                    filter: "blur(10px)" 
+                    x: index % 2 === 0 ? -40 : 40
                   }}
                   whileInView={{ 
                     opacity: 1, 
-                    x: 0,
-                    filter: "blur(0px)" 
+                    x: 0
                   }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ 
@@ -128,7 +124,7 @@ export default function AmenitiesSection() {
                     delay: 0.2,
                     ease: [0.16, 1, 0.3, 1] 
                   }}
-                  className="w-full md:w-[45%] p-8 bg-card/40 backdrop-blur-md rounded-[2rem] shadow-xl border border-secondary/10 hover:border-secondary transition-colors duration-300 group relative z-10 overflow-hidden"
+                  className="w-full md:w-[45%] p-8 bg-card/40 rounded-[2rem] shadow-xl border border-secondary/10 hover:border-secondary transition-colors duration-300 group relative z-10 overflow-hidden"
                   style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
                 >
                   {/* Background Image with Overlay */}
@@ -136,7 +132,7 @@ export default function AmenitiesSection() {
                     <img 
                       src={item.image} 
                       alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-700 blur-[1px] group-hover:scale-110 opacity-40 mix-blend-overlay grayscale group-hover:grayscale-0 group-hover:opacity-60"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 blur-[2px]"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent" />
                   </div>
@@ -161,11 +157,11 @@ export default function AmenitiesSection() {
                   whileInView={{ scale: 1, backgroundColor: "var(--secondary)" }}
                   viewport={{ once: true, margin: "-20% 0px -20% 0px" }} // Triggers closer to the center of viewport
                   transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
-                  className="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border-4 border-background hidden md:flex items-center justify-center z-20 shadow-lg"
+                  className="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border-4 border-muted hidden md:flex items-center justify-center z-20 shadow-lg"
                   style={{
                      // Start as hollow/border-only, fill with secondary color when scrolled into view
                      backgroundColor: 'transparent',
-                     borderColor: 'hsl(var(--secondary))',
+                     borderColor: '#ffb7b7',
                   }}
                 >
                   <motion.div 

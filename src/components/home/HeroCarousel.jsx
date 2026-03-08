@@ -80,7 +80,7 @@ export default function HeroCarousel() {
     <div 
       ref={containerRef}
       id="hero"
-      className="relative w-screen left-1/2 -translate-x-1/2 h-screen  overflow-hidden bg-[#0a0a0a]"
+      className="relative w-screen left-1/2 -translate-x-1/2 h-dvh overflow-hidden bg-[#0a0a0a]"
     >
       <AnimatePresence initial={false}>
         <motion.div
@@ -91,19 +91,8 @@ export default function HeroCarousel() {
           transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0"
         >
-          {/* Layer 1: Background Ken Burns Image */}
-          <motion.div 
-            className="absolute inset-0 overflow-hidden"
-            initial={{ scale: 1 }}
-            animate={{ scale: 1.1 }}
-            transition={{ 
-              duration: 8,
-              ease: "linear"
-            }}
-            style={{ 
-              willChange: "transform"
-            }}
-          >
+          {/* Layer 1: Background Image */}
+          <div className="absolute inset-0 overflow-hidden">
             <div className="absolute inset-0">
               <img
                 src={slides[currentIndex].image}
@@ -118,7 +107,7 @@ export default function HeroCarousel() {
             <div className="absolute inset-0 bg-linear-to-r from-black/20 via-transparent to-black/20 z-10 pointer-events-none" />
             
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] z-10 pointer-events-none" />
-          </motion.div>
+          </div>
 
           {/* Layer 2: Architectural "Arch" Overlay */}
           <div 
@@ -166,7 +155,7 @@ export default function HeroCarousel() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.8, duration: 0.8 }}
-                className="lg:hidden mt-6 flex justify-center"
+                className="xl:hidden mt-6 flex justify-center"
               >
                 <Button 
                   variant="outline"
@@ -217,7 +206,7 @@ export default function HeroCarousel() {
 
 
       {/* Desktop Booking Bar Overlay */}
-      <div className="absolute bottom-24 md:bottom-20 left-0 w-full z-40 px-4 hidden lg:block">
+      <div className="absolute bottom-24 md:bottom-20 left-0 w-full z-40 px-4 hidden xl:block">
         <div className="max-w-7xl mx-auto">
           <BookingBar />
         </div>
@@ -230,7 +219,7 @@ export default function HeroCarousel() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-100 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 lg:hidden"
+            className="fixed inset-0 z-100 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 xl:hidden"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}

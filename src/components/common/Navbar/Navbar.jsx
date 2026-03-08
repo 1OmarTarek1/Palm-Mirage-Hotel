@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { navLinks } from "./navLinks";
 import Logo from "./Logo";
@@ -10,23 +10,18 @@ import NavActions from "./Desktop/NavActions";
 import MegaMenu from "./Desktop/MegaMenu";
 import CartButton from "./CartButton";
 
+const CIRCLE_RADIUS = 28;
 
-// Navbar height in px — used to make a perfect circle on drop
-const CIRCLE_SIZE = 56;
-
-// Intro animation: true circle drops from top, then expands to full width
 const introVariants = {
   initial: {
     y: -120,
-    width: CIRCLE_SIZE,
     opacity: 0,
-    borderRadius: "9999px",
+    clipPath: `circle(${CIRCLE_RADIUS}px at 50% 50%)`,
   },
   drop: {
     y: 0,
-    width: CIRCLE_SIZE,
     opacity: 1,
-    borderRadius: "9999px",
+    clipPath: `circle(${CIRCLE_RADIUS}px at 50% 50%)`,
     transition: {
       type: "spring",
       stiffness: 260,
@@ -36,9 +31,8 @@ const introVariants = {
   },
   expand: {
     y: 0,
-    width: "100%",
     opacity: 1,
-    borderRadius: "9999px",
+    clipPath: `circle(1200px at 50% 50%)`,
     transition: {
       type: "spring",
       stiffness: 120,
@@ -49,55 +43,100 @@ const introVariants = {
   },
 };
 
-// Scroll hide/show variants (applied after intro is done)
 const scrollVariants = {
-  visible: { y: 0, opacity: 1, width: "100%" },
-  hidden: { y: -100, opacity: 0, width: "100%" },
+  visible: { y: 0, opacity: 1 },
+  hidden: { y: -100, opacity: 0 },
+};
+
+const contentVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const slideInLeft = {
+  hidden: { x: -30, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 },
+  },
+};
+
+const slideInUp = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 },
+  },
 };
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [hidden, setHidden] = useState(false);
-  const [introStage, setIntroStage] = useState("drop"); // "drop" | "expand" | "done"
+  const [introStage, setIntroStage] = useState("drop");
   const { scrollY } = useScroll();
   const timeoutRef = useRef(null);
+  const hiddenRef = useRef(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (introStage !== "done") return;
     const previous = scrollY.getPrevious();
-    if (latest > previous && latest > 150) {
-      setHidden(true);
-      setActiveMenu(null);
-      setIsOpen(false);
-    } else {
-      setHidden(false);
+    const delta = latest - previous;
+    if (delta > 5 && latest > 150) {
+      if (!hiddenRef.current) {
+        hiddenRef.current = true;
+        setHidden(true);
+        setActiveMenu(null);
+        setIsOpen(false);
+      }
+    } else if (delta < -5) {
+      if (hiddenRef.current) {
+        hiddenRef.current = false;
+        setHidden(false);
+      }
     }
   });
 
-  const handleMouseEnter = (link) => {
+  const handleMouseEnter = useCallback((link) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setActiveMenu(link);
-  };
+  }, []);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setActiveMenu(null);
-    }, 200);
-  };
+    timeoutRef.current = setTimeout(() => setActiveMenu(null), 200);
+  }, []);
 
-  const keepOpen = () => {
+  const keepOpen = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  };
+  }, []);
+
+  const handleAnimationComplete = useCallback((def) => {
+    if (def === "drop") setIntroStage("expand");
+    else if (def === "expand") setIntroStage("done");
+  }, []);
+
+  const toggleMobile = useCallback(() => setIsOpen((prev) => !prev), []);
+  const closeMobile = useCallback(() => setIsOpen(false), []);
+  const clearMenu = useCallback(() => setActiveMenu(null), []);
+
+  const introDone = introStage === "done";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-1 sm:px-2 md:px-3! lg:px-5 py-3 ">
+    <header className="fixed top-0 left-0 right-0 z-50 px-1 sm:px-2 md:px-3! lg:px-5 py-3">
       <div className="px-2 md:px-0 lg:max-w-7xl mx-auto relative lg:px-2">
-        <div className="flex justify-center">
+        <div className="relative flex justify-center">
         <motion.nav
-          variants={introStage !== "done" ? introVariants : scrollVariants}
-          initial={introStage !== "done" ? "initial" : false}
+          variants={!introDone ? introVariants : scrollVariants}
+          initial={!introDone ? "initial" : false}
           animate={
             introStage === "drop"
               ? "drop"
@@ -107,42 +146,23 @@ export default function Navbar() {
               ? "hidden"
               : "visible"
           }
-          onAnimationComplete={(def) => {
-            if (def === "drop") {
-              setIntroStage("expand");
-            } else if (def === "expand") {
-              setIntroStage("done");
-            }
-          }}
+          onAnimationComplete={handleAnimationComplete}
           transition={
-            introStage === "done"
+            introDone
               ? { duration: 0.35, ease: "easeInOut" }
               : undefined
           }
-          className={`relative flex items-center justify-between px-2 h-14 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20 ${introStage !== "done" ? "overflow-hidden" : ""}`}
+          style={{ willChange: "transform" }}
+          className="relative flex items-center justify-between w-full px-2 h-14 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20"
         >
           <motion.div
             className="flex items-center justify-between w-full h-full"
             initial="hidden"
-            animate={introStage === "done" ? "visible" : "hidden"}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: { 
-                opacity: 1,
-                transition: { 
-                  staggerChildren: 0.08,
-                  delayChildren: 0.1
-                }
-              }
-            }}
-            style={{ pointerEvents: introStage === "done" ? "auto" : "none" }}
+            animate={introDone ? "visible" : "hidden"}
+            variants={contentVariants}
+            style={{ pointerEvents: introDone ? "auto" : "none" }}
           >
-            <motion.div
-              variants={{
-                hidden: { x: -30, opacity: 0 },
-                visible: { x: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 24 } }
-              }}
-            >
+            <motion.div variants={slideInLeft}>
               <Logo />
             </motion.div>
             
@@ -160,14 +180,11 @@ export default function Navbar() {
             />
             
             <motion.div
-              variants={{
-                hidden: { y: 20, opacity: 0 },
-                visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 24 } }
-              }}
+              variants={slideInUp}
               className="flex items-center md:hidden gap-2"
             >
               <CartButton />
-              <MobileMenuButton isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
+              <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />
             </motion.div>
           </motion.div>
         </motion.nav>
@@ -180,12 +197,12 @@ export default function Navbar() {
               isOpen={!!activeMenu}
               onMouseEnter={keepOpen}
               onMouseLeave={handleMouseLeave}
-              onItemClick={() => setActiveMenu(null)}
+              onItemClick={clearMenu}
             />
           )}
         </AnimatePresence>
 
-        <MobileNav navLinks={navLinks} isOpen={isOpen} onClose={() => setIsOpen(false)} />
+        <MobileNav navLinks={navLinks} isOpen={isOpen} onClose={closeMobile} />
       </div>
     </header>
   );

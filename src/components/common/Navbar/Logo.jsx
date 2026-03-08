@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
 
-export default function Logo() {
+function Logo() {
   return (
     <NavLink to="/" className="flex items-center gap-2 group focus:outline-none">
       {({ isActive }) => (
@@ -31,3 +32,4 @@ export default function Logo() {
   );
 }
 
+export default memo(Logo);

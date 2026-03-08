@@ -15,7 +15,7 @@ export default function AboutSection() {
         >
           The Sailing Luxor Hotel
         </motion.span>
-        
+
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -116,35 +116,37 @@ export default function AboutSection() {
             >
               <ul className="space-y-6">
                 {[
-                  "Experience Technology",
-                  "Personalized Experiences",
-                  "Health & wellness-focused services",
-                  "Restaurant"
+                  { title: "Hotel Rooms & Suites", path: "/rooms" },
+                  { title: "Events, Meetings & Conferences", path: "/services/Meetings" },
+                  { title: "Health & Wellness-focused services", path: "/services/wellness" },
+                  { title: "Restaurant & Bars", path: "/services/restaurant" }
                 ].map((item, index) => (
                   <motion.li 
                     key={index}
                     whileHover={{ x: 10 }}
-                    className="flex justify-between align-center group cursor-pointer border-b border-[#fefefec3]/20 pb-4 last:border-0 last:pb-0"
+                    className="group cursor-pointer border-b border-[#fefefec3]/20 pb-4 last:border-0 last:pb-0"
                   >
-                    <span className="text-[#fefefec3] text-sm sm:text-base md:text-xl font-header font-medium text-start">
-                      {item}
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-[#fefefe23] flex items-center justify-center group-hover:bg-[#fefefe23]/40 transition-colors">
-                      <svg 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        className="text-[#fefefec3]"
-                      >
-                        <path d="M5 12h14" />
-                        <path d="m12 5 7 7-7 7" />
-                      </svg>
-                    </div>
+                    <Link to={item.path} className="flex justify-between items-center w-full">
+                      <span className="text-[#fefefec3] text-sm sm:text-base md:text-xl font-header font-medium text-start">
+                        {item.title}
+                      </span>
+                      <div className="w-8 h-8 rounded-full bg-[#fefefe23] flex items-center justify-center group-hover:bg-[#fefefe23]/40 transition-colors">
+                        <svg 
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="text-[#fefefec3]"
+                        >
+                          <path d="M5 12h14" />
+                          <path d="m12 5 7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
                   </motion.li>
                 ))}
               </ul>

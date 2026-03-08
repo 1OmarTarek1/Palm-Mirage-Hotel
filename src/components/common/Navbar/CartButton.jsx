@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import NavTooltip from "./NavTooltip";
 import { toggleCart, selectCartCount, selectCartIsOpen } from "@/store/slices/cartSlice";
 
-export default function CartButton({ itemCount: propCount }) {
+function CartButton({ itemCount: propCount }) {
   const dispatch = useDispatch();
   const reduxCount = useSelector(selectCartCount);
   const isOpen = useSelector(selectCartIsOpen);
@@ -48,3 +49,5 @@ export default function CartButton({ itemCount: propCount }) {
     </NavTooltip>
   );
 }
+
+export default memo(CartButton);
