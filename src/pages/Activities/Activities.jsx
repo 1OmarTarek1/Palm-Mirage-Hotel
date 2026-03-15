@@ -16,8 +16,8 @@ export default function Activities() {
     <div className="text-foreground antialiased overflow-x-hidden transition-colors duration-300">
       <ActivityHero />
       <ActivityCategories active={activeCategory} onChange={setActiveCategory} />
-      {/* <ActivityDetails activities={filtered} />
-      <ActivityBooking /> */}
+      <ActivityDetails activities={filtered} />
+      {/* <ActivityBooking /> */}
     </div>
   );
 }
