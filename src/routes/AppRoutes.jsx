@@ -16,6 +16,7 @@ import Rooms from '@/pages/Rooms/Rooms';
 import Wellness from '@/pages/Services/Wellness';
 import Meetings from '@/pages/Services/Meetings';
 import Menu from '@/pages/menu/Menu';
+import Activities from '@/pages/Activities/Activities';
 import ShopCart from '@/pages/shopcart/ShopCart';
 import Checkout from '@/pages/Checkout/Checkout';
 
@@ -43,6 +44,7 @@ export const routes = createBrowserRouter([
       { path: 'services/restaurant', element: <Restaurant /> },
       { path: 'blog', element: <Blog /> },
       { path: 'blog/:id', element: <BlogDetails /> },
+      { path: 'services/activities', element: <Activities /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
       { path: 'cart', element: <ShopCart /> },

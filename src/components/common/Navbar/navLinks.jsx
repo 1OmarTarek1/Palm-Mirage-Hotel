@@ -11,6 +11,7 @@ import {
   Dumbbell,
   CalendarDays,
   ShoppingBag,
+  Palmtree,
   // change this links for demo
   ShieldCheck ,
   MessageCircleMore,    
@@ -74,6 +75,12 @@ export const navLinks = [
           href: "/services/Meetings",
           description: "Host memorable events in stunning spaces.",
           icon: <CalendarDays size={20} />,
+        },
+        {
+          label: "Activities & Experiences",
+          href: "/services/activities",
+          description: "Explore adventures and cultural experiences in Luxor.",
+          icon: <Palmtree size={20} />,
         },
         // {
         //   label: "Our Products",
