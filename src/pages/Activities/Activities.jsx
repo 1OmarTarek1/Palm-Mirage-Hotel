@@ -17,7 +17,7 @@ export default function Activities() {
       <ActivityHero />
       <ActivityCategories active={activeCategory} onChange={setActiveCategory} />
       <ActivityDetails activities={filtered} />
-      {/* <ActivityBooking /> */}
+      <ActivityBooking />
     </div>
   );
 }
