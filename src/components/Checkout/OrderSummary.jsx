@@ -1,27 +1,20 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Separator } from '@/components/ui/separator';
+import { selectCartItems, selectCartTotal } from '@/store/slices/cartSlice';
 
 const OrderSummary = ({ selectedMethod, onMethodChange }) => {
-  const orderItems = [
-    {
-      id: 1,
-      name: 'Summit View King Room',
-      quantity: 1,
-      date: 'February 22, 2026 - February 23, 2026',
-      details: 'Adult: 1; Child: 0',
-      price: 120.0,
-    },
-    {
-      id: 2,
-      name: 'Summit View King Room',
-      quantity: 1,
-      date: 'February 24, 2026 - February 25, 2026',
-      details: 'Adult: 1; Child: 0',
-      price: 100.0,
-    },
-  ];
+  const orderItems = useSelector(selectCartItems);
+  const total = useSelector(selectCartTotal);
 
-  const subtotal = orderItems.reduce((acc, item) => acc + item.price, 0);
+  if (!orderItems || orderItems.length === 0) {
+    return (
+      <div className="bg-card/50 p-6 rounded-2xl border border-border">
+        <h2 className="text-2xl font-header text-foreground mb-6">Your Order</h2>
+        <p className="text-muted-foreground text-center py-8">Your cart is empty.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card/50 p-6 rounded-2xl border border-border">
@@ -40,14 +33,14 @@ const OrderSummary = ({ selectedMethod, onMethodChange }) => {
                 {item.name} <span className="text-muted-foreground/60">× {item.quantity}</span>
               </h3>
               <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Date:</span> {item.date}
+                <span className="font-medium">Date:</span> {item.date || 'TBD'}
               </p>
               <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Details:</span> {item.details}
+                <span className="font-medium">Details:</span> {item.details || '1 Adult'}
               </p>
             </div>
             <span className="text-sm font-medium text-foreground italic">
-              ${item.price.toFixed(2)}
+              ${(item.price * item.quantity).toFixed(2)}
             </span>
           </div>
         ))}
@@ -58,11 +51,11 @@ const OrderSummary = ({ selectedMethod, onMethodChange }) => {
       <div className="space-y-4">
         <div className="flex justify-between items-center font-medium">
           <span className="text-foreground">Subtotal</span>
-          <span className="text-foreground italic">${subtotal.toFixed(2)}</span>
+          <span className="text-foreground italic">${total.toFixed(2)}</span>
         </div>
         <div className="flex justify-between items-center font-bold text-lg">
           <span className="text-foreground">Total</span>
-          <span className="text-foreground italic">${subtotal.toFixed(2)}</span>
+          <span className="text-foreground italic">${total.toFixed(2)}</span>
         </div>
       </div>
 

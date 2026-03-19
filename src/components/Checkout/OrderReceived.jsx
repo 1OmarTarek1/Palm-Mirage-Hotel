@@ -111,29 +111,27 @@ const OrderReceived = ({ orderReceived }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border border-color-primary/70">
-              <tr>
-                <td className="px-6 py-5 text-muted-foreground">
-                  Summit View King Room <span className="text-foreground font-medium ml-1">× 1</span>
-                </td>
-                <td className="px-6 py-5 text-right text-foreground font-medium italic">$120.00</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-5 text-muted-foreground">
-                  Summit View King Room <span className="text-foreground font-medium ml-1">× 1</span>
-                </td>
-                <td className="px-6 py-5 text-right text-foreground font-medium italic">$100.00</td>
-              </tr>
+              {orderReceived.items?.map((item, index) => (
+                <tr key={index}>
+                  <td className="px-6 py-5 text-muted-foreground">
+                    {item.name} <span className="text-foreground font-medium ml-1">× {item.quantity}</span>
+                  </td>
+                  <td className="px-6 py-5 text-right text-foreground font-medium italic">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
               <tr>
                 <th className="px-6 py-4 font-bold text-foreground">Subtotal:</th>
-                <td className="px-6 py-4 text-right text-foreground font-bold italic">$220.00</td>
+                <td className="px-6 py-4 text-right text-foreground font-bold italic">${orderReceived.total.toFixed(2)}</td>
               </tr>
               <tr>
                 <th className="px-6 py-4 font-bold text-foreground">Payment method:</th>
-                <td className="px-6 py-4 text-right text-muted-foreground">Check payments</td>
+                <td className="px-6 py-4 text-right text-muted-foreground">{orderReceived.paymentMethod}</td>
               </tr>
               <tr className="bg-primary/70">
                 <th className="px-6 py-4 font-bold text-lg text-white">Total:</th>
-                <td className="px-6 py-4 text-right text-white font-bold text-lg italic">$220.00</td>
+                <td className="px-6 py-4 text-right text-white font-bold text-lg italic">${orderReceived.total.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -149,9 +147,9 @@ const OrderReceived = ({ orderReceived }) => {
           {orderReceived.company && <p>{orderReceived.company}</p>}
           <p>{orderReceived.address}</p>
           {orderReceived.apartment && <p>{orderReceived.apartment}</p>}
-          <p>{orderReceived.city}</p>
-          <p>{orderReceived.state}</p>
-          <p>{orderReceived.postcode}</p>
+          <p>
+            {orderReceived.city}{orderReceived.city?.toLowerCase() !== orderReceived.state?.toLowerCase() ? `, ${orderReceived.state}` : ''} {orderReceived.postcode}
+          </p>
           <p>{orderReceived.country}</p>
           
           <div className="pt-6 space-y-3">

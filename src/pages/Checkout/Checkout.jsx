@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -10,8 +11,13 @@ import CheckoutForm from '@/components/Checkout/CheckoutForm';
 import OrderReceived from '@/components/Checkout/OrderReceived';
 import BillingDetails from '@/components/Checkout/BillingDetails';
 import { checkoutSchema } from './checkoutSchema';
+import { selectCartItems, selectCartTotal, clearCart } from '@/store/slices/cartSlice';
 
 const Checkout = () => {
+  const dispatch = useDispatch();
+  const cartItems = useSelector(selectCartItems);
+  const cartTotal = useSelector(selectCartTotal);
+  
   const [paymentMethod, setPaymentMethod] = useState('check');
   const [orderReceived, setOrderReceived] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,19 +98,21 @@ const Checkout = () => {
                 {errors.agreeTerms && <p className="text-red-500 text-xs -mt-4 ml-7">{errors.agreeTerms.message}</p>}
 
                 <CheckoutForm 
-                  amount={220} 
+                  amount={cartTotal} 
                   handleSubmitHook={handleSubmit}
                   getValues={getValues}
                   paymentMethod={paymentMethod}
                   onSuccess={(data) => {
                     setOrderReceived({
                       ...data,
-                      orderNumber: '14129',
+                      orderNumber: Math.floor(10000 + Math.random() * 90000).toString(),
                       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                      total: 220,
+                      items: cartItems,
+                      total: cartTotal,
                       paymentMethod: paymentMethod === 'check' ? 'Check payments' : 'Stripe'
                     });
                     setIsModalOpen(true);
+                    dispatch(clearCart());
                   }}
                   resetForm={reset}
                 />

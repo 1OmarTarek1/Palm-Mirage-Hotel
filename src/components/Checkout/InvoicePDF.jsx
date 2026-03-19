@@ -156,18 +156,16 @@ const InvoicePDF = ({ orderReceived }) => (
           <Text style={styles.tableHeaderRight}>TOTAL</Text>
         </View>
         
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCellLeft}>Summit View King Room x 1</Text>
-          <Text style={styles.tableCellRight}>$120.00</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCellLeft}>Summit View King Room x 1</Text>
-          <Text style={styles.tableCellRight}>$100.00</Text>
-        </View>
+        {orderReceived.items?.map((item, index) => (
+          <View key={index} style={styles.tableRow}>
+            <Text style={styles.tableCellLeft}>{item.name} x {item.quantity}</Text>
+            <Text style={styles.tableCellRight}>${(item.price * item.quantity).toFixed(2)}</Text>
+          </View>
+        ))}
         
         <View style={styles.tableRow}>
           <Text style={styles.tableFooterLeft}>Subtotal:</Text>
-          <Text style={styles.tableFooterRight}>$220.00</Text>
+          <Text style={styles.tableFooterRight}>${orderReceived.total.toFixed(2)}</Text>
         </View>
         <View style={styles.tableRow}>
           <Text style={styles.tableFooterLeft}>Payment method:</Text>
