@@ -5,55 +5,49 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-[#fefefe] shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-300",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline:
-          "border border-primary bg-transparent text-primary shadow-sm hover:bg-primary hover:text-white active:scale-95 transition-all duration-300",
+          "bg-primary text-white shadow hover:bg-primary/90 active:scale-95",
+        primary:
+          "bg-primary text-white shadow hover:bg-primary/90 active:scale-95",
         secondary:
-          "bg-secondary text-primary shadow-sm hover:shadow-md hover:brightness-110 active:scale-95 transition-all duration-300",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-secondary text-white shadow hover:bg-secondary/90 active:scale-95",
+        palmPrimary:
+          "relative overflow-hidden isolate text-white border-2 border-primary shadow-md active:scale-95 before:content-[''] before:absolute before:inset-0 before:z-[-2] before:transition-all before:duration-300 before:bg-primary after:content-[''] after:absolute after:inset-0 after:z-[-1] after:translate-y-full after:transition-transform after:duration-500 after:ease-in-out hover:after:translate-y-0 after:bg-secondary/80",
+        palmSecondary:
+          "relative overflow-hidden isolate text-primary border-2 border-primary bg-transparent active:scale-95 hover:text-white before:content-[''] before:absolute before:inset-0 before:z-[-2] before:transition-all before:duration-300 before:bg-transparent after:content-[''] after:absolute after:inset-0 after:z-[-1] after:translate-y-full after:transition-transform after:duration-500 after:ease-in-out hover:after:translate-y-0 after:bg-primary",
+        ghost: 
+          "text-primary hover:bg-primary/10",
+        light:
+          "bg-primary/10 text-primary hover:bg-primary/20 active:scale-95",
       },
       size: {
         default: "h-11 px-8 py-3 pb-2 rounded-full text-base",
-        sm: "h-9 rounded-full px-4 text-sm",
-        lg: "h-14 rounded-full px-10 text-lg",
-        icon: "h-11 w-11 rounded-full",
+        sm: "h-9 px-3 rounded-full text-xs",
+        lg: "h-14 px-10 py-5 pb-4 rounded-full text-lg",
+        icon: "h-9 w-9 rounded-full",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "palmPrimary",
       size: "default",
     },
   }
 )
 
-const Button = React.forwardRef((props, ref) => {
-  const {
-    className,
-    variant,
-    size,
-    asChild = false,
-    ...rest
-  } = props
-
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button"
-
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}
       ref={ref}
-      {...rest}
+      {...props}
     />
   )
 })
-
 Button.displayName = "Button"
 
 export { Button, buttonVariants }

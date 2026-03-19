@@ -45,6 +45,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
+import { useFlyToCart } from "@/context/FlyToCartContext";
 import {
   MOCK_ROOM_DATA,
   ROOM_AMENITIES,
@@ -166,8 +167,10 @@ export default function RoomDetails() {
   const [wifiSgCount, setWifiSgCount] = useState("1");
   const [isLoading, setIsLoading] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const { flyToCart } = useFlyToCart();
 
-  const handleBooking = async () => {
+  const handleBooking = async (e) => {
+    flyToCart(e.currentTarget);
     setIsLoading(true);
     try {
       // Calculate nights

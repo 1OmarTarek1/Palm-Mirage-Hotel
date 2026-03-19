@@ -11,6 +11,7 @@ const sectionsData = [
   { id: "amenities", label: "Awards" },
   { id: "activities", label: "Activities" },
   { id: "testimonials", label: "Testimonials" },
+  { id: "contact", label: "Contact Us" },
 ];
 
 export default function SectionNavigator() {

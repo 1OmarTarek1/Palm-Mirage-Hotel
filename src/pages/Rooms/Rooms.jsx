@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import RoomCard from "@/components/rooms/RoomCard";
 import RoomFilter from "@/components/rooms/RoomFilter";
@@ -29,13 +30,14 @@ export default function Rooms() {
 
         {/* Mobile Filter Toggle */}
         <div className="lg:hidden flex justify-end mb-6 px-4">
-          <button 
+          <Button 
+            variant="palmPrimary"
             onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-lg active:scale-95 transition-all"
+            className="flex items-center gap-2"
           >
             <SlidersHorizontal size={18} />
             Filter Rooms
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-12 gap-8">

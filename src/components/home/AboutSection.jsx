@@ -44,20 +44,20 @@ export default function AboutSection() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Button 
-            asChild
-            className="w-full sm:w-auto"
-          >
-            <Link to="/about">More About Us</Link>
-          </Button>
-          
-          <Button 
-            asChild
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
-            <Link to="/rooms">Explore Our Accommodations</Link>
-          </Button>
+            <Button
+              asChild
+              variant="palmPrimary"
+              className="mt-6 md:mt-10"
+            >
+              <Link to="/about">More About Us</Link>
+            </Button>
+            <Button
+              asChild
+              variant="palmSecondary"
+              className="mt-6 md:mt-10"
+            >
+              <Link to="/rooms">Explore Our Accommodations</Link>
+            </Button>
         </motion.div>
 
         <div className="flex flex-col gap-6 mt-20">

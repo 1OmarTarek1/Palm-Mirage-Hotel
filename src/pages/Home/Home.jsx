@@ -7,6 +7,7 @@ import ActivitiesSection from "../../components/home/ActivitiesSection";
 import ActivitiesTestimonials from "../../components/about/ActivitiesTestimonials";
 import SectionNavigator from "../../components/home/SectionNavigator";
 import AwardsSection from "../../components/home/AwardsSection";
+import ContactCTA from "../../components/home/ContactCTA";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       <ActivitiesTestimonials />
       <RoomsPlatformsSection />
       <AwardsSection />
+      <ContactCTA />
     </div>
   )
 }

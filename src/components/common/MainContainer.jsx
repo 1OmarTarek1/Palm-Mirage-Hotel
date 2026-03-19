@@ -7,11 +7,12 @@ import DynamicTitle from './DynamicTitle';
 
 const MainContainer = ({ children, className = "", showBreadcrumb = true, title: customTitle }) => {
   const { pathname } = useLocation();
-  const hideHeader = pathname === "/" || pathname === "/services/activities";
+  const isHome = pathname === "/";
+  const hideHeader = isHome || pathname === "/services/activities";
 
   return (
     <div className={cn(
-      `w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-4 lg:px-5 xl:px-2 mb-15 ${!hideHeader && "pt-30"}`,
+      `w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-4 lg:px-5 xl:px-2 ${!isHome && "mb-15"} ${!hideHeader && "pt-30"}`,
       className
     )}>
       {!hideHeader && (

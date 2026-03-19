@@ -67,6 +67,7 @@ export default function RoomCardsSection() {
 
             <Button
               asChild
+              variant="palmPrimary"
               className="shrink-0 self-start md:w-full lg:w-auto lg:self-center"
             >
               <Link to="/rooms">View All Accommodations</Link>

@@ -41,9 +41,12 @@ export default function Footer() {
   return (
     <footer className="bg-[#1a1f1a] text-white relative overflow-hidden">
       {/* ── subtle background texture ── */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_20%_50%,#8a9d8a_0%,transparent_60%)]" />
+      {/* <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_20%_50%,#8a9d8a_0%,transparent_60%)] z-0" /> */}
 
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
+      {/* ── top solid bridge to blend with ContactCTA ── */}
+      {/* <div className="absolute top-0 left-0 right-0 h-16 bg-[#1a1f1a] z-10 pointer-events-none" /> */}
+
+      <div className="relative z-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-4 lg:px-5 xl:px-2">
         {/* ═══ TOP — Logo + Description ══════════════════════════════════ */}
         <motion.div 
           variants={fadeUp}
@@ -123,7 +126,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="bg-[#8a9d8a] hover:bg-[#738581] text-white text-sm font-semibold px-5 py-3 transition-colors shrink-0"
+                className="bg-primary hover:bg-primary/80 text-white text-sm font-semibold px-5 py-3 transition-colors shrink-0"
               >
                 Subscribe
               </button>
@@ -138,7 +141,7 @@ export default function Footer() {
                   aria-label={label}
                   whileHover={{ scale: 1.15, y: -3 }}
                   whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white/70 hover:bg-[#8a9d8a] hover:text-white hover:border-[#8a9d8a] transition-colors"
+                  className="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white/70 hover:bg-primary hover:text-white hover:border-primary transition-colors"
                 >
                   <Icon size={16} />
                 </motion.a>
@@ -159,7 +162,7 @@ export default function Footer() {
             <ul className="grid grid-cols-2 gap-x-4 gap-y-3">
               {quickLinks.map(({ label, href }) => (
                 <li key={label}>
-                  <NavLink to={href} className="text-white/60 text-sm hover:text-[#8a9d8a] transition-colors">
+                  <NavLink to={href} className="text-white/60 text-sm hover:text-primary transition-colors">
                     {label}
                   </NavLink>
                 </li>

@@ -75,12 +75,15 @@ export default function CartSidebar() {
                   >
                     <ShoppingCart size={48} strokeWidth={1.2} className="opacity-30" />
                     <p className="text-sm font-medium">Your cart is empty</p>
-                    <motion.button
-                      onClick={() => dispatch(closeCart())}
-                      className="text-primary text-sm font-semibold hover:underline"
+                    <Link
+                      onClick={() => {
+                        dispatch(closeCart());
+                      }}
+                      to="/rooms"
+                      className="text-primary text-sm font-semibold hover:underline cursor-pointer"
                     >
                       Browse Rooms & Services →
-                    </motion.button>
+                    </Link>
                   </motion.div>
                 ) : (
                   items.map((item) => (

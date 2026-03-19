@@ -144,19 +144,19 @@ body {
 
 /* For Chrome, Edge, and Safari */
 ::-webkit-scrollbar {
-  width: 8px; /* Slightly thinner than default for modern look */
+  width: 8px; 
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; /* Keep track invisible or very subtle */
+  background: transparent; 
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: color-mix(in srgb, var(--primary) 70%, transparent);
   border-radius: 10px;
-  border: 2px solid transparent; /* Creates padding effect within track */
+  border: 2px solid transparent; 
   background-clip: content-box;
 }
 
@@ -178,7 +178,6 @@ body {
   background-color: var(--primary);
 }
 
-/* Utility to completely hide scrollbar while maintaining scroll functionality */
 .hide-scrollbar {
   -ms-overflow-style: none !important;  /* IE and Edge */
   scrollbar-width: none !important;  /* Firefox */
@@ -186,3 +185,30 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none !important;
 }
+
+
+
+.Toastify__close-button { @apply 
+    text-foreground!
+    opacity-50! 
+    hover:opacity-100! 
+    transition-opacity 
+    self-center! 
+    p-1!  
+    flex! 
+    items-center! 
+    justify-center!
+;}
+
+.Toastify__close-button > svg { @apply 
+  w-4!
+  h-4!;
+}
+
+
+/* ==========================================================================
+   Premium Button Styles
+   ========================================================================== */
+
+/* Buttons are now handled via Tailwind classes in button.jsx */
+

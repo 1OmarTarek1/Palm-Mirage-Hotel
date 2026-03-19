@@ -4,14 +4,14 @@ const cartSlice = createSlice({
   name: "cart",
   initialState: {
     items: [
-      {
-        id: "room-1",
-        name: "Classic Room - Garden View",
-        image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&q=80",
-        price: 320,
-        quantity: 1,
-        nights: 2
-      }
+      // {  // fake data to test the cart
+      //   id: "room-1",
+      //   name: "Classic Room - Garden View",
+      //   image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&q=80",
+      //   price: 320,
+      //   quantity: 1,
+      //   nights: 2
+      // }
     ],       // [{ id, name, image, price, quantity, nights }]
     isOpen: false,   // sidebar open/closed
   },

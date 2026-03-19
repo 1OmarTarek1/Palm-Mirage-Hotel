@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "./booking/DatePicker";
 import BookingCounter from "./booking/BookingCounter";
+import { useFlyToCart } from "@/context/FlyToCartContext";
 import { cn } from "@/lib/utils";
 
 export default function BookingBar({ className, variant = "overlay" }) {
+  const { flyToCart } = useFlyToCart();
   const [activePopover, setActivePopover] = useState(null);
   const [bookingState, setBookingState] = useState({
     checkIn: new Date(),
@@ -188,7 +190,8 @@ export default function BookingBar({ className, variant = "overlay" }) {
               "w-full px-5 h-12 text-xs font-bold uppercase tracking-widest transition-all",
               variant === "overlay" ? "xl:w-auto" : "lg:w-auto"
             )}
-            onClick={() => {
+            onClick={(e) => {
+              flyToCart(e.currentTarget);
               if (!bookingState.checkIn || !bookingState.checkOut) {
                 alert("Please select both check-in and check-out dates.");
                 return;

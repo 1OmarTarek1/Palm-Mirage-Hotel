@@ -2,17 +2,20 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import { toast } from "react-toastify";
+import { useFlyToCart } from "@/context/FlyToCartContext";
 import { Button } from "@/components/ui/button";
 import { BedDouble, Maximize2, Users, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
+  const { flyToCart } = useFlyToCart();
 
   if (!room) return null;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
+    flyToCart(e.currentTarget);
     dispatch(
       addItem({
         id: room.id,
@@ -87,17 +90,17 @@ export default function RoomCard({ room, className }) {
           <div className="flex items-center gap-2">
             <Button
               asChild
-              variant="outline"
+              variant="palmSecondary"
               size="sm"
-              className="px-8 font-bold border-2 hover:bg-primary hover:text-white transition-all rounded-xl"
+              className="px-7"
             >
               <Link to={`/rooms/${room.id}`}>Book Now</Link>
             </Button>
             <Button
               onClick={handleAddToCart}
-              variant="outline"
+              variant="palmSecondary"
               size="icon"
-              className="h-9 w-9 shrink-0 rounded-xl border-2 hover:bg-primary hover:text-white transition-all"
+              className="h-9 w-9 shrink-0"
               aria-label="Add to cart"
               title="Add to cart"
             >
