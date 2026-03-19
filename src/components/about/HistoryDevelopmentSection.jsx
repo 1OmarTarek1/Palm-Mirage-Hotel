@@ -15,7 +15,7 @@ export default function HistoryDevelopmentSection() {
               <p className="text-foreground/50 text-xs leading-relaxed">
                 Our high-end rooms are designed to offer personalized comfort and sophistication, ensuring a truly memorable stay.
               </p>
-              <Button variant="outline" className="border-[#82917d] text-[#82917d] hover:bg-[#82917d] hover:text-white rounded-full px-8 py-2 text-xs font-semibold h-auto">
+              <Button variant="palmSecondary" className="rounded-full px-8 py-2 text-xs font-semibold h-auto">
                 Read More History
               </Button>
             </div>
@@ -64,7 +64,7 @@ export default function HistoryDevelopmentSection() {
               <p className="text-foreground/50 text-xs leading-relaxed">
                 Our portfolio showcases a diverse landscape of exceptional properties, from breathtaking resort layouts and rejuvenating spa retreats to exclusive private clubs, vibrant urban experiences, and opulent...
               </p>
-              <Button variant="outline" className="border-[#82917d] text-[#82917d] hover:bg-[#82917d] hover:text-white rounded-full px-8 py-2 text-xs font-semibold h-auto">
+              <Button variant="palmSecondary" className="rounded-full px-8 py-2 text-xs font-semibold h-auto">
                 Read More
               </Button>
             </div>

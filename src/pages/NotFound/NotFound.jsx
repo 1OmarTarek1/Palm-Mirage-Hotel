@@ -39,10 +39,13 @@ export default function NotFoundPage() {
               <Home size={15} />
               Back to Home
             </Button>
-            <Button variant="outline" onClick={() => navigate(-1)}>
-              <ArrowLeft size={15} />
-              Go Back
-            </Button>
+            <Button 
+            variant="palmSecondary" 
+            onClick={() => navigate(-1)}
+            className="rounded-full px-8"
+          >
+            Go Back
+          </Button>
           </div>
 
         </div>
