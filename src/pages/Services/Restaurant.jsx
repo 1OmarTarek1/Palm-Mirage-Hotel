@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   {
@@ -185,18 +186,12 @@ export default function Restaurant() {
 
                 {/* Buttons */}
                 <div className="flex flex-col gap-4 text-center mt-4">
-                  <NavLink
-                    className="bg-primary hover:bg-primary/90 text-white py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-primary/20 tracking-wider uppercase text-sm"
-                    to="/contact"
-                  >
-                    Book A Table
-                  </NavLink>
-                  <NavLink
-                    className="border-2 border-primary/20 hover:border-primary/40 text-foreground py-4 rounded-full font-bold transition-all bg-card/50 backdrop-blur-sm tracking-wider uppercase text-sm"
-                    to="/services/menu"
-                  >
-                    Browse Menus
-                  </NavLink>
+                  <Button asChild variant="palmPrimary">
+                    <NavLink to="/contact">Book A Table</NavLink>
+                  </Button>
+                  <Button asChild variant="palmSecondary">
+                    <NavLink to="/services/menu">Browse Menus</NavLink>
+                  </Button>
                 </div>
               </div>
 
@@ -267,13 +262,9 @@ export default function Restaurant() {
 
                 {/* button*/}
                 <div className="mt-8 flex justify-center lg:justify-start">
-                  <NavLink
-                    className="px-10 py-4 rounded-full border-2 border-primary/30 text-primary font-header font-bold text-lg hover:bg-primary hover:text-white transition-all duration-500 shadow-sm backdrop-blur-sm group overflow-hidden relative"
-                    to="/contact"
-                  >
-                    <span className="relative z-10">Reserve Now</span>
-                    <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                  </NavLink>
+                  <Button asChild variant="palmSecondary" size="lg">
+                    <NavLink to="/contact">Reserve Now</NavLink>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -314,13 +305,9 @@ export default function Restaurant() {
 
                 {/* button*/}
                 <div className="mt-8 flex justify-center lg:justify-start">
-                  <NavLink
-                    className="px-10 py-4 rounded-full border-2 border-primary/30 text-primary font-header font-bold text-lg hover:bg-primary hover:text-white transition-all duration-500 shadow-sm backdrop-blur-sm group overflow-hidden relative"
-                    to="/contact"
-                  >
-                    <span className="relative z-10">Reserve Now</span>
-                    <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                  </NavLink>
+                  <Button asChild variant="palmSecondary" size="lg">
+                    <NavLink to="/contact">Reserve Now</NavLink>
+                  </Button>
                 </div>
               </div>
 
@@ -394,13 +381,9 @@ export default function Restaurant() {
 
                 {/* button*/}
                 <div className="mt-8 flex justify-center lg:justify-start">
-                  <NavLink
-                    className="px-10 py-4 rounded-full border-2 border-primary/30 text-primary font-header font-bold text-lg hover:bg-primary hover:text-white transition-all duration-500 shadow-sm backdrop-blur-sm group overflow-hidden relative"
-                    to="/contact"
-                  >
-                    <span className="relative z-10">Reserve Now</span>
-                    <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                  </NavLink>
+                  <Button asChild variant="palmSecondary" size="lg">
+                    <NavLink to="/contact">Reserve Now</NavLink>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -449,12 +432,13 @@ export default function Restaurant() {
                   </ul>
                 </div>
                 {/* زر الحجز الملون */}
-                <NavLink 
-                  to="/contact"
-                  className="inline-block bg-primary hover:bg-primary/90 text-white px-12 py-4 rounded-full transition-all duration-500 shadow-lg hover:shadow-primary/20 font-bold tracking-wider uppercase text-sm"
+                <Button
+                  asChild
+                  variant="palmPrimary"
+                  className="w-full"
                 >
-                  Reserve Now
-                </NavLink>
+                  <Link to="/contact">Reserve Now</Link>
+                </Button>
               </div>
             </div>
           </div>

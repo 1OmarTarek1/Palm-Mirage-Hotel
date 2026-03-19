@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 export default function MenuReservationHero({ activeCategory }) {
   return (
@@ -49,12 +50,14 @@ export default function MenuReservationHero({ activeCategory }) {
                 or email us at{" "}
                 <span className="text-white font-medium">sailing@contact.com</span>.
               </p>
-              <button className="group px-8 py-4 rounded-full border border-white/40 bg-white/10 backdrop-blur-sm text-white text-sm font-semibold hover:bg-white hover:text-gray-900 transition-all duration-300 whitespace-nowrap">
-                Reserve Now
-                <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform duration-200">
-                  →
-                </span>
-              </button>
+              <Button
+                variant="palmSecondary"
+                className="border-white/40 text-white text-sm"
+                size="lg"
+                onClick={() => document.getElementById('reservation-form').scrollIntoView({ behavior: 'smooth' })}
+              >
+                Book A Table
+              </Button>
             </div>
           </div>
         </div>

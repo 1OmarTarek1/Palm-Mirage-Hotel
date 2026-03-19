@@ -17,6 +17,7 @@ import {
   EVENT_TYPES,
   GUEST_COUNT_OPTIONS,
 } from "@/utils/constants";
+import { Button } from "../../components/ui/button";
 
 
 export default function Meetings() {
@@ -261,10 +262,10 @@ export default function Meetings() {
             </div>
 
             <div className="flex justify-center pt-4">
-              <button
+              <Button
+                variant="palmPrimary"
                 type="submit"
                 disabled={isSubmitting}
-                className="px-10 py-4 bg-[#8c9e8d] hover:bg-[#7a8c7b] disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 uppercase tracking-widest text-[13px] flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -274,7 +275,7 @@ export default function Meetings() {
                 ) : (
                   "Book A Consultation"
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
