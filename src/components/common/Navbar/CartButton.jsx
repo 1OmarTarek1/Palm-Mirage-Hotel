@@ -15,6 +15,7 @@ function CartButton({ itemCount: propCount }) {
   return (
     <NavTooltip label="Cart">
       <motion.button
+        id="navbar-cart-button"
         onClick={() => dispatch(toggleCart())}
         aria-label="Shopping Cart"
         className={`

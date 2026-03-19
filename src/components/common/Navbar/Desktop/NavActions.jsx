@@ -18,7 +18,6 @@ function NavActions({ activeMenu, onHover, onLeave }) {
   return (
     <div className="hidden md:flex items-center gap-2 lg:gap-3">
       <motion.div variants={actionVariants}><CartButton /></motion.div>
-      <motion.div variants={actionVariants}><ThemeToggle /></motion.div>
       <motion.div variants={actionVariants}>
         <LanguageToggle 
           activeMenu={activeMenu}
@@ -26,6 +25,7 @@ function NavActions({ activeMenu, onHover, onLeave }) {
           onLeave={onLeave}
         />
       </motion.div>
+      <motion.div variants={actionVariants}><ThemeToggle /></motion.div>
       <motion.div variants={actionVariants}><LoginButton /></motion.div>
     </div>
   );
