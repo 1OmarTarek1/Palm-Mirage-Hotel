@@ -73,7 +73,7 @@ const OrderSummary = ({ selectedMethod, onMethodChange }) => {
           onClick={() => onMethodChange('check')}
         >
             <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${selectedMethod === 'check' ? 'border-primary bg-primary' : 'border-border'}`}>
-                {selectedMethod === 'check' && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                {selectedMethod === 'check' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
             </div>
             <span className={`text-sm font-medium transition-colors ${selectedMethod === 'check' ? 'text-foreground' : 'text-muted-foreground'}`}>Check payments</span>
         </div>
@@ -94,7 +94,7 @@ const OrderSummary = ({ selectedMethod, onMethodChange }) => {
         >
             <div className="flex items-center gap-3">
                 <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${selectedMethod === 'stripe' ? 'border-primary bg-primary' : 'border-border'}`}>
-                    {selectedMethod === 'stripe' && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                    {selectedMethod === 'stripe' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                 </div>
                 <span className={`text-sm font-medium transition-colors ${selectedMethod === 'stripe' ? 'text-foreground' : 'text-muted-foreground'}`}>Stripe</span>
             </div>
