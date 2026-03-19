@@ -171,14 +171,13 @@ export default function RoomFilter({ onFilter }) {
       {/* Actions */}
       <div className="flex flex-col gap-3">
         <Button
-          variant="outline"
-          className="flex-1 rounded-full  bg-primary text-white hover:bg-secondary font-bold"
+          variant="palmPrimary"
           onClick={handleFilter}
         >
           Filter
         </Button>
         <Button
-          className="flex-1 rounded-full bg-transparent text-primary border border-secondary  hover:border-black"
+          variant="palmSecondary"
           onClick={handleReset}
         >
           Reset
