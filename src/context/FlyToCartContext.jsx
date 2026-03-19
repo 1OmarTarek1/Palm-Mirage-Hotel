@@ -47,7 +47,7 @@ export function FlyToCartProvider({ children }) {
       {children}
       
       {/* Overlay for animations */}
-      <div className="fixed inset-0 pointer-events-none z-[99999] overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none z-99999 overflow-hidden">
         <AnimatePresence>
           {animations.map((anim) => (
             <motion.div
