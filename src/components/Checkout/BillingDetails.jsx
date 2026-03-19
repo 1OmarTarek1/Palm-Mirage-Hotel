@@ -1,8 +1,29 @@
 import React from 'react';
+import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
-const BillingDetails = ({ register, errors }) => {
+const BillingDetails = ({ register, errors, control }) => {
+  const countries = [
+    "Egypt", "Saudi Arabia", "United Arab Emirates", "Kuwait", "Qatar", 
+    "Bahrain", "Oman", "Jordan", "Lebanon", "USA", "UK", "Canada", "Germany", "France"
+  ];
+
+  const governorates = [
+    "Cairo", "Giza", "Alexandria", "Dakahlia", "Red Sea", "Beheira", "Fayoum", 
+    "Gharbia", "Ismailia", "Monufia", "Minya", "Qalyubia", "New Valley", 
+    "Sharqia", "Suez", "Aswan", "Assiut", "Beni Suef", "Damietta", 
+    "Kafr El Sheikh", "Matrouh", "Port Said", "Sohag", "South Sinai", 
+    "North Sinai", "Qena", "Luxor"
+  ].sort();
   return (
     <div className="lg:col-span-8">
       <h2 className="text-2xl font-header text-foreground mb-8">Billing Details</h2>
@@ -43,19 +64,22 @@ const BillingDetails = ({ register, errors }) => {
 
         <div className="space-y-2">
           <Label htmlFor="country" className="text-muted-foreground">Country / Region <span className="text-destructive">*</span></Label>
-          <div className="relative">
-              <select 
-                id="country" 
-                {...register('country')} 
-                autoComplete="country-name"
-                className={`w-full h-12 px-4 rounded-md border border-border bg-card/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none ${errors.country ? 'border-destructive' : ''}`}
-              >
-                  <option value="Egypt">Egypt</option>
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-              </div>
-          </div>
+          <Controller
+            name="country"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger className={errors.country ? 'border-destructive' : ''}>
+                  <SelectValue placeholder="Select a country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
           {errors.country && <p className="text-destructive text-xs">{errors.country.message}</p>}
         </div>
 
@@ -91,21 +115,22 @@ const BillingDetails = ({ register, errors }) => {
 
         <div className="space-y-2">
           <Label htmlFor="state" className="text-muted-foreground">State / County <span className="text-destructive">*</span></Label>
-          <div className="relative">
-              <select 
-                id="state" 
-                {...register('state')} 
-                autoComplete="address-level1"
-                className={`w-full h-12 px-4 rounded-md border border-border bg-card/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none ${errors.state ? 'border-destructive' : ''}`}
-              >
-                  <option value="">Select an option...</option>
-                  <option value="Cairo">Cairo</option>
-                  <option value="Giza">Giza</option>
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-              </div>
-          </div>
+          <Controller
+            name="state"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger className={errors.state ? 'border-destructive' : ''}>
+                  <SelectValue placeholder="Select a state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {governorates.map((state) => (
+                    <SelectItem key={state} value={state}>{state}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
           {errors.state && <p className="text-destructive text-xs">{errors.state.message}</p>}
         </div>
 
@@ -145,7 +170,17 @@ const BillingDetails = ({ register, errors }) => {
         </div>
 
         <div className="flex items-center space-x-2 pt-4">
-          <input type="checkbox" id="create-account" {...register('createAccount')} className="w-4 h-4 rounded border-border accent-primary" />
+          <Controller
+            name="createAccount"
+            control={control}
+            render={({ field }) => (
+              <Checkbox 
+                id="create-account" 
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            )}
+          />
           <Label htmlFor="create-account" className="text-sm font-medium text-muted-foreground">Create an account?</Label>
         </div>
 

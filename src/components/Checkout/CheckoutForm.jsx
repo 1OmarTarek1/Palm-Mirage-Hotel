@@ -3,23 +3,13 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 
-const CheckoutForm = ({ amount, validateBilling, paymentMethod, resetForm, onSuccess, getValues }) => {
+const CheckoutForm = ({ amount, paymentMethod, resetForm, onSuccess, getValues, handleSubmitHook }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const onSubmit = async () => {
     setLoading(true);
     setError(null);
-
-    // 1. Trigger validation on the billing form
-    const isBillingValid = await validateBilling();
-    if (!isBillingValid) {
-      setError('Please fix the billing details errors before proceeding.');
-      setLoading(false);
-      return;
-    }
 
     try {
       if (paymentMethod === 'stripe') {
@@ -60,7 +50,7 @@ const CheckoutForm = ({ amount, validateBilling, paymentMethod, resetForm, onSuc
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmitHook(onSubmit)} className="space-y-4">
       {error && (
         <div className="p-3 text-destructive bg-destructive/10 border border-destructive/20 rounded-md text-sm">
           {error}
@@ -70,7 +60,7 @@ const CheckoutForm = ({ amount, validateBilling, paymentMethod, resetForm, onSuc
       <Button
         type="submit"
         disabled={loading}
-        className="w-full h-14 rounded-full text-lg mt-6 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        className="w-full h-14 rounded-lg text-lg mt-6 transition-all hover:scale-[1.02] active:scale-[0.98]"
       >
         {loading ? (
           <div className="flex items-center gap-2">
