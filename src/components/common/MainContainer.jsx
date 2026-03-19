@@ -7,20 +7,20 @@ import DynamicTitle from './DynamicTitle';
 
 const MainContainer = ({ children, className = "", showBreadcrumb = true, title: customTitle }) => {
   const { pathname } = useLocation();
-  const isHomePage = pathname === "/";
+  const hideHeader = pathname === "/" || pathname === "/services/activities";
 
   return (
     <div className={cn(
-      `w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-4 lg:px-5 xl:px-2 mb-15 ${!isHomePage && "pt-30"}`,
+      `w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-4 lg:px-5 xl:px-2 mb-15 ${!hideHeader && "pt-30"}`,
       className
     )}>
-      {!isHomePage && (
+      {!hideHeader && (
         <div className="flex flex-col items-center text-center mb-10">
           <DynamicTitle customTitle={customTitle} />
           {showBreadcrumb && <AppBreadcrumb />}
         </div>
       )}
-      <div className={cn(!isHomePage && "mt-0")}>
+      <div className={cn(!hideHeader && "mt-0")}>
         {children}
       </div>
     </div>
