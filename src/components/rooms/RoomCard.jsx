@@ -2,17 +2,20 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import { toast } from "react-toastify";
+import { useFlyToCart } from "@/context/FlyToCartContext";
 import { Button } from "@/components/ui/button";
 import { BedDouble, Maximize2, Users, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
+  const { flyToCart } = useFlyToCart();
 
   if (!room) return null;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
+    flyToCart(e.currentTarget);
     dispatch(
       addItem({
         id: room.id,
