@@ -158,7 +158,7 @@ export default function HeroCarousel() {
                 className="xl:hidden mt-6 flex justify-center"
               >
                 <Button 
-                  variant="outline"
+                  variant="palmSecondary"
                   onClick={() => setShowMobileBooking(true)}
                   className="px-8 h-12 rounded-full text-[11px] font-bold tracking-widest uppercase"
                 >

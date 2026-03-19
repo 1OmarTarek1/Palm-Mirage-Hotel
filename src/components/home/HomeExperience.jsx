@@ -209,7 +209,7 @@ export default function HomeExperience() {
 
                       {/* CTA */}
                       <div className="pt-2 md:pt-3">
-                        <Button asChild variant="outline" className="border border-white/40 bg-transparent text-white hover:bg-white hover:text-black rounded-full px-5 py-2.5 md:py-3 h-auto text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase flex items-center gap-2 transition-all duration-300 group w-fit">
+                        <Button asChild variant="palmSecondary" className="border-white/40 text-white text-sm">
                           <Link to={`/${exp.id}`}>
                             Explore {exp.title.split(' ')[0]}
                             <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />

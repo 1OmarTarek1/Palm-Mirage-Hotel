@@ -52,7 +52,7 @@ export default function ActivitiesSection() {
               <motion.div>
                 <Button 
                    asChild
-                   className="rounded-full px-6 py-5 bg-secondary/70 hover:bg-secondary text-white text-base transition-colors shadow-lg"
+                   variant="palmPrimary"
                 >
                   <Link to="/services/activities">Discover More</Link>
                 </Button>
