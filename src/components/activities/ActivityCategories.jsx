@@ -145,7 +145,7 @@ export default function ActivityCategories({ active, onChange }) {
         <div className="text-center mt-6">
           <button
             onClick={() => onChange(null)}
-            className="text-xs text-muted-foreground hover:text-secondary transition-colors underline underline-offset-4"
+            className="text-xs text-muted-foreground hover:text-secondary transition-colors underline underline-offset-4 cursor-pointer"
           >
             Show All Activities
           </button>
