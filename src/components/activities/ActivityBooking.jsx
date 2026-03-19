@@ -2,9 +2,18 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { ACTIVITIES_DATA } from "@/data/activitiesData";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ActivityBooking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +25,7 @@ export default function ActivityBooking() {
         { position: "top-right", autoClose: 3000 }
       );
       e.target.reset();
+      setSelectedActivity("");
     } catch {
       toast.error("Failed to send inquiry. Please try again.");
     } finally {
@@ -89,20 +99,22 @@ export default function ActivityBooking() {
                 <label htmlFor="activity" className="block text-[12px] font-bold text-muted-foreground">
                   Activity*
                 </label>
-                <select
-                  id="activity"
-                  name="activity"
-                  autoComplete="off"
+                <Select 
+                  value={selectedActivity} 
+                  onValueChange={setSelectedActivity}
                   required
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none text-muted-foreground"
                 >
-                  <option value="">— Choose an activity —</option>
-                  {ACTIVITIES_DATA.map((act) => (
-                    <option key={act.id} value={act.id}>
-                      {act.title}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full h-12 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-muted-foreground">
+                    <SelectValue placeholder="— Choose an activity —" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACTIVITIES_DATA.map((act) => (
+                      <SelectItem key={act.id} value={act.id}>
+                        {act.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <label htmlFor="date" className="block text-[12px] font-bold text-muted-foreground">
@@ -131,10 +143,11 @@ export default function ActivityBooking() {
             </div>
 
             <div className="flex justify-center pt-4">
-              <button
+              <Button
+                variant="palmPrimary"
                 type="submit"
                 disabled={isSubmitting}
-                className="px-10 py-4 bg-secondary/80 hover:bg-secondary disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 uppercase tracking-widest text-[13px] flex items-center gap-2"
+                className="px-10 py-7 rounded-full text-[13px] font-bold tracking-widest uppercase flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -144,7 +157,7 @@ export default function ActivityBooking() {
                 ) : (
                   "Submit Inquiry"
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
