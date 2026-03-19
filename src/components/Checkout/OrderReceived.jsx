@@ -1,13 +1,86 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { pdf } from '@react-pdf/renderer';
+import InvoicePDF from './InvoicePDF';
 
 const OrderReceived = ({ orderReceived }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
   if (!orderReceived) return null;
 
+  const handleDownloadPDF = async () => {
+    setIsGenerating(true);
+    try {
+      const blob = await pdf(<InvoicePDF orderReceived={orderReceived} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Hotel-Invoice-${orderReceived.orderNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-      <div className="space-y-8">
-        <p className="text-lg text-muted-foreground">Thank you. Your order has been received.</p>
+    <div className="space-y-12 invoice-container relative">
+      <style>
+        {`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .invoice-container, .invoice-container * {
+              visibility: visible;
+            }
+            .invoice-container {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              padding: 20px;
+            }
+            .no-print {
+              display: none !important;
+            }
+          }
+          /* PDF Color Overrides (html2canvas oklab fix): Force HEX/RGBA ONLY when exporting */
+        `}
+      </style>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-serif text-foreground">Success!</h1>
+          <p className="text-lg text-muted-foreground italic">Thank you. Your order has been received.</p>
+        </div>
         
+        <button
+          onClick={handleDownloadPDF}
+          disabled={isGenerating}
+          data-html2canvas-ignore="true"
+          className="no-print flex items-center justify-center gap-2 px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-all border border-primary/20 font-medium group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isGenerating ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Generating PDF...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Download Invoice (PDF)</span>
+            </>
+          )}
+        </button>
+      </div>        
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-8 border-y border-border">
           <div className="space-y-1">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Order Number:</p>
@@ -26,30 +99,29 @@ const OrderReceived = ({ orderReceived }) => {
             <p className="text-sm font-bold text-foreground">{orderReceived.paymentMethod}</p>
           </div>
         </div>
-      </div>
 
       <div className="space-y-8">
         <h2 className="text-3xl font-serif text-foreground">Order Details</h2>
         <div className="border border-border rounded-lg overflow-hidden">
           <table className="w-full text-sm text-left">
-            <thead className="bg-muted text-muted-foreground uppercase text-[10px] tracking-wider">
+            <thead className="bg-primary/70 text-white uppercase text-[11px] font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4 font-medium border-b border-border">Product</th>
                 <th className="px-6 py-4 font-medium border-b border-border text-right">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border border-color-primary/70">
               <tr>
-                <td className="px-6 py-8 text-muted-foreground">
+                <td className="px-6 py-5 text-muted-foreground">
                   Summit View King Room <span className="text-foreground font-medium ml-1">× 1</span>
                 </td>
-                <td className="px-6 py-8 text-right text-foreground font-medium italic">$120.00</td>
+                <td className="px-6 py-5 text-right text-foreground font-medium italic">$120.00</td>
               </tr>
               <tr>
-                <td className="px-6 py-8 text-muted-foreground">
+                <td className="px-6 py-5 text-muted-foreground">
                   Summit View King Room <span className="text-foreground font-medium ml-1">× 1</span>
                 </td>
-                <td className="px-6 py-8 text-right text-foreground font-medium italic">$100.00</td>
+                <td className="px-6 py-5 text-right text-foreground font-medium italic">$100.00</td>
               </tr>
               <tr>
                 <th className="px-6 py-4 font-bold text-foreground">Subtotal:</th>
@@ -59,9 +131,9 @@ const OrderReceived = ({ orderReceived }) => {
                 <th className="px-6 py-4 font-bold text-foreground">Payment method:</th>
                 <td className="px-6 py-4 text-right text-muted-foreground">Check payments</td>
               </tr>
-              <tr className="bg-muted">
-                <th className="px-6 py-6 font-bold text-lg text-foreground">Total:</th>
-                <td className="px-6 py-6 text-right text-foreground font-bold text-lg italic">$220.00</td>
+              <tr className="bg-primary/70">
+                <th className="px-6 py-4 font-bold text-lg text-white">Total:</th>
+                <td className="px-6 py-4 text-right text-white font-bold text-lg italic">$220.00</td>
               </tr>
             </tbody>
           </table>
