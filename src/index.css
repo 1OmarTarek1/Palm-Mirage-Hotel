@@ -189,20 +189,20 @@ body {
 
 
 .Toastify__close-button { @apply 
-    !text-foreground 
-    !opacity-50 
-    hover:!opacity-100 
+    text-foreground!
+    opacity-50! 
+    hover:opacity-100! 
     transition-opacity 
-    !self-center 
-    !p-1  
-    !flex 
-    !items-center 
-    !justify-center
+    self-center! 
+    p-1!  
+    flex! 
+    items-center! 
+    justify-center!
 ;}
 
 .Toastify__close-button > svg { @apply 
-  !w-4 
-  !h-4;
+  w-4!
+  h-4!;
 }
 
 
