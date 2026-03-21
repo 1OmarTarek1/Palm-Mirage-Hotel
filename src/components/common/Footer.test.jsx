@@ -1,9 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import Footer from './Footer';
 
-// Mock framer-motion
+// Mock everything BEFORE importing the component
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }) => <div {...props}>{children}</div>,
@@ -12,38 +10,35 @@ jest.mock('framer-motion', () => ({
   },
 }));
 
-// Mock lucide-react
 jest.mock('lucide-react', () => ({
-  MapPin: () => <div data-testid="map-pin" />,
-  Phone: () => <div data-testid="phone" />,
-  Mail: () => <div data-testid="mail" />,
-  Facebook: () => <div data-testid="facebook" />,
-  Twitter: () => <div data-testid="twitter" />,
-  Linkedin: () => <div data-testid="linkedin" />,
-  Instagram: () => <div data-testid="instagram" />,
-  Hotel: () => <div data-testid="hotel" />,
-  ChevronUp: () => <div data-testid="chevron-up" />,
+  MapPin: () => <div />,
+  Phone: () => <div />,
+  Mail: () => <div />,
+  Facebook: () => <div />,
+  Twitter: () => <div />,
+  Linkedin: () => <div />,
+  Instagram: () => <div />,
+  Hotel: () => <div />,
+  ChevronUp: () => <div />,
 }));
 
-// Mock AnimatedScrollToTop
-jest.mock('./AnimatedScrollToTop', () => () => <div data-testid="scroll-to-top" />);
+jest.mock('react-router-dom', () => ({
+  NavLink: ({ children, to }) => <a href={to}>{children}</a>,
+}));
 
-describe('Footer component', () => {
-  test('renders hotel name', () => {
-    render(
-      <MemoryRouter>
-        <Footer />
-      </MemoryRouter>
-    );
+jest.mock('./AnimatedScrollToTop', () => () => <div />);
+jest.mock('@/assets/logo.png', () => 'test-file-stub');
+
+const Footer = require('./Footer').default;
+
+describe('Footer component final attempt', () => {
+  test('renders correctly', () => {
+    render(<Footer />);
     expect(screen.getByText('Palm Mirage Hotel')).toBeInTheDocument();
   });
 
-  test('updates email input', () => {
-    render(
-      <MemoryRouter>
-        <Footer />
-      </MemoryRouter>
-    );
+  test('email input works', () => {
+    render(<Footer />);
     const input = screen.getByPlaceholderText('Your email');
     fireEvent.change(input, { target: { value: 'test@example.com' } });
     expect(input.value).toBe('test@example.com');
