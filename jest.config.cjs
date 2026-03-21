@@ -10,6 +10,6 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(input-otp|lucide-react|@radix-ui)/)"
+    "node_modules/(?!(input-otp|lucide-react|@radix-ui|@hookform|clsx|tailwind-merge)/)"
   ],
 };
