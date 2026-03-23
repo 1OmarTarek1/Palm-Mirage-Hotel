@@ -1,16 +1,25 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 import AuthButton from "@/components/auth/AuthButton";
 import AuthHeader from "@/components/auth/AuthHeader";
 import PasswordField from "@/components/auth/PasswordField";
 import FormInputField from "@/components/auth/FormInputField";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { loginSchema } from "@/features/auth/authSchema";
+import { fetchUserProfile } from "@/store/slices/authSlice";
+import { toast } from "react-toastify";
 
 export default function Login() {
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [serverError, setServerError] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -20,12 +29,32 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (formData) => {
+    setServerError("");
     try {
-      console.log(data);
-      navigate("/")
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_BASE}/auth/login`,
+        formData
+      );
+
+      Cookies.set("accessToken", data.data.accessToken, {
+        expires: 10,
+        secure: true,
+        sameSite: "Strict",
+      });
+      Cookies.set("refreshToken", data.data.refreshToken, {
+        expires: 365,
+        secure: true,
+        sameSite: "Strict",
+      });
+
+      await dispatch(fetchUserProfile()).unwrap();
+      toast.success("Welcome back! You're now logged in.");
+      navigate("/");
     } catch (error) {
-      console.log(error);
+      const msg = error.response?.data?.message || "Login failed. Please try again.";
+      setServerError(msg);
+      toast.error(msg);
     }
   };
 
@@ -62,9 +91,23 @@ export default function Login() {
           Forgot your password?
         </Link>
 
+        {serverError && (
+          <p className="text-sm text-red-500 text-center">{serverError}</p>
+        )}
+
         {/*  ---------- Submit Button  ---------- */}
         <AuthButton isSubmitting={isSubmitting}>Login</AuthButton>
       </form>
+
+      <div className="relative flex items-center gap-4">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground uppercase tracking-wider">
+          or
+        </span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
+      <GoogleAuthButton mode="login" />
     </section>
   );
 }
