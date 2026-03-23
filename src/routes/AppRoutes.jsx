@@ -64,6 +64,7 @@ export const routes = createBrowserRouter([
     ],
   },
 
+  // ProtectedRoute for authenticated users (e.g., account management, bookings)
   // {
   //   path: "/account",
   //   element: (
