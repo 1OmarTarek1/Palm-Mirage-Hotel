@@ -4,6 +4,7 @@ import ThemeToggle from '../ThemeToggle';
 import LanguageToggle from '../LanguageToggle';
 import LoginButton from '../LoginButton';
 import CartButton from '../CartButton';
+import WishlistButton from '../WishlistButton';
 
 const actionVariants = {
   hidden: { y: 20, opacity: 0 },
@@ -17,7 +18,9 @@ const actionVariants = {
 function NavActions({ activeMenu, onHover, onLeave }) {
   return (
     <div className="hidden md:flex items-center gap-2 lg:gap-3">
-      
+      <motion.div variants={actionVariants}>
+        <WishlistButton />
+      </motion.div>
       <motion.div variants={actionVariants}>
         <CartButton />
       </motion.div>
