@@ -1,16 +1,23 @@
 import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch , useSelector} from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import { toast } from "react-toastify";
 import { useFlyToCart } from "@/hooks/useFlyToCart";
 import { Button } from "@/components/ui/button";
-import { BedDouble, Maximize2, Users, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  toggleWishlist,
+  selectIsInWishlist,
+} from '@/store/slices/wishlistSlice';
+import { BedDouble, Maximize2, Users, ShoppingCart, Heart } from "lucide-react";
 
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
   const { flyToCart } = useFlyToCart();
 
+  const isInWishlist = useSelector((state) =>
+    selectIsInWishlist(state, room.id)
+  );
   if (!room) return null;
 
   const handleAddToCart = (e) => {
@@ -29,9 +36,22 @@ export default function RoomCard({ room, className }) {
     );
     toast.success(`${room.name} added to cart`);
   };
-
+ const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    dispatch(toggleWishlist(room));
+    toast.success(
+      isInWishlist
+        ? `${room.name} removed from wishlist`
+        :` ${room.name} added to wishlist`
+    );
+  };
   return (
-    <div className={cn("bg-card rounded-3xl overflow-hidden shadow-sm flex flex-col h-full select-none group border border-transparent hover:border-primary transition-all duration-300", className)}>
+    <div
+      className={cn(
+        'bg-card rounded-3xl overflow-hidden shadow-sm flex flex-col h-full select-none group border border-transparent hover:border-primary transition-all duration-300',
+        className
+      )}
+    >
       {/* Image Container */}
       <div className="relative overflow-hidden aspect-4/3 rounded-t-3xl text-left">
         <Link to={`/rooms/${room.id}`} className="block w-full h-full">
@@ -51,7 +71,10 @@ export default function RoomCard({ room, className }) {
         <div className="absolute bottom-0 left-0 bg-card px-5 py-3 rounded-tr-3xl transition-colors duration-300">
           <p className="text-foreground font-semibold text-base leading-none">
             <span className="text-xl font-bold">${room.price}.00</span>
-            <span className="text-sm font-normal text-muted-foreground"> /night</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {' '}
+              /night
+            </span>
           </p>
         </div>
       </div>
@@ -70,7 +93,7 @@ export default function RoomCard({ room, className }) {
           <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
             <BedDouble size={16} className="text-primary/60" />
             <span>
-              {room.beds} {room.beds > 1 ? "beds" : "bed"}
+              {room.beds} {room.beds > 1 ? 'beds' : 'bed'}
             </span>
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
@@ -80,7 +103,7 @@ export default function RoomCard({ room, className }) {
           <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
             <Users size={16} className="text-primary/60" />
             <span>
-              {room.guests} {room.guests > 1 ? "adults" : "adult"}
+              {room.guests} {room.guests > 1 ? 'adults' : 'adult'}
             </span>
           </div>
         </div>
@@ -88,12 +111,7 @@ export default function RoomCard({ room, className }) {
         {/* Buttons & Partners */}
         <div className="flex items-center justify-between gap-4 mt-auto pt-2">
           <div className="flex items-center gap-2">
-            <Button
-              asChild
-              variant="palmSecondary"
-              size="sm"
-              className="px-7"
-            >
+            <Button asChild variant="palmSecondary" size="sm" className="px-7">
               <Link to={`/rooms/${room.id}`}>Book Now</Link>
             </Button>
             <Button
@@ -106,8 +124,21 @@ export default function RoomCard({ room, className }) {
             >
               <ShoppingCart size={16} />
             </Button>
+            <Button
+              onClick={handleToggleWishlist}
+              variant="palmSecondary"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              aria-label="Toggle wishlist"
+              title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <Heart
+                size={16}
+                className={isInWishlist ? 'fill-current text-red-500' : ''}
+              />
+            </Button>
           </div>
-          
+
           {room.partners && room.partners.length > 0 && (
             <div className="flex items-center gap-2">
               {room.partners.map((partner) => (
