@@ -45,7 +45,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
-import { useFlyToCart } from "@/context/FlyToCartContext";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 import {
   MOCK_ROOM_DATA,
   ROOM_AMENITIES,
@@ -189,19 +189,13 @@ export default function RoomDetails() {
         nights: nights
       }));
 
-      toast.success("Room added to cart! Redirecting...", {
-        position: "top-right",
-        autoClose: 1500,
-      });
+      toast.success("Room added to cart! Redirecting...");
 
       setTimeout(() => {
         navigate("/cart");
       }, 1500);
     } catch (error) {
-      toast.error("Booking failed. Please try again.", {
-        position: "top-right",
-        autoClose: 4000,
-      });
+      toast.error("Booking failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

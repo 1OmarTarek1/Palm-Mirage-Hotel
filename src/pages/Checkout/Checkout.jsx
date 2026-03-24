@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import OrderSummary from '@/components/Checkout/OrderSummary';
 import CheckoutForm from '@/components/Checkout/CheckoutForm';
 import OrderReceived from '@/components/Checkout/OrderReceived';
@@ -140,12 +141,14 @@ const Checkout = () => {
               className="bg-background w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative z-10 custom-scrollbar"
             >
               <div className="sticky top-0 right-0 z-20 flex justify-end p-6 bg-linear-to-b from-background via-background/80 to-transparent pointer-events-none">
-                <button 
+                <Button 
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 bg-muted/50 hover:bg-muted rounded-full transition-colors pointer-events-auto shadow-sm border border-border cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  className="bg-muted/50 hover:bg-muted border border-border pointer-events-auto shadow-sm"
                 >
                   <X className="w-5 h-5 text-muted-foreground" />
-                </button>
+                </Button>
               </div>
 
               <div className="px-8 pb-12 md:px-16 md:pb-20 -mt-12">

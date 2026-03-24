@@ -18,6 +18,8 @@ import {
   GUEST_COUNT_OPTIONS,
 } from "@/utils/constants";
 import { Button } from "../../components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 
 export default function Meetings() {
@@ -41,10 +43,7 @@ export default function Meetings() {
     // Simulate API call
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success("Consultation request sent successfully! We'll contact you soon.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      toast.success("Consultation request sent successfully! We'll contact you soon.");
       e.target.reset();
     } catch (error) {
       toast.error("Failed to send request. Please try again later.");
@@ -192,18 +191,18 @@ export default function Meetings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Name*</label>
-                <input
+                <Input
                   type="text"
                   required
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all placeholder:text-muted-foreground/30"
+                  variant="palm"
                 />
               </div>
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Email*</label>
-                <input
+                <Input
                   type="email"
                   required
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all placeholder:text-muted-foreground/30"
+                  variant="palm"
                 />
               </div>
             </div>
@@ -211,18 +210,19 @@ export default function Meetings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Phone Number*</label>
-                <input
+                <Input
                   type="tel"
                   required
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all placeholder:text-muted-foreground/30"
+                  variant="palm"
                 />
               </div>
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Preferred Event Date</label>
                 <div className="relative">
-                  <input
+                  <Input
                     type="date"
-                    className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none"
+                    variant="palm"
+                    className="appearance-none"
                   />
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default function Meetings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Type of Event*</label>
-                <select className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none text-muted-foreground">
+                <select className="w-full h-12 px-4 rounded-xl bg-transparent border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none text-muted-foreground">
                   <option>—Please choose an option—</option>
                   {EVENT_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -242,7 +242,7 @@ export default function Meetings() {
               </div>
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Estimated Number of Guests*</label>
-                <select className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none text-muted-foreground">
+                <select className="w-full h-12 px-4 rounded-xl bg-transparent border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all appearance-none text-muted-foreground">
                   <option>—Please choose an option—</option>
                   {GUEST_COUNT_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -255,10 +255,10 @@ export default function Meetings() {
 
             <div className="space-y-2">
               <label className="block text-[12px] font-bold text-muted-foreground">Additional Requests / Notes</label>
-              <textarea
+              <Textarea
                 rows={5}
-                className="w-full p-4 rounded-xl bg-card border border-border/40 focus:border-[#8c9e8d] focus:ring-1 focus:ring-[#8c9e8d] outline-none transition-all placeholder:text-muted-foreground/30 resize-none"
-              ></textarea>
+                className="resize-none"
+              ></Textarea>
             </div>
 
             <div className="flex justify-center pt-4">

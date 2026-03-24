@@ -12,7 +12,7 @@ export default function AuthButton({
       variant="palmPrimary"
       size="default"
       disabled={isSubmitting}
-      className="w-full md:h-13 rounded-lg"
+      className="w-full md:h-12 rounded-md"
     >
       {isSubmitting ? (
         <>
