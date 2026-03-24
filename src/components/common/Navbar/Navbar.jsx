@@ -9,6 +9,7 @@ import MobileNav from "./Mobile/MobileNav";
 import NavActions from "./Desktop/NavActions";
 import MegaMenu from "./Desktop/MegaMenu";
 import CartButton from "./CartButton";
+import LoginButton from "./LoginButton";
 
 const CIRCLE_RADIUS = 28;
 
@@ -184,6 +185,7 @@ export default function Navbar() {
               className="flex items-center md:hidden gap-2"
             >
               <CartButton />
+              <LoginButton />
               <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />
             </motion.div>
           </motion.div>

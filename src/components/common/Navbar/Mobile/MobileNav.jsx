@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AUTH_PATHS } from "../navLinks";
 import ThemeToggle from "../ThemeToggle";
 import LanguageToggle from "../LanguageToggle";
 import MobileAccordion from "./MobileAccordion";
@@ -80,20 +78,6 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
               />
               
               <ThemeToggle mobile />
-
-              <NavLink
-                to={AUTH_PATHS.login}
-                onClick={onClose}
-                className={({ isActive }) => `
-                  flex items-center gap-4 p-4 rounded-2xl transition-all
-                  ${isActive ? "bg-primary/20 text-primary shadow-lg" : "text-white/60 hover:bg-white/10 hover:text-white"}
-                `}
-              >
-                <div className="shrink-0">
-                  <LogIn size={20} />
-                </div>
-                <span className="font-semibold">Login</span>
-              </NavLink>
             </motion.div>
           </div>
         </motion.div>

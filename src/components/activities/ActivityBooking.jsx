@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ActivityBooking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,8 +23,7 @@ export default function ActivityBooking() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       toast.success(
-        "Your activity inquiry has been sent! We'll contact you shortly.",
-        { position: "top-right", autoClose: 3000 }
+        "Your activity inquiry has been sent! We'll contact you shortly."
       );
       e.target.reset();
       setSelectedActivity("");
@@ -70,26 +71,26 @@ export default function ActivityBooking() {
                 <label htmlFor="name" className="block text-[12px] font-bold text-muted-foreground">
                   Name*
                 </label>
-                <input
+                <Input
                   id="name"
                   name="name"
                   type="text"
                   autoComplete="name"
                   required
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-foreground placeholder:text-muted-foreground/30"
+                  variant="palm"
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-[12px] font-bold text-muted-foreground">
                   Email*
                 </label>
-                <input
+                <Input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-foreground placeholder:text-muted-foreground/30"
+                  variant="palm"
                 />
               </div>
             </div>
@@ -104,7 +105,7 @@ export default function ActivityBooking() {
                   onValueChange={setSelectedActivity}
                   required
                 >
-                  <SelectTrigger className="w-full h-12 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-muted-foreground">
+                  <SelectTrigger className="w-full h-12 rounded-xl bg-transparent border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-muted-foreground">
                     <SelectValue placeholder="— Choose an activity —" />
                   </SelectTrigger>
                   <SelectContent>
@@ -120,12 +121,13 @@ export default function ActivityBooking() {
                 <label htmlFor="date" className="block text-[12px] font-bold text-muted-foreground">
                   Preferred Date
                 </label>
-                <input
+                <Input
                   id="date"
                   name="date"
                   type="date"
                   autoComplete="off"
-                  className="w-full h-12 px-4 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none text-muted-foreground"
+                  variant="palm"
+                  className="appearance-none text-muted-foreground"
                 />
               </div>
             </div>
@@ -134,11 +136,11 @@ export default function ActivityBooking() {
               <label htmlFor="notes" className="block text-[12px] font-bold text-muted-foreground">
                 Notes / Special Requests
               </label>
-              <textarea
+              <Textarea
                 id="notes"
                 name="notes"
                 rows={5}
-                className="w-full p-4 rounded-xl bg-card border border-border/40 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-foreground placeholder:text-muted-foreground/30 resize-none"
+                className="resize-none"
               />
             </div>
 

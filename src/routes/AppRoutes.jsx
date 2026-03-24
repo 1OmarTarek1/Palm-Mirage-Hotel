@@ -19,6 +19,8 @@ import Menu from '@/pages/menu/Menu';
 import Activities from '@/pages/Activities/Activities';
 import ShopCart from '@/pages/shopcart/ShopCart';
 import Checkout from '@/pages/Checkout/Checkout';
+import Profile from '@/pages/Profile/Profile';
+import Settings from '@/pages/Settings/Settings';
 
 // Auth Pages
 import ForgotPassword from "@/pages/Auth/ForgotPassword";
@@ -49,6 +51,8 @@ export const routes = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'cart', element: <ShopCart /> },
       { path: 'cart/checkout', element: <Checkout /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'settings', element: <Settings /> },
     ],
   },
 

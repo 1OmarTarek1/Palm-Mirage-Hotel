@@ -61,7 +61,7 @@ const CheckoutForm = ({ amount, paymentMethod, resetForm, onSuccess, getValues, 
         type="submit"
         disabled={loading}
         variant="palmPrimary"
-        className="w-full py-6 rounded-full font-bold transition-all shadow-lg hover:shadow-primary/20 tracking-wider uppercase text-sm"
+        className="w-full h-12 rounded-md font-bold transition-all shadow-lg hover:shadow-primary/20 tracking-wider uppercase text-sm"
       >
         {loading ? (
           <div className="flex items-center gap-2">

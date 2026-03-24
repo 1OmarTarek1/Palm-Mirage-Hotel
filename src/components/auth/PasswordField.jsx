@@ -23,7 +23,7 @@ export default function PasswordField({
           id={id}
           type={showPassword ? "text" : "password"}
           placeholder={placeholder}
-          className="bg-background border-border focus:ring-2 focus:ring-primary pr-12 md:py-6"
+          className="pr-12 md:py-6"
           {...register}
         />
 

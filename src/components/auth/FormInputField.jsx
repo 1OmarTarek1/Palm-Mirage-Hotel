@@ -24,7 +24,7 @@ export default function FormInputField({
         type={type}
         placeholder={placeholder}
         className={cn(
-          "bg-background border-border focus:ring-2 focus:ring-primary md:py-6",
+          "md:py-6",
           className,
         )}
         {...register}

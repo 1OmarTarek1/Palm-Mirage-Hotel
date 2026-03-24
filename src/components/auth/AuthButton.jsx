@@ -9,8 +9,10 @@ export default function AuthButton({
   return (
     <Button
       type="submit"
+      variant="palmPrimary"
+      size="default"
       disabled={isSubmitting}
-      className="bg-primary text-primary-foreground md:py-6 rounded-lg hover:bg-secondary transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground "
+      className="w-full md:h-12 rounded-md"
     >
       {isSubmitting ? (
         <>

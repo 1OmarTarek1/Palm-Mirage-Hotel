@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from './InvoicePDF';
+import { Button } from '@/components/ui/button';
 
 const OrderReceived = ({ orderReceived }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,11 +58,12 @@ const OrderReceived = ({ orderReceived }) => {
           <p className="text-lg text-muted-foreground italic">Thank you. Your order has been received.</p>
         </div>
         
-        <button
+        <Button
           onClick={handleDownloadPDF}
           disabled={isGenerating}
-          data-html2canvas-ignore="true"
-          className="no-print flex items-center justify-center gap-2 px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-all border border-primary/20 font-medium group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="light"
+          size="default"
+          className="no-print flex items-center justify-center gap-2 group"
         >
           {isGenerating ? (
             <>
@@ -79,7 +81,7 @@ const OrderReceived = ({ orderReceived }) => {
               <span>Download Invoice (PDF)</span>
             </>
           )}
-        </button>
+        </Button>
       </div>        
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-8 border-y border-border">
           <div className="space-y-1">

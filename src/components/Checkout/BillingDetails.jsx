@@ -1,6 +1,7 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
@@ -36,7 +37,7 @@ const BillingDetails = ({ register, errors, control }) => {
               id="first-name" 
               {...register('firstName')} 
               autoComplete="given-name"
-              className={`h-12 bg-card/50 border-border ${errors.firstName ? 'border-destructive' : ''}`} 
+              className={errors.firstName ? 'border-destructive' : ''} 
             />
             {errors.firstName && <p className="text-destructive text-xs">{errors.firstName.message}</p>}
           </div>
@@ -46,7 +47,7 @@ const BillingDetails = ({ register, errors, control }) => {
               id="last-name" 
               {...register('lastName')} 
               autoComplete="family-name"
-              className={`h-12 bg-card/50 border-border ${errors.lastName ? 'border-destructive' : ''}`} 
+              className={errors.lastName ? 'border-destructive' : ''} 
             />
             {errors.lastName && <p className="text-destructive text-xs">{errors.lastName.message}</p>}
           </div>
@@ -58,7 +59,6 @@ const BillingDetails = ({ register, errors, control }) => {
             id="company" 
             {...register('company')} 
             autoComplete="organization"
-            className="h-12 bg-card/50 border-border" 
           />
         </div>
 
@@ -69,7 +69,7 @@ const BillingDetails = ({ register, errors, control }) => {
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger className={errors.country ? 'border-destructive' : ''}>
+                <SelectTrigger className={`h-12 ${errors.country ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Select a country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -90,7 +90,7 @@ const BillingDetails = ({ register, errors, control }) => {
             {...register('address')} 
             autoComplete="address-line1"
             placeholder="House number and street name" 
-            className={`h-12 bg-card/50 border-border ${errors.address ? 'border-destructive' : ''}`} 
+            className={errors.address ? 'border-destructive' : ''} 
           />
           {errors.address && <p className="text-destructive text-xs">{errors.address.message}</p>}
           <Input 
@@ -98,7 +98,6 @@ const BillingDetails = ({ register, errors, control }) => {
             {...register('apartment')} 
             autoComplete="address-line2"
             placeholder="Apartment, suite, unit, etc. (optional)" 
-            className="h-12 bg-card/50 border-border" 
           />
         </div>
 
@@ -108,7 +107,7 @@ const BillingDetails = ({ register, errors, control }) => {
             id="city" 
             {...register('city')} 
             autoComplete="address-level2"
-            className={`h-12 bg-card/50 border-border ${errors.city ? 'border-destructive' : ''}`} 
+            className={errors.city ? 'border-destructive' : ''} 
           />
           {errors.city && <p className="text-destructive text-xs">{errors.city.message}</p>}
         </div>
@@ -120,7 +119,7 @@ const BillingDetails = ({ register, errors, control }) => {
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger className={errors.state ? 'border-destructive' : ''}>
+                <SelectTrigger className={`h-12 ${errors.state ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Select a state" />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,7 +139,7 @@ const BillingDetails = ({ register, errors, control }) => {
             id="postcode" 
             {...register('postcode')} 
             autoComplete="postal-code"
-            className={`h-12 bg-card/50 border-border ${errors.postcode ? 'border-destructive' : ''}`} 
+            className={errors.postcode ? 'border-destructive' : ''} 
           />
           {errors.postcode && <p className="text-destructive text-xs">{errors.postcode.message}</p>}
         </div>
@@ -152,7 +151,7 @@ const BillingDetails = ({ register, errors, control }) => {
             type="tel" 
             {...register('phone')} 
             autoComplete="tel"
-            className={`h-12 bg-card/50 border-border ${errors.phone ? 'border-destructive' : ''}`} 
+            className={errors.phone ? 'border-destructive' : ''} 
           />
           {errors.phone && <p className="text-destructive text-xs">{errors.phone.message}</p>}
         </div>
@@ -164,7 +163,7 @@ const BillingDetails = ({ register, errors, control }) => {
             type="email" 
             {...register('email')} 
             autoComplete="email"
-            className={`h-12 bg-card/50 border-border ${errors.email ? 'border-destructive' : ''}`} 
+            className={errors.email ? 'border-destructive' : ''} 
           />
           {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
         </div>
@@ -188,11 +187,10 @@ const BillingDetails = ({ register, errors, control }) => {
           <h3 className="text-xl font-header text-foreground">Additional Information</h3>
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-muted-foreground">Order notes (optional)</Label>
-            <textarea 
+            <Textarea 
               id="notes" 
               {...register('orderNotes')}
               placeholder="Notes about your order, e.g. special notes for delivery." 
-              className="w-full min-h-[120px] p-4 rounded-md border border-border bg-card/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
             />
           </div>
         </div>

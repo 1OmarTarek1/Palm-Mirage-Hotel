@@ -1,22 +1,36 @@
 import React from "react"
+import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-const Input = React.forwardRef((props, ref) => {
-  const { className, type, ...rest } = props
+const inputVariants = cva(
+  "flex w-full transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default:
+          "h-9 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary md:text-sm",
+        palm:
+          "h-12 px-4 rounded-md bg-transparent border border-border focus:border-secondary focus:ring-1 focus:ring-secondary text-foreground placeholder:text-muted-foreground placeholder:text-sm",
+      },
+    },
+    defaultVariants: {
+      variant: "palm",
+    },
+  }
+)
 
+
+const Input = React.forwardRef(({ className, type, variant, ...props }, ref) => {
   return (
     <input
       type={type}
-      className={cn(
-        "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        className
-      )}
+      className={cn(inputVariants({ variant, className }))}
       ref={ref}
-      {...rest}
+      {...props}
     />
   )
 })
 
 Input.displayName = "Input"
 
-export { Input }
+export { Input, inputVariants }

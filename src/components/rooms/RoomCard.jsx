@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import { toast } from "react-toastify";
-import { useFlyToCart } from "@/context/FlyToCartContext";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 import { Button } from "@/components/ui/button";
 import { BedDouble, Maximize2, Users, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";

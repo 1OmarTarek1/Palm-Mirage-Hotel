@@ -6,7 +6,7 @@ import AuthImage from "../assets/auth/auth img.jpg";
 export default function AuthLayout() {
   useScrollToTop();
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex justify-center p-4">
       <div className="w-full grid grid-cols-1 lg:grid-cols-2">
         {/* Left Side Outlet*/}
         <div className="flex items-center justify-center p-6 md:p-10">
@@ -16,7 +16,7 @@ export default function AuthLayout() {
         </div>
 
         {/* Right Side  */}
-        <div className="hidden lg:block relative rounded-xl overflow-hidden h-[90vh]">
+        <div className="hidden lg:block relative rounded-xl overflow-hidden h-[90vh] sticky top-[5vh] self-start">
           <img
             src={AuthImage}
             alt="auth"

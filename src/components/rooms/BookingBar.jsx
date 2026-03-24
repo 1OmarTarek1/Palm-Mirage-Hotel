@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "./booking/DatePicker";
 import BookingCounter from "./booking/BookingCounter";
-import { useFlyToCart } from "@/context/FlyToCartContext";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 import { cn } from "@/lib/utils";
 
 export default function BookingBar({ className, variant = "overlay" }) {

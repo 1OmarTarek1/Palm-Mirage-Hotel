@@ -1,15 +1,20 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 import AuthButton from "@/components/auth/AuthButton";
 import AuthHeader from "@/components/auth/AuthHeader";
 import PasswordField from "@/components/auth/PasswordField";
 import FormInputField from "@/components/auth/FormInputField";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { registerSchema } from "@/features/auth/authSchema";
 
 export default function Register() {
   const navigate = useNavigate();
+  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -27,12 +32,16 @@ export default function Register() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (formData) => {
+    setServerError("");
     try {
-      console.log(data);
+      await axios.post(`${import.meta.env.VITE_API_BASE}/auth/signup`, formData);
+      toast.success("Account created! Please check your email to verify.");
       navigate("/auth/login");
     } catch (error) {
-      console.log(error);
+      const msg = error.response?.data?.message || "Registration failed. Please try again.";
+      setServerError(msg);
+      toast.error(msg);
     }
   };
 
@@ -98,9 +107,23 @@ export default function Register() {
           error={errors.confirmPassword}
         />
 
+        {serverError && (
+          <p className="text-sm text-red-500 text-center">{serverError}</p>
+        )}
+
         {/*  ---------- Submit Button  ---------- */}
         <AuthButton isSubmitting={isSubmitting}>Sign up</AuthButton>
       </form>
+
+      <div className="relative flex items-center gap-4">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground uppercase tracking-wider">
+          or
+        </span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
+      <GoogleAuthButton mode="register" />
     </section>
   );
 }
