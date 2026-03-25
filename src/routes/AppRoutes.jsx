@@ -1,8 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
 
-import AuthLayout from "@/layouts//AuthLayout";
-import MainLayout from "@/layouts/MainLayout.jsx";
-import NotFound from "@/pages/NotFound/NotFound";
+import AuthLayout from '@/layouts//AuthLayout';
+import MainLayout from '@/layouts/MainLayout.jsx';
+import NotFound from '@/pages/NotFound/NotFound';
 
 // Public Pages
 import About from '@/pages/About/About';
@@ -21,18 +21,19 @@ import ShopCart from '@/pages/shopcart/ShopCart';
 import Checkout from '@/pages/Checkout/Checkout';
 import Profile from '@/pages/Profile/Profile';
 import Settings from '@/pages/Settings/Settings';
+import Wishlist from '@/pages/Wishlist/Wishlist';
 
 // Auth Pages
-import ForgotPassword from "@/pages/Auth/ForgotPassword";
-import Login from "@/pages/Auth/Login";
-import Register from "@/pages/Auth/Register";
-import ResetPassword from "@/pages/Auth/ResetPassword";
-import Restaurant from "../pages/Services/Restaurant.jsx";
+import ForgotPassword from '@/pages/Auth/ForgotPassword';
+import Login from '@/pages/Auth/Login';
+import Register from '@/pages/Auth/Register';
+import ResetPassword from '@/pages/Auth/ResetPassword';
+import Restaurant from '../pages/Services/Restaurant.jsx';
 // import ProtectedRoute from './ProtectedRoute'
 
 export const routes = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <MainLayout />,
     errorElement: <NotFound />,
     children: [
@@ -53,18 +54,19 @@ export const routes = createBrowserRouter([
       { path: 'cart/checkout', element: <Checkout /> },
       { path: 'profile', element: <Profile /> },
       { path: 'settings', element: <Settings /> },
+      { path: 'wishlist', element: <Wishlist /> },
     ],
   },
 
   {
-    path: "/auth",
+    path: '/auth',
     element: <AuthLayout />,
     errorElement: <NotFound />,
     children: [
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-      { path: "forgot-password", element: <ForgotPassword /> },
-      { path: "reset-password", element: <ResetPassword /> },
+      { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
+      { path: 'reset-password', element: <ResetPassword /> },
     ],
   },
 
