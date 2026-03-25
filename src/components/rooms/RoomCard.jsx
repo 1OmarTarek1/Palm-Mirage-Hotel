@@ -9,7 +9,7 @@ import {
   toggleWishlist,
   selectIsInWishlist,
 } from '@/store/slices/wishlistSlice';
-import { BedDouble, Maximize2, Users, ShoppingCart, Heart } from "lucide-react";
+import { BedDouble, Maximize2, Users, ShoppingCart, Heart } from 'lucide-react';
 
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
@@ -22,7 +22,7 @@ export default function RoomCard({ room, className }) {
 
   const handleAddToCart = (e) => {
     e.preventDefault();
-    flyToCart(e.currentTarget);
+    flyToCart(e.currentTarget, 'navbar-cart-button');
     dispatch(
       addItem({
         id: room.id,
@@ -36,13 +36,14 @@ export default function RoomCard({ room, className }) {
     );
     toast.success(`${room.name} added to cart`);
   };
- const handleToggleWishlist = (e) => {
+  const handleToggleWishlist = (e) => {
     e.preventDefault();
+    flyToCart(e.currentTarget, 'navbar-wishlist-button');
     dispatch(toggleWishlist(room));
     toast.success(
       isInWishlist
         ? `${room.name} removed from wishlist`
-        :` ${room.name} added to wishlist`
+        : `${room.name} added to wishlist`
     );
   };
   return (
@@ -128,14 +129,11 @@ export default function RoomCard({ room, className }) {
               onClick={handleToggleWishlist}
               variant="palmSecondary"
               size="icon"
-              className="h-9 w-9 shrink-0"
+              className="h-9 w-9 shrink-0 text-primary hover:text-white"
               aria-label="Toggle wishlist"
               title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             >
-              <Heart
-                size={16}
-                className={isInWishlist ? 'fill-current text-red-500' : ''}
-              />
+              <Heart size={16} className="fill-current text-current" />
             </Button>
           </div>
 
