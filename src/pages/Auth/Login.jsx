@@ -9,6 +9,7 @@ import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordField from "@/components/auth/PasswordField";
 import { loginSchema } from "@/features/auth/authSchema";
 
+// -------------------- Login Page Component --------------------  //
 export default function Login() {
   const {
     register,
