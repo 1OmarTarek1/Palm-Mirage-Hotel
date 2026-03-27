@@ -4,10 +4,10 @@ export default function MobileMenuButton({ isOpen, onToggle }) {
   return (
     <motion.button
       onClick={onToggle}
-      className="md:hidden flex items-center justify-center w-10 h-10 text-white rounded-full bg-white/10 border border-white/10 relative"
+      className="md:hidden flex items-center justify-center w-8 h-8 md:w-10 md:h-10 text-white rounded-full bg-white/10 border border-white/10 relative"
       aria-label="Toggle menu"
     >
-      <div className="w-6 h-6 flex flex-col justify-center items-center">
+      <div className="w-5 h-5 md:w-6 md:h-6 flex flex-col justify-center items-center">
         <svg width="24" height="24" viewBox="0 0 24 24" className="text-white">
           <motion.path
             stroke="currentColor"

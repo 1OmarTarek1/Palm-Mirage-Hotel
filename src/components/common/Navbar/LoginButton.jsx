@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { LogIn, User, LogOut, Settings, UserCircle } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useMatch } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import NavTooltip from "./NavTooltip";
@@ -13,6 +13,8 @@ export default function LoginButton() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef(null);
+  const isProfilePage = useMatch("/profile");
+  const isSettingsPage = useMatch("/settings");
 
   const handleEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -36,13 +38,13 @@ export default function LoginButton() {
         <NavLink
           to="/auth/login"
           className={({ isActive }) => `
-            flex items-center justify-center w-10 h-10 rounded-full border border-white/10
+            flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/10
             transition-all duration-300 hover:bg-primary/20
-            ${isActive ? "text-primary bg-primary/20 shadow-inner" : "text-white/60 bg-primary/5"}
+            ${isActive ? "text-primary bg-primary/20 shadow-inner border border-primary/20" : "text-white/60 bg-primary/5"}
           `}
         >
           <motion.div>
-            <LogIn size={18} />
+            <LogIn className="w-4 h-4 md:w-[18px] md:h-[18px]" />
           </motion.div>
         </NavLink>
       </NavTooltip>
@@ -61,7 +63,12 @@ export default function LoginButton() {
       onMouseLeave={handleLeave}
     >
       <button
-        className="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 transition-all duration-300 hover:bg-primary/20 overflow-hidden bg-primary/5 cursor-pointer"
+        className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border transition-all duration-300 hover:bg-primary/20 overflow-hidden bg-primary/5 cursor-pointer
+          ${(isProfilePage || isSettingsPage)
+            ? "text-primary bg-primary/20 shadow-inner border-primary/20"
+            : "border-white/10"
+          }
+        `}
         onClick={() => setOpen((p) => !p)}
       >
         {user?.image ? (
@@ -72,7 +79,7 @@ export default function LoginButton() {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <User size={18} className="text-white/60" />
+          <User className="w-4 h-4 md:w-[18px] md:h-[18px] text-white/60" />
         )}
       </button>
 
