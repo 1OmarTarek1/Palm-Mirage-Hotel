@@ -1,25 +1,14 @@
-import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import Cookies from "js-cookie";
 
-import Navbar from "@/components/common/Navbar/Navbar";
 import CartSidebar from "@/components/common/CartSidebar";
-import MainContainer from "@/components/common/MainContainer";
 import Footer from "@/components/common/Footer";
+import MainContainer from "@/components/common/MainContainer";
+import Navbar from "@/components/common/Navbar/Navbar";
 import useScrollToTop from "@/hooks/useScrollToTop";
-import { fetchUserProfile } from "@/store/slices/authSlice";
+
 
 export default function MainLayout() {
   useScrollToTop();
-  const dispatch = useDispatch();
-  const { isAuthenticated, loading } = useSelector((s) => s.auth);
-
-  useEffect(() => {
-    if (!isAuthenticated && !loading && Cookies.get("accessToken")) {
-      dispatch(fetchUserProfile());
-    }
-  }, [isAuthenticated, loading, dispatch]);
   return (
     <div className="relative min-h-screen bg-secondary/3">
       {/* Global Decorative Background Elements */}
