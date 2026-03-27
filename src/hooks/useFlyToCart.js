@@ -5,18 +5,18 @@ import { addAnimation, removeAnimation } from '../store/slices/uiSlice';
 export function useFlyToCart() {
   const dispatch = useDispatch();
 
-  const flyToCart = useCallback((sourceElement) => {
+  const flyToCart = useCallback((sourceElement, targetId = 'navbar-cart-button') => {
     // 1. Get source position
     const sourceRect = sourceElement.getBoundingClientRect();
     
-    // 2. Find target (Navbar cart button)
-    const targetElements = document.querySelectorAll("#navbar-cart-button");
+    // 2. Find target dynamically based on targetId
+    const targetElements = document.querySelectorAll(`#${targetId}`);
     const targetElement = Array.from(targetElements).find(
       (el) => el.offsetWidth > 0 && el.offsetHeight > 0
     );
 
     if (!targetElement) {
-      console.warn("FlyToCart: visible navbar-cart-button not found");
+      console.warn(`FlyToCart: visible target #${targetId} not found`);
       return;
     }
     const targetRect = targetElement.getBoundingClientRect();

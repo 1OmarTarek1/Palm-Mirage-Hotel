@@ -38,7 +38,9 @@ export default function RoomCard({ room, className }) {
   };
   const handleToggleWishlist = (e) => {
     e.preventDefault();
-    flyToCart(e.currentTarget, 'navbar-wishlist-button');
+    if (!isInWishlist) {
+      flyToCart(e.currentTarget, 'navbar-wishlist-button');
+    }
     dispatch(toggleWishlist(room));
     toast.success(
       isInWishlist
@@ -133,7 +135,10 @@ export default function RoomCard({ room, className }) {
               aria-label="Toggle wishlist"
               title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             >
-              <Heart size={16} className="fill-current text-current" />
+              <Heart
+                size={16}
+                className={cn('text-current', isInWishlist && 'fill-current')}
+              />
             </Button>
           </div>
 
