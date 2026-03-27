@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -14,74 +14,95 @@ const sectionsData = [
   { id: "contact", label: "Contact Us" },
 ];
 
+const getSectionElement = (id) =>
+  document.getElementById(id) ??
+  document.querySelector(`[data-section-anchor="${id}"]`);
+
 export default function SectionNavigator() {
   const [activeSection, setActiveSection] = useState("hero");
   const [hoveredSection, setHoveredSection] = useState(null);
   const [orderedSections, setOrderedSections] = useState(sectionsData);
+  const sectionObserverRef = useRef(null);
 
-  // Determine section order based on actual DOM position
-  useEffect(() => {
-    const sortSectionsByDOM = () => {
-      const sorted = [...sectionsData].sort((a, b) => {
-        const elA = document.getElementById(a.id);
-        const elB = document.getElementById(b.id);
-        
-        // If element doesn't exist yet, push it to the end (or keep relative order)
-        if (!elA) return 1;
-        if (!elB) return -1;
-
-        // Compare vertical position relative to document
-        const rectA = elA.getBoundingClientRect();
-        const rectB = elB.getBoundingClientRect();
-        const topA = rectA.top + window.scrollY;
-        const topB = rectB.top + window.scrollY;
-
-        return topA - topB;
-      });
-
-      setOrderedSections(sorted);
-    };
-
-    // Initial sort
-    // Use a slight delay to ensure all components have mounted and rendered
-    const timeoutId = setTimeout(sortSectionsByDOM, 500);
-
-    // Re-sort on window resize just in case layout changes fundamentally alter order
-    window.addEventListener('resize', sortSectionsByDOM);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', sortSectionsByDOM);
-    };
+  const getAvailableSections = useCallback(() => {
+    return sectionsData.filter((section) => getSectionElement(section.id));
   }, []);
 
-  useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: "-45% 0px -45% 0px",
-      threshold: 0
-    };
+  const sortSectionsByDOM = useCallback(() => {
+    const sorted = [...sectionsData].sort((a, b) => {
+      const elA = getSectionElement(a.id);
+      const elB = getSectionElement(b.id);
 
-    const handleIntersect = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    };
+      if (!elA && !elB) return 0;
+      if (!elA) return 1;
+      if (!elB) return -1;
 
-    const observer = new IntersectionObserver(handleIntersect, observerOptions);
-    
-    sectionsData.forEach((section) => {
-      const element = document.getElementById(section.id);
+      const rectA = elA.getBoundingClientRect();
+      const rectB = elB.getBoundingClientRect();
+      const topA = rectA.top + window.scrollY;
+      const topB = rectB.top + window.scrollY;
+
+      return topA - topB;
+    });
+
+    setOrderedSections(sorted);
+  }, []);
+
+  const bindSectionObserver = useCallback(() => {
+    sectionObserverRef.current?.disconnect();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: "-45% 0px -45% 0px",
+        threshold: 0,
+      }
+    );
+
+    getAvailableSections().forEach((section) => {
+      const element = getSectionElement(section.id);
       if (element) observer.observe(element);
     });
 
-    return () => observer.disconnect();
-  }, []);
+    sectionObserverRef.current = observer;
+  }, [getAvailableSections]);
+
+  // Determine section order based on actual DOM position
+  useEffect(() => {
+    const refreshNavigator = () => {
+      sortSectionsByDOM();
+      bindSectionObserver();
+    };
+
+    const timeoutId = window.setTimeout(refreshNavigator, 100);
+    const mutationObserver = new MutationObserver(() => {
+      window.requestAnimationFrame(refreshNavigator);
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    window.addEventListener("resize", refreshNavigator);
+    
+    return () => {
+      window.clearTimeout(timeoutId);
+      mutationObserver.disconnect();
+      sectionObserverRef.current?.disconnect();
+      window.removeEventListener("resize", refreshNavigator);
+    };
+  }, [bindSectionObserver, sortSectionsByDOM]);
 
   const scrollToSection = (id) => {
-    const element = document.getElementById(id);
+    const element = getSectionElement(id);
     if (element) {
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
