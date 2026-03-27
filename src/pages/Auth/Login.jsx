@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import AuthButton from "@/components/auth/AuthButton";
 import AuthHeader from "@/components/auth/AuthHeader";
@@ -9,8 +9,10 @@ import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordField from "@/components/auth/PasswordField";
 import { loginSchema } from "@/features/auth/authSchema";
 
-// -------------------- Login Page Component --------------------  //
 export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
   const {
     register,
     handleSubmit,
@@ -21,7 +23,8 @@ export default function Login() {
   });
 
   const onSubmit = async (formData) => {
-    console.log(formData)
+    console.log(formData);
+     navigate(from, { replace: true });
   };
 
   return (
@@ -38,10 +41,7 @@ export default function Login() {
       {/* -------------------- Login Form --------------------  */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* ---------- Email Input Field ---------- */}
-        <FormInputField
-          register={register("email")}
-          error={errors.email}
-        />
+        <FormInputField register={register("email")} error={errors.email} />
 
         {/* ----------  Password Input Field  ---------- */}
         <PasswordField
