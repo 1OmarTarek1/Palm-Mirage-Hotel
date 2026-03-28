@@ -62,7 +62,7 @@ export default function ActivityDetails({ activities, onBookActivity }) {
                       className="aspect-3/2 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="aspect-3/2 w-full bg-gradient-to-br from-primary/25 via-primary/10 to-transparent" />
+                    <div className="aspect-3/2 w-full bg-linear-to-br from-primary/25 via-primary/10 to-transparent" />
                   )}
                 </div>
               </div>
