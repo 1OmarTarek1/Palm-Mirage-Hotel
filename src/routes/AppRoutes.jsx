@@ -17,6 +17,7 @@ import Wellness from '@/pages/Services/Wellness';
 import Meetings from '@/pages/Services/Meetings';
 import Menu from '@/pages/menu/Menu';
 import Activities from '@/pages/Activities/Activities';
+import ActivityDetailPage from '@/pages/Activities/ActivityDetailPage';
 import ShopCart from '@/pages/shopcart/ShopCart';
 import Checkout from '@/pages/Checkout/Checkout';
 import Profile from '@/pages/Profile/Profile';
@@ -48,6 +49,7 @@ export const routes = createBrowserRouter([
       { path: 'blog', element: <Blog /> },
       { path: 'blog/:id', element: <BlogDetails /> },
       { path: 'services/activities', element: <Activities /> },
+      { path: 'services/activities/:id', element: <ActivityDetailPage /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
       { path: 'cart', element: <ShopCart /> },

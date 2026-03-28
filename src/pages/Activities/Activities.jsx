@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ActivityHero from "@/components/activities/ActivityHero";
 import ActivityCategories from "@/components/activities/ActivityCategories";
 import ActivityDetails from "@/components/activities/ActivityDetails";
@@ -9,6 +9,7 @@ export default function Activities() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const bookingRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,6 +47,10 @@ export default function Activities() {
     [activities, activeCategory]
   );
 
+  const handleBookActivity = (activityId) => {
+    bookingRef.current?.selectActivity(activityId);
+  };
+
   return (
     <div className="text-foreground antialiased overflow-x-hidden transition-colors duration-300">
       <ActivityHero />
@@ -59,9 +64,9 @@ export default function Activities() {
           Loading activities...
         </section>
       ) : (
-        <ActivityDetails activities={filtered} />
+        <ActivityDetails activities={filtered} onBookActivity={handleBookActivity} />
       )}
-      <ActivityBooking activities={activities} />
+      <ActivityBooking ref={bookingRef} activities={activities} />
     </div>
   );
 }

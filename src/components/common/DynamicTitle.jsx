@@ -5,6 +5,7 @@ import { navLinks } from './Navbar/navLinks';
 const DynamicTitle = ({ customTitle }) => {
   const { pathname } = useLocation();
   const isHomePage = pathname === "/";
+  const isMongoObjectId = (value) => /^[a-f\d]{24}$/i.test(value);
 
   const getDynamicTitle = () => {
     if (customTitle) return customTitle;
@@ -36,8 +37,8 @@ const DynamicTitle = ({ customTitle }) => {
     const lastSegment = pathSegments[pathSegments.length - 1];
     
     if (lastSegment) {
-      // If the last segment is a number (likely an ID), use the parent segment + "Details"
-      if (/^\d+$/.test(lastSegment) && pathSegments.length > 1) {
+      // If the last segment looks like a resource id, use the parent segment + "Details"
+      if ((/^\d+$/.test(lastSegment) || isMongoObjectId(lastSegment)) && pathSegments.length > 1) {
         const parentSegment = pathSegments[pathSegments.length - 2];
         return `${parentSegment.replace(/-/g, " ")} Details`.toUpperCase();
       }

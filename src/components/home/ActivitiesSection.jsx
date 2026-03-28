@@ -4,6 +4,20 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { fetchActivities } from "@/services/activityService";
 
+const formatPrice = (value) => {
+  const amount = Number(value ?? 0);
+
+  if (!Number.isFinite(amount)) {
+    return "$0";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
 export default function ActivitiesSection() {
   const [activities, setActivities] = useState([]);
 
@@ -71,22 +85,44 @@ export default function ActivitiesSection() {
                 {activity.description}
               </p>
 
-              <div className="grid grid-cols-3 gap-8 pt-0">
-                {activity.stats.map((stat, statIndex) => (
-                  <div key={`${stat.label}-${statIndex}`} className="space-y-2">
-                    <div className="text-xl font-header font-bold text-secondary/80 md:text-2xl">
-                      {stat.value}
-                    </div>
-                    <div className="whitespace-nowrap text-[9px] font-medium uppercase tracking-tighter text-muted-foreground sm:tracking-widest md:text-xs">
-                      {stat.label}
-                    </div>
+              <div className="grid grid-cols-1 gap-6 border-t border-border/50 pt-4 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <div className="text-xl font-header font-bold text-secondary/80 md:text-2xl">
+                    {formatPrice(activity.basePrice)}
                   </div>
-                ))}
+                  <div className="text-[9px] font-medium uppercase tracking-tighter text-muted-foreground sm:tracking-widest md:text-xs">
+                    Starting From
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xl font-header font-bold text-secondary/80 md:text-2xl">
+                    {activity.durationMinutes || 0} min
+                  </div>
+                  <div className="text-[9px] font-medium uppercase tracking-tighter text-muted-foreground sm:tracking-widest md:text-xs">
+                    Duration
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-base font-header font-bold text-secondary/80 md:text-lg">
+                    {activity.location || "Palm Hotel"}
+                  </div>
+                  <div className="text-[9px] font-medium uppercase tracking-tighter text-muted-foreground sm:tracking-widest md:text-xs">
+                    Meeting Point
+                  </div>
+                </div>
               </div>
 
-              <motion.div>
+              <motion.div className="flex flex-col gap-3 sm:flex-row">
                 <Button asChild variant="palmPrimary">
                   <Link to="/services/activities">Discover More</Link>
+                </Button>
+
+                <Button asChild variant="palmSecondary">
+                  <Link to={`/services/activities/${activity.id || activity._id}`}>
+                    All Details
+                  </Link>
                 </Button>
               </motion.div>
             </motion.div>
