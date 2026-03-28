@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
-
 // ============================================================
 //                      USER THUNKS
 // ============================================================
@@ -12,7 +10,7 @@ import useAxiosPrivate from '../../hooks/useAxiosPrivate';
  */
 export const fetchMyProfile = createAsyncThunk(
   'user/fetchMyProfile',
-  async (_, { rejectWithValue, extra: axiosPrivate }) => {
+  async (axiosPrivate, { rejectWithValue }) => {
     try {
       const { data } = await axiosPrivate.get('/users/me');
       return data.data.user;
@@ -30,7 +28,7 @@ export const fetchMyProfile = createAsyncThunk(
  */
 export const changePassword = createAsyncThunk(
   'user/changePassword',
-  async ({ currentPassword, newPassword }, { rejectWithValue, extra: axiosPrivate }) => {
+  async ({ axiosPrivate, currentPassword, newPassword }, { rejectWithValue }) => {
     try {
       const { data } = await axiosPrivate.patch('/users/change-password', {
         currentPassword,
@@ -52,12 +50,10 @@ export const changePassword = createAsyncThunk(
 const userSlice = createSlice({
   name: 'user',
   initialState: {
-    // ── Profile ────────────────────────────────────────────
-    profile:        null,
-    profileLoading: false,
-    profileError:   null,
+    profile:         null,
+    profileLoading:  false,
+    profileError:    null,
 
-    // ── Change Password ────────────────────────────────────
     passwordLoading: false,
     passwordError:   null,
     passwordSuccess: false,
@@ -112,11 +108,11 @@ const userSlice = createSlice({
 export const { resetPasswordState, clearProfile } = userSlice.actions;
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
-export const selectProfile        = (state) => state.user.profile;
-export const selectProfileLoading = (state) => state.user.profileLoading;
-export const selectProfileError   = (state) => state.user.profileError;
+export const selectProfile         = (state) => state.user.profile;
+export const selectProfileLoading  = (state) => state.user.profileLoading;
+export const selectProfileError    = (state) => state.user.profileError;
 export const selectPasswordLoading = (state) => state.user.passwordLoading;
-export const selectPasswordError  = (state) => state.user.passwordError;
+export const selectPasswordError   = (state) => state.user.passwordError;
 export const selectPasswordSuccess = (state) => state.user.passwordSuccess;
 
 export default userSlice.reducer;
