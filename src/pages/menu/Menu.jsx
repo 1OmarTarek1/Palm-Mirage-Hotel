@@ -3,42 +3,34 @@ import { useState, useEffect } from "react";
 import MenuTabs from "../../components/menu/MenuTabs";
 import MenuGrid from "../../components/menu/MenuGrid";
 import MenuReservationHero from "../../components/menu/MenuReservationHero";
-import { categories } from "../../components/menu/menuData";
 import { Loader2 } from "lucide-react";
 import menuApi from "../../services/menuApi";
 
 export default function MenuPage() {
-  const [activeIndex, setActiveIndex] = useState(3);
-  const activeCategory = categories[activeIndex];
-  
-  // State for data lifecycle
-  const [menuItems, setMenuItems] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0); 
+  const [categories, setCategories] = useState([]);
+  const [groupedItems, setGroupedItems] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch real menu data when the component mounts
   useEffect(() => {
     const fetchMenu = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // This will trigger the Axios HTTP request to your Express endpoint (e.g. /api/menu)
-        const rawData = await menuApi.getAllMenuItems();
+        // Fetch the menu data grouped by category directly from your endpoint
+        const rawData = await menuApi.getGroupedMenu();
         
-        // The backend `getAllMenuItems` returns an object: { message: "Done", data: { items: [], pagination: {} } }
-        // We need to specifically map to the `items` array directly.
-        let itemsArray = rawData?.data?.items;
+        const dataPayload = rawData?.data || {};
         
-        // Fallbacks in case the API structure changes
-        if (!itemsArray) {
-          itemsArray = Array.isArray(rawData?.data) ? rawData.data : (Array.isArray(rawData) ? rawData : []);
-        }
-        
-        setMenuItems(itemsArray);
+        // Ensure valid fallback arrays
+        setCategories(dataPayload.categories || []);
+        setGroupedItems(dataPayload.categoryMenuItems || {});
+
       } catch (err) {
-        console.error("API error fetching menu:", err);
-        setError(err?.response?.data?.message || "Failed to fetch menu items from server.");
+        console.error("API error fetching grouped menu:", err);
+        setError(err?.response?.data?.message || err.message || "Failed to fetch menu items from server.");
       } finally {
         setLoading(false);
       }
@@ -47,15 +39,14 @@ export default function MenuPage() {
     fetchMenu();
   }, []);
 
-  // Filter fetched items by matching the DB document's `category` with the active Tab's label
-  const currentCategoryItems = menuItems.filter(
-    (item) => item.category?.toLowerCase() === activeCategory.label.toLowerCase()
-  );
+  // Determine current active category and its items
+  const activeCategory = categories[activeIndex] || null;
+  const currentCategoryLabel = activeCategory?.label || "";
+  const currentCategoryItems = activeCategory ? (groupedItems[currentCategoryLabel] || []) : [];
 
   return (
     <div className="w-full transition-colors duration-300 min-h-[50vh]">
       {/* <MenuHeader /> */}
-      <MenuTabs activeIndex={activeIndex} onSelect={setActiveIndex} />
       
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -72,15 +63,28 @@ export default function MenuPage() {
             Try Again
           </button>
         </div>
+      ) : categories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <p className="text-muted-foreground font-medium">No menu data available. Please add items in the admin panel.</p>
+        </div>
       ) : (
-        <MenuGrid
-          activeIndex={activeIndex}
-          categoryLabel={activeCategory.label}
-          items={currentCategoryItems}
-        />
+        <>
+          <MenuTabs 
+            categories={categories} 
+            activeIndex={activeIndex} 
+            onSelect={setActiveIndex} 
+          />
+          <MenuGrid
+            activeIndex={activeIndex}
+            categoryLabel={currentCategoryLabel}
+            items={currentCategoryItems}
+          />
+          <MenuReservationHero 
+            activeCategory={activeCategory} 
+            items={currentCategoryItems} 
+          />
+        </>
       )}
-      
-      <MenuReservationHero activeCategory={activeCategory} items={currentCategoryItems} />
     </div>
   );
 }
