@@ -27,13 +27,15 @@ import {
 const formatScheduleLabel = (schedule) =>
   `${schedule.date} - ${schedule.startTime} to ${schedule.endTime}`;
 
+const phonePattern = /^(\+?[1-9]\d{7,14}|00[1-9]\d{7,14})$/;
+
 const ActivityBooking = forwardRef(function ActivityBooking(
   { activities = [], initialActivityId = "", initialScheduleId = "" },
   ref
 ) {
   const dispatch = useDispatch();
   const axiosPrivate = useAxiosPrivate();
-  const { accessToken, isAuthenticated } = useAuth();
+  const { accessToken, isAuthenticated, user } = useAuth();
   const isCreating = useSelector(selectCreatingActivityBooking);
   const isCancelling = useSelector(selectCancellingActivityBooking);
   const myActiveBookings = useSelector(selectActiveActivityBookings);
@@ -107,6 +109,12 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     [myActiveBookings, selectedSchedule]
   );
 
+  useEffect(() => {
+    if (!existingBooking && user?.phoneNumber && !phone) {
+      setPhone(user.phoneNumber);
+    }
+  }, [existingBooking, phone, user?.phoneNumber]);
+
   const totalPrice = useMemo(() => {
     if (!selectedScheduleData) return 0;
 
@@ -139,14 +147,17 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   };
 
   const handleBookingSubmit = async () => {
+    const normalizedPhone = phone.trim();
+    const normalizedNotes = notes.trim();
+
     await dispatch(
       createActivityBooking({
         axiosPrivate,
         payload: {
           scheduleId: selectedScheduleData.id,
           guests: Number(guests),
-          contactPhone: phone,
-          notes,
+          contactPhone: normalizedPhone,
+          notes: normalizedNotes,
         },
       })
     ).unwrap();
@@ -197,6 +208,26 @@ const ActivityBooking = forwardRef(function ActivityBooking(
       return;
     }
 
+    if (!existingBooking) {
+      const normalizedPhone = phone.trim();
+      const guestCount = Number(guests);
+
+      if (!Number.isInteger(guestCount) || guestCount < 1) {
+        toast.error("Please enter a valid number of guests.");
+        return;
+      }
+
+      if (guestCount > Number(selectedScheduleData.availableSeats || 0)) {
+        toast.error("Selected guests exceed the available seats for this session.");
+        return;
+      }
+
+      if (!phonePattern.test(normalizedPhone)) {
+        toast.error("Use a valid phone number, for example +201012345678.");
+        return;
+      }
+    }
+
     try {
       if (existingBooking) {
         await handleCancelBooking();
@@ -205,7 +236,11 @@ const ActivityBooking = forwardRef(function ActivityBooking(
 
       await handleBookingSubmit();
     } catch (error) {
-      toast.error(error || "Failed to update activity booking");
+      toast.error(
+        typeof error === "string"
+          ? error
+          : error?.message || "Failed to update activity booking"
+      );
     }
   };
 
@@ -356,6 +391,8 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                   name="phone"
                   type="tel"
                   autoComplete="tel"
+                  placeholder="+201012345678"
+                  pattern="^(\\+?[1-9]\\d{7,14}|00[1-9]\\d{7,14})$"
                   value={existingBooking ? existingBooking.contactPhone : phone}
                   onChange={(event) => setPhone(event.target.value)}
                   disabled={Boolean(existingBooking)}
