@@ -1,6 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 
 const activeStatuses = ['pending', 'confirmed'];
+
+const getErrorMessage = (err, fallbackMessage) =>
+  err.response?.data?.details?.[0]?.message ||
+  err.response?.data?.message ||
+  fallbackMessage;
 
 export const fetchMyActivityBookings = createAsyncThunk(
   'activityBookings/fetchMyActivityBookings',
@@ -9,9 +14,7 @@ export const fetchMyActivityBookings = createAsyncThunk(
       const { data } = await axiosPrivate.get('/activity-bookings/my');
       return data?.data?.bookings ?? [];
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to load activity bookings'
-      );
+      return rejectWithValue(getErrorMessage(err, 'Failed to load activity bookings'));
     }
   }
 );
@@ -23,9 +26,7 @@ export const createActivityBooking = createAsyncThunk(
       const { data } = await axiosPrivate.post('/activity-bookings', payload);
       return data?.data?.booking;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to create activity booking'
-      );
+      return rejectWithValue(getErrorMessage(err, 'Failed to create activity booking'));
     }
   }
 );
@@ -39,9 +40,7 @@ export const cancelActivityBooking = createAsyncThunk(
       });
       return data?.data?.booking;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to cancel activity booking'
-      );
+      return rejectWithValue(getErrorMessage(err, 'Failed to cancel activity booking'));
     }
   }
 );
@@ -133,7 +132,9 @@ export const selectCreateActivityBookingError = (state) => state.activityBooking
 export const selectCancellingActivityBooking = (state) => state.activityBookings.cancelling;
 export const selectCancelActivityBookingError = (state) => state.activityBookings.cancelError;
 export const selectLastCreatedActivityBooking = (state) => state.activityBookings.lastCreatedBooking;
-export const selectActiveActivityBookings = (state) =>
-  state.activityBookings.bookings.filter((booking) => activeStatuses.includes(booking.status));
+export const selectActiveActivityBookings = createSelector(
+  [selectActivityBookings],
+  (bookings) => bookings.filter((booking) => activeStatuses.includes(booking.status))
+);
 
 export default activityBookingsSlice.reducer;
