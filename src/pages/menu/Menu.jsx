@@ -10,6 +10,7 @@ export default function MenuPage() {
   const activeCategory = categories[activeIndex];
   const items = categoryMenuItems[activeCategory.label];
 
+
   return (
     <div className="w-full transition-colors duration-300">
       {/* <MenuHeader /> */}
