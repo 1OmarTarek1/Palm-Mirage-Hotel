@@ -36,6 +36,12 @@ const menuApi = {
   getMenuItemsByCategory: async (category) => {
     const response = await axiosInstance.get(`/menu?category=${category}`);
     return response.data;
+  },
+
+  // Get grouped menu items (categories + array)
+  getGroupedMenu: async () => {
+    const response = await axiosInstance.get('/menu/grouped');
+    return response.data;
   }
 };
 
