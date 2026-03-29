@@ -9,7 +9,7 @@ export default function MenuTabs({ activeIndex, onSelect }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, delay: 0.3, ease: "easeOut" }}
     >
-      <div className="flex items-stretch border border-border rounded-2xl overflow-hidden divide-x divide-border shadow-sm">
+      <div className="flex items-stretch border border-border rounded-2xl overflow-x-auto overflow-y-hidden divide-x divide-border shadow-sm scrollbar-hide webkit-scrollbar-hide">
         {categories.map(({ label, Icon }, i) => {
           const isActive = i === activeIndex;
           return (

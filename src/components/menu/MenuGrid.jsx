@@ -33,11 +33,14 @@ const headerVariants = {
 
 
 function MenuItem({ item }) {
+  // Check if price is a valid number to format it correctly, otherwise use as string
+  const formattedPrice = typeof item.price === 'number' ? `$${item.price.toFixed(2)}` : item.price;
+
   return (
     <div className="group mb-2 flex items-start gap-4 py-5 border-b border-border last:border-b-0 hover:bg-primary/10 transition-colors duration-200 rounded-xl px-3 -mx-3">
-      <div className="shrink-0 w-[68px] h-[68px] rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 bg-muted shadow-sm">
+      <div className="shrink-0 w-[68px] h-[68px] rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 bg-muted shadow-sm flex items-center justify-center">
         <img
-          src={item.img}
+          src={item.image || item.img}
           alt={item.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
@@ -52,7 +55,7 @@ function MenuItem({ item }) {
             {item.name}
           </h3>
           <span className="text-[15px] font-bold text-primary shrink-0 tabular-nums">
-            {item.price}
+            {formattedPrice}
           </span>
         </div>
         <div className="my-1 border-b border-dotted border-border" />
@@ -86,26 +89,14 @@ export default function MenuGrid({ activeIndex, categoryLabel, items }) {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-9 "
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-9"
             variants={gridVariants}
           >
-            <motion.div variants={colVariants} className="flex flex-col">
-              {items.slice(0, 3).map((item) => (
-                <MenuItem key={item.id + "-a"} item={item} />
-              ))}
-            </motion.div>
-
-            <motion.div variants={colVariants} className="flex flex-col">
-              {items.slice(3, 6).map((item) => (
-                <MenuItem key={item.id + "-b"} item={item} />
-              ))}
-            </motion.div>
-
-            <motion.div variants={colVariants} className="flex flex-col">
-              {items.slice(6, 9).map((item) => (
-                <MenuItem key={item.id + "-c"} item={item} />
-              ))}
-            </motion.div>
+            {items.map((item) => (
+              <motion.div key={item._id || item.id} variants={colVariants} className="flex flex-col">
+                <MenuItem item={item} />
+              </motion.div>
+            ))}
           </motion.div>
         </motion.div>
       </AnimatePresence>
