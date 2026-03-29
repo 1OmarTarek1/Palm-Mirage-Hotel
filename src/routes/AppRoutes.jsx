@@ -70,6 +70,7 @@ export const routes = createBrowserRouter([
       { path: 'register', element: <Register /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
+      { path: 'change-password', element: <ChangePassword /> },
     ],
   },
 
