@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createActivityBooking, fetchActivitySchedules } from "@/services/activityService";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import { fetchActivitySchedules } from "@/services/activityService";
 
 const formatScheduleLabel = (schedule) =>
   `${schedule.date} - ${schedule.startTime} to ${schedule.endTime}`;
@@ -20,6 +21,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   { activities = [], initialActivityId = "", initialScheduleId = "" },
   ref
 ) {
+  const axiosPrivate = useAxiosPrivate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState("");
@@ -116,7 +118,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
 
     setIsSubmitting(true);
     try {
-      await createActivityBooking({
+      await axiosPrivate.post("/activity-bookings", {
         scheduleId: selectedScheduleData.id,
         guests: Number(guests),
         contactPhone: phone,
@@ -138,7 +140,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
       );
       resetForm();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create activity booking");
+      toast.error(error.response?.data?.message || "Failed to create activity booking");
     } finally {
       setIsSubmitting(false);
     }

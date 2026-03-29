@@ -1,12 +1,9 @@
 import axios from "axios";
-import Cookies from "js-cookie";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 const resolveImage = (image) =>
   typeof image === "string" ? image : image?.secure_url || "";
-
-const getAccessToken = () => Cookies.get("accessToken");
 
 const mapActivity = (activity) => ({
   id: activity._id ?? activity.id,
@@ -89,28 +86,5 @@ export async function fetchActivitySchedules(activityId) {
     }
 
     throw new Error("Failed to fetch activity schedules");
-  }
-}
-
-export async function createActivityBooking(payload) {
-  const accessToken = getAccessToken();
-  if (!accessToken) {
-    throw new Error("Please sign in first to book an activity.");
-  }
-
-  try {
-    const { data } = await axios.post(`${API_BASE}/activity-bookings`, payload, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    return data?.data?.booking;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.message || error.message);
-    }
-
-    throw new Error("Failed to create activity booking");
   }
 }
