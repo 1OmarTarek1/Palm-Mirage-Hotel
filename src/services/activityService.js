@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import axiosInstance from "@/services/axiosInstance";
 
 const resolveImage = (image) =>
   typeof image === "string" ? image : image?.secure_url || "";
@@ -48,7 +48,7 @@ const mapSchedule = (schedule) => ({
 
 export async function fetchActivities() {
   try {
-    const { data } = await axios.get(`${API_BASE}/activity`);
+    const { data } = await axiosInstance.get("/activity");
     return (data?.data?.activities ?? []).map(mapActivity);
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -61,7 +61,7 @@ export async function fetchActivities() {
 
 export async function fetchActivityById(activityId) {
   try {
-    const { data } = await axios.get(`${API_BASE}/activity/${activityId}`);
+    const { data } = await axiosInstance.get(`/activity/${activityId}`);
     return mapActivity(data?.data?.activity);
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -75,10 +75,10 @@ export async function fetchActivityById(activityId) {
 export async function fetchActivitySchedules(activityId) {
   try {
     const endpoint = activityId
-      ? `${API_BASE}/activity/${activityId}/schedules`
-      : `${API_BASE}/activity-schedules`;
+      ? `/activity/${activityId}/schedules`
+      : "/activity-schedules";
 
-    const { data } = await axios.get(endpoint);
+    const { data } = await axiosInstance.get(endpoint);
     return (data?.data?.schedules ?? []).map(mapSchedule);
   } catch (error) {
     if (axios.isAxiosError(error)) {
