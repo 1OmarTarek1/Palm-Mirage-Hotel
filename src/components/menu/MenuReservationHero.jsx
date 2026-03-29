@@ -1,16 +1,19 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
-export default function MenuReservationHero({ activeCategory }) {
+export default function MenuReservationHero({ activeCategory, items }) {
+  // Use backend category image if available on the items array, fallback to static category hero
+  const activeHeroImg = items?.[0]?.categoryHeroImg || activeCategory?.heroImg;
+
   return (
     <div className="mb-20">
       <div className="relative w-full rounded-3xl overflow-hidden min-h-[500px] sm:min-h-[540px] md:min-h-[580px] lg:min-h-[620px]">
 
         <AnimatePresence mode="wait">
           <motion.img
-            key={activeCategory.heroImg}
-            src={activeCategory.heroImg}
-            alt={`${activeCategory.label} ambiance`}
+            key={activeHeroImg}
+            src={activeHeroImg}
+            alt={`${activeCategory?.label || 'Menu'} ambiance`}
             className="absolute inset-0 w-full h-full object-cover object-center dark:brightness-50 dark:contrast-110"
             initial={{ opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
