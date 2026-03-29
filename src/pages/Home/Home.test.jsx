@@ -12,13 +12,14 @@ jest.mock('../../components/about/ActivitiesTestimonials', () => () => <div data
 jest.mock('../../components/home/SectionNavigator', () => () => <div data-testid="section-navigator" />);
 jest.mock('../../components/home/AwardsSection', () => () => <div data-testid="awards-section" />);
 jest.mock('../../components/home/ContactCTA', () => () => <div data-testid="contact-cta" />);
+jest.mock('../../components/home/LazySection', () => ({ children }) => <>{children}</>);
 
 const Home = require('./Home').default;
 
 describe('Home page', () => {
   test('renders all sections', () => {
     render(<Home />);
-    
+
     expect(screen.getByTestId('section-navigator')).toBeInTheDocument();
     expect(screen.getByTestId('hero-carousel')).toBeInTheDocument();
     expect(screen.getByTestId('about-section')).toBeInTheDocument();

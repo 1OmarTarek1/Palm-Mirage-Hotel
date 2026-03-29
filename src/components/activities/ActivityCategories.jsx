@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import {
   Ship,
   Landmark,
@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { ACTIVITY_CATEGORIES, ACTIVITIES_DATA } from "@/data/activitiesData";
 
 const ICON_MAP = {
   Ship: Ship,
@@ -20,8 +19,29 @@ const ICON_MAP = {
   ChefHat: ChefHat,
 };
 
-export default function ActivityCategories({ active, onChange }) {
+const formatCategoryLabel = (categoryId) =>
+  categoryId
+    .split("-")
+    .join(" ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+export default function ActivityCategories({ active, onChange, activities = [] }) {
   const scrollRef = useRef(null);
+  const categories = useMemo(() => {
+    const seen = new Set();
+
+    return activities
+      .filter((activity) => {
+        if (!activity.category || seen.has(activity.category)) return false;
+        seen.add(activity.category);
+        return true;
+      })
+      .map((activity) => ({
+        id: activity.category,
+        label: formatCategoryLabel(activity.category),
+        icon: activity.icon,
+      }));
+  }, [activities]);
 
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -38,7 +58,7 @@ export default function ActivityCategories({ active, onChange }) {
     } else {
       onChange(categoryId);
       // Scroll to the first activity of that category
-      const first = ACTIVITIES_DATA.find((a) => a.category === categoryId);
+      const first = activities.find((activity) => activity.category === categoryId);
       if (first) {
         setTimeout(() => {
           document
@@ -94,7 +114,7 @@ export default function ActivityCategories({ active, onChange }) {
         ref={scrollRef}
         className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 snap-x snap-mandatory pt-2 px-1 hide-scroll"
       >
-        {ACTIVITY_CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const Icon = ICON_MAP[cat.icon];
           const isActive = active === cat.id;
 

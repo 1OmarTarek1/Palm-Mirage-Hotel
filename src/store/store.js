@@ -6,6 +6,7 @@ import uiReducer from "./slices/uiSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import roomsReducer from "@/services/rooms/roomsSlice";
 import activitiesReducer from "@/services/activities/activitiesSlice";
+import activityBookingsReducer from "@/services/activityBookings/activityBookingsSlice";
 import menuReducer from "@/services/menu/menuSlice";
 import userReducer from "@/services/user/userSlice";
 import bookingReducer from "@/services/booking/bookingSlice";
@@ -19,6 +20,7 @@ export const store = configureStore({
     wishlist: wishlistReducer,
     rooms: roomsReducer,
     activities: activitiesReducer,
+    activityBookings: activityBookingsReducer,
     menu: menuReducer,
     user: userReducer,
     booking: bookingReducer,

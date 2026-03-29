@@ -51,8 +51,8 @@ export default function MenuReservationHero({ activeCategory }) {
                 <span className="text-white font-medium">sailing@contact.com</span>.
               </p>
               <Button
-                variant="palmSecondary"
-                className="border-white/40 text-white text-sm"
+                variant="palmWhiteSecondary"
+                className="text-sm"
                 size="lg"
                 onClick={() => document.getElementById('reservation-form').scrollIntoView({ behavior: 'smooth' })}
               >

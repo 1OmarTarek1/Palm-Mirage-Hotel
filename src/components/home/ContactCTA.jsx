@@ -47,7 +47,7 @@ export default function ContactCTA() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6"
               >
-                <Button asChild variant="palmSecondary" className="border-white/40 text-white text-md" size="lg">
+                <Button asChild variant="palmWhiteSecondary" className="text-md" size="lg">
                   <Link to="/contact">
                     Contact Us Now
                     <ArrowRight className="ml-2 w-5 h-5" />

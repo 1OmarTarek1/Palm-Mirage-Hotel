@@ -10,6 +10,7 @@ import NavActions from "./Desktop/NavActions";
 import MegaMenu from "./Desktop/MegaMenu";
 import CartButton from "./CartButton";
 import LoginButton from "./LoginButton";
+import WishlistButton from "./WishlistButton";
 
 const CIRCLE_RADIUS = 28;
 
@@ -154,7 +155,7 @@ export default function Navbar() {
               : undefined
           }
           style={{ willChange: "transform" }}
-          className="relative flex items-center justify-between w-full px-2 h-14 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20"
+          className="relative flex items-center justify-between w-full px-2 h-12 md:h-14 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20"
         >
           <motion.div
             className="flex items-center justify-between w-full h-full"
@@ -182,8 +183,9 @@ export default function Navbar() {
             
             <motion.div
               variants={slideInUp}
-              className="flex items-center md:hidden gap-2"
+              className="flex items-center md:hidden gap-1 md:gap-2"
             >
+              <WishlistButton />
               <CartButton />
               <LoginButton />
               <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />

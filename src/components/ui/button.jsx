@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "relative overflow-hidden isolate text-white border-2 border-primary shadow-md active:scale-95 before:content-[''] before:absolute before:inset-0 before:z-[-2] before:bg-primary after:content-[''] after:absolute after:z-[-1] after:-left-[10%] after:bottom-0 after:w-[120%] after:h-[150%] after:rounded-[50%_50%_0_0] after:translate-y-full after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.23,1,0.32,1)] hover:after:translate-y-0 after:bg-secondary/80",
         palmSecondary:
           "relative overflow-hidden isolate text-primary border-2 border-primary bg-transparent active:scale-95 hover:text-white before:content-[''] before:absolute before:inset-0 before:z-[-2] before:bg-transparent after:content-[''] after:absolute after:z-[-1] after:-left-[10%] after:bottom-0 after:w-[120%] after:h-[150%] after:rounded-[50%_50%_0_0] after:translate-y-full after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.23,1,0.32,1)] hover:after:translate-y-0 after:bg-primary",
+        palmWhiteSecondary:
+          "relative overflow-hidden isolate border-2 border-white/40 bg-transparent text-white shadow-md active:scale-95 hover:border-primary hover:text-white before:content-[''] before:absolute before:inset-0 before:z-[-2] before:bg-transparent after:content-[''] after:absolute after:z-[-1] after:-left-[10%] after:bottom-0 after:w-[120%] after:h-[150%] after:rounded-[50%_50%_0_0] after:translate-y-full after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.23,1,0.32,1)] hover:after:translate-y-0 after:bg-primary",
         ghost: 
           "text-primary hover:bg-primary/10",
         light:

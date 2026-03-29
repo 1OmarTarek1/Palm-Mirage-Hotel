@@ -1,6 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 import AuthButton from "@/components/auth/AuthButton";
 import AuthHeader from "@/components/auth/AuthHeader";
@@ -8,10 +12,18 @@ import FormInputField from "@/components/auth/FormInputField";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordField from "@/components/auth/PasswordField";
 import { loginSchema } from "@/features/auth/authSchema";
+import { setCredentials } from "@/store/slices/authSlice";
+
+const getCookieOptions = () => ({
+  expires: 10,
+  secure: window.location.protocol === "https:",
+  sameSite: "Lax",
+});
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const from = location.state?.from?.pathname || "/";
   const {
     register,
@@ -23,33 +35,55 @@ export default function Login() {
   });
 
   const onSubmit = async (formData) => {
-    console.log(formData);
-     navigate(from, { replace: true });
+    try {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE}/auth/login`, formData);
+      const accessToken = data?.data?.accessToken;
+      const refreshToken = data?.data?.refreshToken;
+
+      Cookies.set("accessToken", accessToken, getCookieOptions());
+      Cookies.set("refreshToken", refreshToken, {
+        ...getCookieOptions(),
+        expires: 365,
+      });
+
+      const profileResponse = await axios.get(`${import.meta.env.VITE_API_BASE}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      dispatch(
+        setCredentials({
+          user: profileResponse?.data?.data?.user ?? null,
+          accessToken,
+        }),
+      );
+
+      toast.success("Signed in successfully.");
+      navigate(from, { replace: true });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Login failed. Please try again.");
+    }
   };
 
   return (
     <section className="w-full max-w-md mx-auto flex flex-col gap-6">
-      {/* -------------------- Header Section  -------------------- */}
       <AuthHeader
         title="Welcome Back"
         description="Sign in to continue to your account"
-        questionText="Donâ€™t have an account?"
+        questionText="Don’t have an account?"
         linkText="Register"
         linkTo="/register"
       />
 
-      {/* -------------------- Login Form --------------------  */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        {/* ---------- Email Input Field ---------- */}
         <FormInputField register={register("email")} error={errors.email} />
 
-        {/* ----------  Password Input Field  ---------- */}
         <PasswordField
           register={register("password")}
           error={errors.password}
         />
 
-        {/* ----------Forgot Password Link ---------- */}
         <Link
           to="/auth/forgot-password"
           className="text-sm text-left text-muted-foreground hover:text-primary hover:underline cursor-pointer transition focus:outline-primary"
@@ -57,7 +91,6 @@ export default function Login() {
           Forgot your password?
         </Link>
 
-        {/*  ---------- Submit Button  ---------- */}
         <AuthButton isSubmitting={isSubmitting}>Login</AuthButton>
       </form>
 

@@ -1,18 +1,31 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const loadCartFromStorage = () => {
+  try {
+    const serializedCart = localStorage.getItem("cartItems");
+    if (serializedCart === null) {
+      return [];
+    }
+    return JSON.parse(serializedCart);
+  } catch (err) {
+    console.error("Could not load cart from local storage", err);
+    return [];
+  }
+};
+
+const saveCartToStorage = (items) => {
+  try {
+    const serializedCart = JSON.stringify(items);
+    localStorage.setItem("cartItems", serializedCart);
+  } catch (err) {
+    console.error("Could not save cart to local storage", err);
+  }
+};
+
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
-    items: [
-      // {  // fake data to test the cart
-      //   id: "room-1",
-      //   name: "Classic Room - Garden View",
-      //   image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&q=80",
-      //   price: 320,
-      //   quantity: 1,
-      //   nights: 2
-      // }
-    ],       // [{ id, name, image, price, quantity, nights }]
+    items: loadCartFromStorage(), // [{ id, name, image, price, quantity, nights }]
     isOpen: false,   // sidebar open/closed
   },
   reducers: {
@@ -27,10 +40,12 @@ const cartSlice = createSlice({
       } else {
         state.items.push({ ...action.payload, quantity: action.payload.quantity ?? 1 });
       }
+      saveCartToStorage(state.items);
     },
 
     removeItem: (state, action) => {
       state.items = state.items.filter((i) => i.id !== action.payload);
+      saveCartToStorage(state.items);
     },
 
     updateQuantity: (state, action) => {
@@ -42,11 +57,13 @@ const cartSlice = createSlice({
         } else {
           item.quantity = quantity;
         }
+        saveCartToStorage(state.items);
       }
     },
 
     clearCart: (state) => {
       state.items = [];
+      saveCartToStorage(state.items);
     },
   },
 });

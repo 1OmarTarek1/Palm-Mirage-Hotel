@@ -10,17 +10,16 @@ jest.mock('@/components/activities/ActivityCategories', () => ({ active, onChang
 ));
 jest.mock('@/components/activities/ActivityDetails', () => ({ activities }) => (
   <div data-testid="activity-details">
-    {activities.map(a => <div key={a.id}>{a.name}</div>)}
+    {activities.map(a => <div key={a.id}>{a.title}</div>)}
   </div>
 ));
 jest.mock('@/components/activities/ActivityBooking', () => () => <div data-testid="activity-booking" />);
 
-// Mock data
-jest.mock('@/data/activitiesData', () => ({
-  ACTIVITIES_DATA: [
-    { id: 1, name: 'Skiing', category: 'Winter' },
-    { id: 2, name: 'Hiking', category: 'Summer' },
-  ],
+jest.mock('@/services/activityService', () => ({
+  fetchActivities: jest.fn().mockResolvedValue([
+    { id: 1, title: 'Skiing', category: 'Winter' },
+    { id: 2, title: 'Hiking', category: 'Summer' },
+  ]),
 }));
 
 const Activities = require('./Activities').default;
@@ -34,15 +33,21 @@ describe('Activities page', () => {
 
   test('filters activities when category changes', () => {
     render(<Activities />);
-    
+
     // Initially all activities
-    expect(screen.getByText('Skiing')).toBeInTheDocument();
+    expect(screen.getByText('Loading activities...')).toBeInTheDocument();
+  });
+
+  test('shows fetched activities and filters when category changes', async () => {
+    render(<Activities />);
+
+    expect(await screen.findByText('Skiing')).toBeInTheDocument();
     expect(screen.getByText('Hiking')).toBeInTheDocument();
-    
+
     // Change category to Summer
     const summerBtn = screen.getByText('Summer');
     fireEvent.click(summerBtn);
-    
+
     expect(screen.queryByText('Skiing')).not.toBeInTheDocument();
     expect(screen.getByText('Hiking')).toBeInTheDocument();
   });
