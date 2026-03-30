@@ -20,7 +20,7 @@ export default function GoogleAuthButton() {
       await axiosInstance.post("/auth/login-google", {
         idToken: credentialResponse.credential,
       });
-      const profileResponse = await axiosInstance.get("/auth/profile");
+      const profileResponse = await axiosInstance.get("/auth/account");
 
       dispatch(
         setCredentials({

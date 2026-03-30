@@ -40,7 +40,7 @@ const menuApi = {
 
   // Get grouped menu items (categories + array)
   getGroupedMenu: async () => {
-    const response = await axiosInstance.get('/menu/grouped');
+    const response = await axiosInstance.get('/menu/menu-grouped');
     return response.data;
   }
 };

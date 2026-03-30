@@ -30,7 +30,7 @@ export default function Login() {
   const onSubmit = async (formData) => {
     try {
       await axiosInstance.post("/auth/login", formData);
-      const profileResponse = await axiosInstance.get("/auth/profile");
+      const profileResponse = await axiosInstance.get("/auth/account");
 
       dispatch(
         setCredentials({
