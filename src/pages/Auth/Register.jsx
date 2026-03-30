@@ -123,7 +123,7 @@ export default function Register() {
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      <GoogleAuthButton mode="register" />
+      <GoogleAuthButton />
     </section>
   );
 }

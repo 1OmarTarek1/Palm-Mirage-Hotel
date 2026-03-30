@@ -14,9 +14,11 @@ const fadeUp = {
 };
 
 export default function Settings() {
-  const { user, isAuthenticated } = useSelector((s) => s.auth);
+  const { user, isAuthenticated, isHydrating } = useSelector((s) => s.auth);
   const isDark = useSelector(selectIsDark);
   const dispatch = useDispatch();
+
+  if (isHydrating) return null;
 
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
 
