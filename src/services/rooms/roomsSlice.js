@@ -12,10 +12,41 @@ import axiosInstance from "@/services/axiosInstance";
  */
 export const fetchAllRooms = createAsyncThunk(
   "rooms/fetchAllRooms",
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, limit = 20 } = {}, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.get("/rooms");
-      return data.data.data;
+      const { data } = await axiosInstance.get("/rooms", {
+        params: { page, limit },
+      });
+
+      // Data shape varies: API could return raw array or object with meta
+      const responseData = data?.data;
+      if (Array.isArray(responseData?.data)) {
+        return {
+          rooms: responseData.data,
+          page,
+          limit,
+          totalPages: 1,
+          totalItems: responseData.data.length,
+        };
+      }
+
+      if (Array.isArray(responseData)) {
+        return {
+          rooms: responseData,
+          page,
+          limit,
+          totalPages: 1,
+          totalItems: responseData.length,
+        };
+      }
+
+      return {
+        rooms: responseData?.data || responseData || [],
+        page: responseData?.page || page,
+        limit: responseData?.limit || limit,
+        totalPages: responseData?.totalPages || responseData?.pages || 1,
+        totalItems: responseData?.totalItems || responseData?.total || 0,
+      };
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Failed to load rooms",
@@ -51,6 +82,10 @@ const roomsSlice = createSlice({
     rooms: [],
     listLoading: false,
     listError: null,
+    listPage: 1,
+    listLimit: 20,
+    listTotalPages: 1,
+    listTotalItems: 0,
 
     // ── Single room details ────────────────────────────────
     room: null,
@@ -74,7 +109,23 @@ const roomsSlice = createSlice({
       })
       .addCase(fetchAllRooms.fulfilled, (state, action) => {
         state.listLoading = false;
-        state.rooms = action.payload;
+        const payload = action.payload;
+
+        if (payload?.rooms) {
+          state.rooms = payload.rooms;
+          state.listPage = payload.page ?? state.listPage;
+          state.listLimit = payload.limit ?? state.listLimit;
+          state.listTotalPages = payload.totalPages ?? state.listTotalPages;
+          state.listTotalItems = payload.totalItems ?? state.listTotalItems;
+        } else if (Array.isArray(payload)) {
+          state.rooms = payload;
+          state.listPage = 1;
+          state.listLimit = payload.length;
+          state.listTotalPages = 1;
+          state.listTotalItems = payload.length;
+        } else {
+          state.rooms = payload;
+        }
       })
       .addCase(fetchAllRooms.rejected, (state, action) => {
         state.listLoading = false;
@@ -108,5 +159,10 @@ export const selectListError = (state) => state.rooms.listError;
 export const selectRoom = (state) => state.rooms.room;
 export const selectRoomLoading = (state) => state.rooms.roomLoading;
 export const selectRoomError = (state) => state.rooms.roomError;
+
+export const selectRoomsPage = (state) => state.rooms.listPage;
+export const selectRoomsLimit = (state) => state.rooms.listLimit;
+export const selectRoomsTotalPages = (state) => state.rooms.listTotalPages;
+export const selectRoomsTotalItems = (state) => state.rooms.listTotalItems;
 
 export default roomsSlice.reducer;

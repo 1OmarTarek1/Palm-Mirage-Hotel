@@ -144,27 +144,6 @@ export default function RoomCard({ room, className }) {
               />
             </Button>
           </div>
-
-          {/* {room.partners && room.partners.length > 0 && (
-            <div className="flex items-center gap-2">
-              {room.partners.map((partner) => (
-                <a
-                  key={partner.name}
-                  href={partner.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={partner.name}
-                  className="opacity-80 hover:opacity-100 transition-opacity"
-                >
-                  <img
-                    src={partner.logo}
-                    alt={partner.name}
-                    className="w-8 h-8 rounded-lg object-contain bg-white p-1 border border-border/50 shadow-sm"
-                  />
-                </a>
-              ))}
-            </div>
-          )} */}
         </div>
       </div>
     </div>
