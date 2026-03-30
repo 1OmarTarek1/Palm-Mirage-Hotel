@@ -12,6 +12,8 @@ import {
 } from "@/store/slices/cartSlice";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function CartSidebar() {
   const dispatch = useDispatch();
@@ -189,21 +191,24 @@ export default function CartSidebar() {
                       dispatch(clearCart());
                       toast.error("Cart cleared");
                     }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border/50
-                               text-foreground/70 hover:bg-muted transition-colors cursor-pointer "
+                    className={cn(
+                      buttonVariants({ variant: "palmSecondary" }),
+                      "h-12 flex-1 rounded-2xl px-5 text-sm font-medium",
+                    )}
                   >
-                    Clear All
+                    <span>Clear All</span>
                   </MotionButton>
 
                   <MotionDiv className="flex-2">
                     <Link
                       to="/cart"
                       onClick={() => dispatch(closeCart())}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl
-                                 bg-primary text-white font-semibold text-sm shadow-lg
-                                 hover:bg-primary/90 transition-colors"
+                      className={cn(
+                        buttonVariants({ variant: "palmPrimary" }),
+                        "h-12 w-full rounded-2xl px-5 text-sm font-semibold",
+                      )}
                     >
-                      Go To Cart
+                      <span>Go To Cart</span>
                       <ArrowRight size={16} />
                     </Link>
                   </MotionDiv>

@@ -86,7 +86,7 @@ export default function RoomFilter({ onFilter }) {
         </h4>
         <ul className="space-y-2.5">
           {roomTypes.map((type) => (
-            <li key={type.id} className="flex items-center justify-between">
+            <li key={type.value} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="border rounded-xs"
@@ -130,14 +130,14 @@ export default function RoomFilter({ onFilter }) {
                 >
                   {Array.from({ length: value }).map((_, i) => (
                     <Star
-                      key={i}
+                      key={`filled-${value}-${i}`}
                       size={13}
                       className="fill-amber-400 text-amber-400"
                     />
                   ))}
                   {Array.from({ length: 5 - value }).map((_, i) => (
                     <Star
-                      key={i}
+                      key={`empty-${value}-${i}`}
                       size={13}
                       className="text-stone-200 fill-stone-200"
                     />
