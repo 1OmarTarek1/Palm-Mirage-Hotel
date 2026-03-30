@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const getRoomId = (room) => room?.id || room?._id || room?.roomNumber;
+
 const loadWishlistFromLocalStorage = () => {
   try {
     const savedWishlist = localStorage.getItem('wishlist');
@@ -17,26 +19,28 @@ const wishlistSlice = createSlice({
   },
   reducers: {
     addToWishlist: (state, action) => {
-      const existing = state.items.find((i) => i.id === action.payload.id);
+      const roomId = getRoomId(action.payload);
+      const existing = state.items.find((i) => getRoomId(i) === roomId);
       if (!existing) {
-        state.items.push(action.payload);
+        state.items.push({ ...action.payload, id: roomId });
         // Persist to localStorage
         localStorage.setItem('wishlist', JSON.stringify(state.items));
       }
     },
 
     removeFromWishlist: (state, action) => {
-      state.items = state.items.filter((i) => i.id !== action.payload);
+      state.items = state.items.filter((i) => getRoomId(i) !== action.payload);
       // Persist to localStorage
       localStorage.setItem('wishlist', JSON.stringify(state.items));
     },
 
     toggleWishlist: (state, action) => {
-      const existing = state.items.find((i) => i.id === action.payload.id);
+      const roomId = getRoomId(action.payload);
+      const existing = state.items.find((i) => getRoomId(i) === roomId);
       if (existing) {
-        state.items = state.items.filter((i) => i.id !== action.payload.id);
+        state.items = state.items.filter((i) => getRoomId(i) !== roomId);
       } else {
-        state.items.push(action.payload);
+        state.items.push({ ...action.payload, id: roomId });
       }
       // Persist to localStorage
       localStorage.setItem('wishlist', JSON.stringify(state.items));
@@ -62,6 +66,6 @@ export const selectWishlistItems = (state) => state.wishlist.items;
 export const selectWishlistCount = (state) => state.wishlist.items.length;
 
 export const selectIsInWishlist = (state, roomId) =>
-  state.wishlist.items.some((item) => item.id === roomId);
+  state.wishlist.items.some((item) => getRoomId(item) === roomId);
 
 export default wishlistSlice.reducer;
