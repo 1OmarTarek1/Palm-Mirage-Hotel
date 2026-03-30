@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Bed,
   Maximize2,
@@ -31,6 +31,7 @@ import {
   Loader2,
   ChevronRight,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Carousel,
@@ -43,7 +44,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import { useFlyToCart } from "@/hooks/useFlyToCart";
 import {
@@ -57,17 +58,33 @@ import {
   TRUSTED_PARTNERS,
   CALENDAR_DAYS,
 } from "@/utils/constants";
+import {
+  fetchRoomById,
+  selectRoom,
+  selectRoomLoading,
+  selectRoomError,
+  clearRoom,
+} from "@/services/rooms/roomsSlice";
 
 // Map icon name strings → actual Lucide components
 const ICON_MAP = {
+  // Case-insensitive/variant keys
   Wifi, Waves, Ban, Dumbbell, Car, CheckCircle2, Coffee, Utensils,
   Umbrella, Table, Wind, Bed, Lock, GlassWater, Tv, Phone,
   Monitor, Refrigerator, Usb, Gift, Bath, Shirt, Footprints, Droplets,
+  pool: Waves,
+  fitness: Dumbbell,
+  "fitness center": Dumbbell,
+  parking: Car,
+  housekeeping: Shirt,
+  breakfast: Coffee,
+  restaurant: Utensils,
 };
 
 function RoomIcon({ name, className = "w-5 h-5 text-[#018058]" }) {
-  const IconComponent = ICON_MAP[name];
-  if (!IconComponent) return null;
+  // Extract likely key from name if name is a string (e.g. "high-speed wifi" -> "wifi")
+  const iconKey = name?.toLowerCase().trim();
+  const IconComponent = ICON_MAP[iconKey] || ICON_MAP[name] || CheckCircle2;
   return <IconComponent className={className} />;
 }
 
@@ -110,7 +127,54 @@ export default function RoomDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const room = MOCK_ROOM_DATA;
+
+  const apiRoom = useSelector(selectRoom);
+  const isLoadingApi = useSelector(selectRoomLoading);
+  const apiError = useSelector(selectRoomError);
+
+  // Map API response to match the structure expected by the UI
+  const room = apiRoom
+    ? {
+        id: apiRoom._id || apiRoom.id || apiRoom.room?._id || apiRoom._doc?._id || apiRoom.data?._id || id,
+        name: apiRoom.roomName || apiRoom.name || apiRoom.room?.roomName || apiRoom._doc?.roomName || apiRoom.data?.roomName || "Exquisite Luxury Room",
+        type: apiRoom.roomType || apiRoom.type || apiRoom.room?.roomType || apiRoom._doc?.roomType || apiRoom.data?.roomType || "Luxury Suite",
+        price: Number(apiRoom.price || apiRoom.room?.price || apiRoom._doc?.price || apiRoom.data?.price || 0),
+        discount: Number(apiRoom.discount || apiRoom.room?.discount || apiRoom._doc?.discount || apiRoom.data?.discount || 0),
+        hasOffer: Boolean(apiRoom.discount || apiRoom._doc?.discount || apiRoom.hasOffer || apiRoom.room?.hasOffer || apiRoom.data?.hasOffer),
+        rating: Number(apiRoom.rating || apiRoom.room?.rating || apiRoom._doc?.rating || apiRoom.data?.rating || 5),
+        beds: Number(apiRoom.beds || apiRoom.room?.beds || apiRoom._doc?.beds || apiRoom.data?.beds || 1),
+        bedType: apiRoom.bedType || apiRoom.room?.bedType || apiRoom._doc?.bedType || apiRoom.data?.bedType || "King Bed", 
+        size: Number(apiRoom.size || apiRoom.room?.size || apiRoom._doc?.size || apiRoom.data?.size || 45),
+        adults: Number(apiRoom.guests || apiRoom.capacity || apiRoom.room?.guests || apiRoom._doc?.capacity || apiRoom.data?.guests || 2),
+        viewsCount: Number(apiRoom.viewsCount || apiRoom.room?.viewsCount || apiRoom._doc?.viewsCount || apiRoom.data?.viewsCount || 120),
+        description: apiRoom.description || apiRoom.room?.description || apiRoom._doc?.description || apiRoom.data?.description || "Experience the pinnacle of hospitality in our thoughtfully curated spaces, designed for those who appreciate the finer things in life.",
+        images: (() => {
+          const rawImages = apiRoom.roomImages || apiRoom.room?.roomImages || apiRoom._doc?.roomImages || apiRoom.data?.roomImages || apiRoom.images || apiRoom.room?.images || [];
+          if (Array.isArray(rawImages)) {
+            return rawImages.map(img => img.secure_url || (typeof img === 'string' ? img : null)).filter(Boolean);
+          }
+          return [apiRoom.image, apiRoom.room?.image].filter(Boolean);
+        })().length > 0 ? (() => {
+          const rawImages = apiRoom.roomImages || apiRoom.room?.roomImages || apiRoom._doc?.roomImages || apiRoom.data?.roomImages || apiRoom.images || apiRoom.room?.images || [];
+          if (Array.isArray(rawImages)) {
+            return rawImages.map(img => img.secure_url || (typeof img === 'string' ? img : null)).filter(Boolean);
+          }
+          return [apiRoom.image, apiRoom.room?.image].filter(Boolean);
+        })() : MOCK_ROOM_DATA.images,
+        facilities: (apiRoom.facilities || apiRoom.room?.facilities || apiRoom._doc?.facilities || apiRoom.data?.facilities || []).map(f => typeof f === 'string' ? { name: f, icon: f } : f),
+      }
+    : null;
+
+  console.log("RoomDetails.jsx: Render", { id, apiRoom, room, isLoadingApi, apiError });
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchRoomById(id));
+    }
+    return () => {
+      dispatch(clearRoom());
+    };
+  }, [dispatch, id]);
 
   // Helper for dynamic dates
   const today = new Date();
@@ -201,17 +265,64 @@ export default function RoomDetails() {
     }
   };
 
+  if (isLoadingApi) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <span className="ml-3 text-lg font-medium">Loading room details...</span>
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <h2 className="text-2xl font-bold text-destructive mb-4">Error</h2>
+        <p className="text-muted-foreground mb-6">{apiError}</p>
+        <Button onClick={() => navigate("/rooms")}>Back to Rooms</Button>
+      </div>
+    );
+  }
+
+  if (!room) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
+          <Ban className="w-10 h-10 text-muted-foreground" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-4">Room Not Found</h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          We couldn't find the room you're looking for. It might have been removed or you may have the wrong link.
+        </p>
+        <Button onClick={() => navigate("/rooms")} className="bg-[#8c9e8d] hover:bg-[#7a8c7b]">
+          Back to All Rooms
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen text-foreground transition-colors duration-300">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="min-h-screen text-foreground transition-colors duration-300"
+    >
       <div className="container pb-8 font-main">
 
         {/* Hero Carousel */}
-        <div className="relative group mb-12">
+        <motion.div 
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="relative group mb-12"
+        >
           <Carousel className="w-full">
             <CarouselContent>
               {room.images.map((image, index) => (
                 <CarouselItem key={index}>
-                  <div className="relative aspect-4/5 sm:aspect-video overflow-hidden rounded-xl shadow-xl">
+                  <div className="relative aspect-4/5 sm:aspect-video overflow-hidden rounded-xl shadow-xl hover:scale-[1.01] transition-transform duration-700">
                     <img src={image} alt={`${room.name} - image ${index + 1}`} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/5" />
                   </div>
@@ -222,9 +333,14 @@ export default function RoomDetails() {
             <CarouselNext className="right-6 bg-white/90 hover:bg-white hover:text-black text-gray-800 border-none shadow-md h-10 w-10 opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Room Summary Card */}
-            <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-auto sm:w-auto sm:min-w-[550px]">
-              <div className="text-card-foreground p-4 sm:p-10 rounded-2xl backdrop-blur-md border border-white/20 shadow-2xl bg-card/40 sm:bg-card/60 relative z-20 transition-all duration-300">
-                <h1 className="text-xl sm:text-4xl font-bold mb-4 sm:mb-8 font-header leading-tight text-foreground">
+            <motion.div 
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-auto sm:w-auto sm:min-w-[550px]"
+            >
+              <div className="text-card-foreground p-4 sm:p-10 rounded-2xl backdrop-blur-md border border-white/20 shadow-2xl bg-card/40 sm:bg-card/60 relative z-20 transition-all duration-300 hover:bg-card/70 group/card">
+                <h1 className="text-xl sm:text-4xl font-bold mb-4 sm:mb-8 font-header leading-tight text-foreground group-hover/card:text-primary transition-colors">
                   {room.name}
                 </h1>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-10 sm:gap-y-4 text-[11px] sm:text-sm font-medium text-muted-foreground">
@@ -244,11 +360,23 @@ export default function RoomDetails() {
                     <Users className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/60" />
                     <span>{room.adults} Adults</span>
                   </div>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/60" />
+                    <span>{room.viewsCount} Views</span>
+                  </div>
                 </div>
+                {room.hasOffer && (
+                  <div className="mt-6 flex items-center gap-2">
+                    <span className="bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                      Special Offer: {room.discount}% OFF
+                    </span>
+                    <Gift className="w-4 h-4 text-destructive" />
+                  </div>
+                )}
               </div>
-            </div>
+            </motion.div>
           </Carousel>
-        </div>
+        </motion.div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-10">
@@ -265,12 +393,25 @@ export default function RoomDetails() {
             <section>
               <h2 className="text-xl font-bold mb-6 text-foreground">Services &amp; Amenities:</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
-                {ROOM_AMENITIES.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 text-[14px] text-muted-foreground">
-                    <RoomIcon name={item.iconName} />
-                    <span>{item.label}</span>
-                  </div>
-                ))}
+                {room.facilities.length > 0 ? (
+                  room.facilities.map((fac, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-[14px] text-muted-foreground group">
+                      <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                        <RoomIcon name={fac.icon} />
+                      </div>
+                      <span className="group-hover:text-foreground transition-colors">{fac.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  ROOM_AMENITIES.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-[14px] text-muted-foreground group">
+                      <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                        <RoomIcon name={item.iconName} />
+                      </div>
+                      <span className="group-hover:text-foreground transition-colors">{item.label}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </section>
 
@@ -495,7 +636,14 @@ export default function RoomDetails() {
                 <h2 className="text-xl font-bold mb-4 text-foreground">Book This Room</h2>
                 <div className="mb-6">
                   <span className="text-sm text-muted-foreground">From</span>
-                  <span className="text-2xl font-bold ml-2 text-foreground">${room.price.toFixed(2)}</span>
+                  {room.hasOffer ? (
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-2xl font-bold text-foreground">${(room.price * (1 - room.discount / 100)).toFixed(2)}</span>
+                       <span className="text-sm text-muted-foreground line-through">${(room.price || 0).toFixed(2)}</span>
+                    </div>
+                  ) : (
+                    <span className="text-2xl font-bold ml-2 text-foreground">${(room.price || 0).toFixed(2)}</span>
+                  )}
                   <span className="text-sm text-muted-foreground"> /night</span>
                 </div>
 
@@ -552,7 +700,7 @@ export default function RoomDetails() {
                       <span className="text-sm font-bold text-foreground">Total:</span>
                       <button className="block text-[10px] text-muted-foreground underline decoration-dotted">View details</button>
                     </div>
-                    <span className="text-lg font-bold text-foreground">${room.price.toFixed(1)}</span>
+                    <span className="text-lg font-bold text-foreground">${(room.price || 0).toFixed(1)}</span>
                   </div>
 
                   <Button onClick={handleBooking} disabled={isLoading}
@@ -618,6 +766,6 @@ export default function RoomDetails() {
         </section>
 
       </div>
-    </div>
+    </motion.div>
   );
 }
