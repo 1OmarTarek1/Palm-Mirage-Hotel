@@ -7,30 +7,52 @@ import { selectIsDark } from "@/store/slices/themeSlice";
 import { setCredentials } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
 
-export default function GoogleAuthButton({ mode = "login" }) {
+export default function GoogleAuthButton() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isDark = useSelector(selectIsDark);
   const [error, setError] = useState("");
 
-  const handleSuccess = async (credentialResponse) => {
-    setError("");
-
-    try {
-      const { data } = await axios.post(
+  const authenticateWithGoogle = async (idToken) => {
+    const request = (requestMode) =>
+      axios.post(
         `${import.meta.env.VITE_API_BASE}/auth/login-google`,
         {
-          idToken: credentialResponse.credential,
-          mode,
+          idToken,
+          mode: requestMode,
         },
         {
           withCredentials: true,
         },
       );
 
+    try {
+      const { data } = await request("login");
+      return { data, action: "login" };
+    } catch (err) {
+      const message = err.response?.data?.message || "";
+      const shouldRegister =
+        err.response?.status === 404 ||
+        message === "No account found with this Google email. Please register first.";
+
+      if (!shouldRegister) {
+        throw err;
+      }
+
+      const { data } = await request("register");
+      return { data, action: "register" };
+    }
+  };
+
+  const handleSuccess = async (credentialResponse) => {
+    setError("");
+
+    try {
+      const { data, action } = await authenticateWithGoogle(credentialResponse.credential);
+
       const accessToken = data?.data?.accessToken;
 
-      const profileResponse = await axios.get(`${import.meta.env.VITE_API_BASE}/auth/me`, {
+      const profileResponse = await axios.get(`${import.meta.env.VITE_API_BASE}/auth/profile`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -44,7 +66,11 @@ export default function GoogleAuthButton({ mode = "login" }) {
         }),
       );
 
-      toast.success(mode === "register" ? "Google account created successfully." : "Signed in with Google successfully.");
+      toast.success(
+        action === "register"
+          ? "Google account created successfully."
+          : "Signed in with Google successfully."
+      );
       navigate("/", { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || "Google sign-in failed. Try again.";

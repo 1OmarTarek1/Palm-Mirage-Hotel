@@ -46,7 +46,7 @@ export default function Login() {
         expires: 365,
       });
 
-      const profileResponse = await axiosInstance.get("/auth/me", {
+      const profileResponse = await axiosInstance.get("/auth/profile", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -106,3 +106,4 @@ export default function Login() {
     </section>
   );
 }
+
