@@ -6,11 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Star } from "lucide-react";
 
 const roomTypes = [
-  { id: 17, label: "Deluxe Room", count: 13 },
-  { id: 19, label: "Double Room", count: 11 },
-  { id: 20, label: "Family Room", count: 15 },
-  { id: 23, label: "Single Room", count: 7 },
-  { id: 24, label: "Twin Room", count: 5 },
+  { value: "deluxe", label: "Deluxe Room", count: 13 },
+  { value: "double", label: "Double Room", count: 11 },
+  { value: "family", label: "Family Room", count: 15 },
+  { value: "single", label: "Single Room", count: 7 },
+  { value: "twin", label: "Twin Room", count: 5 },
 ];
 
 const ratings = [
@@ -22,7 +22,7 @@ const ratings = [
 ];
 
 const defaultState = {
-  price: [5, 1000],
+  price: [0, 1000],
   roomTypes: [],
   ratings: [],
   unrated: false,
@@ -44,6 +44,7 @@ export default function RoomFilter({ onFilter }) {
     setSelectedTypes([]);
     setSelectedRatings([]);
     setUnrated(false);
+    onFilter?.(defaultState);
   };
 
   const handleFilter = () => {
@@ -89,12 +90,12 @@ export default function RoomFilter({ onFilter }) {
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="border rounded-xs"
-                  id={`type-${type.id}`}
-                  checked={selectedTypes.includes(type.id)}
-                  onCheckedChange={() => toggleItem(setSelectedTypes, type.id)}
+                  id={`type-${type.value}`}
+                  checked={selectedTypes.includes(type.value)}
+                  onCheckedChange={() => toggleItem(setSelectedTypes, type.value)}
                 />
                 <Label
-                  htmlFor={`type-${type.id}`}
+                  htmlFor={`type-${type.value}`}
                   className="text-sm text-stone-600 cursor-pointer"
                 >
                   {type.label}
