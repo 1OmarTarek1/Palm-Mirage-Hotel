@@ -70,10 +70,10 @@ export const registerSchema = z
 // Reset Password Schema
 export const resetPasswordSchema = z
   .object({
-    otp: z
+    code: z
       .string({ required_error: "OTP is required" })
       .trim()
-      .regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
+      .regex(/^\d{4}$/, "OTP must be exactly 4 digits"),
 
     password: z
       .string()

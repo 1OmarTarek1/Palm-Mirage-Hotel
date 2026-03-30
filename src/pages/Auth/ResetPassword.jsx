@@ -1,5 +1,6 @@
+import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import AuthButton from "@/components/auth/AuthButton";
@@ -7,25 +8,42 @@ import AuthHeader from "@/components/auth/AuthHeader";
 import PasswordField from "@/components/auth/PasswordField";
 import FormInputField from "@/components/auth/FormInputField";
 import { resetPasswordSchema } from "@/features/auth/authSchema";
+import axiosInstance from "@/services/axiosInstance";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const { state } = useLocation();
 
   const {
     register,
     handleSubmit,
     formState: { isSubmitting, errors },
   } = useForm({
-    defaultValues: { otp: "", password: "", confirmPassword: "" },
+    defaultValues: {
+      code: "",
+      password: "",
+      confirmPassword: "",
+      email: state?.data?.email || "",
+    },
     resolver: zodResolver(resetPasswordSchema),
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (formData) => {
     try {
-      console.log(data);
+      console.log({ ...formData, ...state });
+      await axiosInstance.patch("/auth/reset-password", {
+        ...formData,
+        ...state,
+      });
+      toast.success(
+        "Password reset successful. Please check your email for further instructions.",
+      );
       navigate("/auth/login");
     } catch (error) {
-      console.log(error);
+      const message =
+        error.response?.data?.message ||
+        "Something went wrong. We couldn't reset your password. Please try again.";
+      toast.error(message);
     }
   };
 
@@ -45,11 +63,11 @@ export default function ResetPassword() {
         {/* ----------  OTP Input Field  ---------- */}
         <FormInputField
           type="text"
-          id="otp"
-          label="OTP"
-          placeholder="Enter 6-digit code"
-          register={register("otp")}
-          error={errors.otp}
+          id="code"
+          label="code"
+          placeholder="Enter 4-digit code"
+          register={register("code")}
+          error={errors.code}
         />
 
         {/* ----------  Password Input Field  ---------- */}
