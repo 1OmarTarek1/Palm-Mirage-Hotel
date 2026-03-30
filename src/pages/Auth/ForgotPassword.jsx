@@ -1,12 +1,14 @@
-import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import z from "zod";
 
 import AuthButton from "@/components/auth/AuthButton";
 import AuthHeader from "@/components/auth/AuthHeader";
 import FormInputField from "@/components/auth/FormInputField";
 import { emailValidator } from "@/features/auth/authSchema";
+import axiosInstance from "@/services/axiosInstance";
+import { toast } from "react-toastify";
 
 const emailSchema = z.object({
   email: emailValidator,
@@ -24,12 +26,19 @@ export default function ForgotPassword() {
     resolver: zodResolver(emailSchema),
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (formData) => {
     try {
-      console.log(data);
+      console.log(formData);
+      await axiosInstance.patch("/auth/forgot-password", formData);
+      toast.success(
+        "Password reset successful. Please check your email for further instructions.",
+      );
       navigate("/auth/reset-password");
     } catch (error) {
-      console.log(error);
+      const message =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      toast.error(message);
     }
   };
 
