@@ -11,7 +11,7 @@ export const fetchMyActivityBookings = createAsyncThunk(
   'activityBookings/fetchMyActivityBookings',
   async (axiosPrivate, { rejectWithValue }) => {
     try {
-      const { data } = await axiosPrivate.get('/activity-bookings/my');
+      const { data } = await axiosPrivate.get('/activity-bookings/my-bookings');
       return data?.data?.bookings ?? [];
     } catch (err) {
       return rejectWithValue(getErrorMessage(err, 'Failed to load activity bookings'));
@@ -138,3 +138,4 @@ export const selectActiveActivityBookings = createSelector(
 );
 
 export default activityBookingsSlice.reducer;
+
