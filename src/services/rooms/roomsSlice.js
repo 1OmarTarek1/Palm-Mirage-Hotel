@@ -18,8 +18,9 @@ export const fetchAllRooms = createAsyncThunk(
         params: { page, limit },
       });
 
-      // Data shape varies: API could return raw array or object with meta
-      const responseData = data?.data;
+      // Robust data extraction: check data.data.rooms, data.data, or data itself
+      const responseData = data?.data?.rooms || data?.data || data;
+      
       if (Array.isArray(responseData?.data)) {
         return {
           rooms: responseData.data,
@@ -64,7 +65,8 @@ export const fetchRoomById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get(`/rooms/${id}`);
-      return data.data.room;
+      // Return data.data._doc (Mongoose), data.data.room, data.data, or data itself
+      return data?.data?._doc || data?.data?.room || data?.data || data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Room not found");
     }
