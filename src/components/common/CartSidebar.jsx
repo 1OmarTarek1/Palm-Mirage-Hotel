@@ -18,13 +18,16 @@ export default function CartSidebar() {
   const isOpen = useSelector(selectCartIsOpen);
   const items = useSelector(selectCartItems);
   const total = useSelector(selectCartTotal);
+  const MotionDiv = motion.div;
+  const MotionAside = motion.aside;
+  const MotionButton = motion.button;
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <MotionDiv
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -35,7 +38,7 @@ export default function CartSidebar() {
           />
 
           {/* Sidebar Panel */}
-          <motion.aside
+          <MotionAside
             key="sidebar"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -55,19 +58,19 @@ export default function CartSidebar() {
                   </span>
                 )}
               </div>
-              <motion.button
+              <MotionButton
                 onClick={() => dispatch(closeCart())}
                 className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
               >
                 <X size={18} className="text-foreground/60" />
-              </motion.button>
+              </MotionButton>
             </div>
 
             {/* ── Items List ── */}
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scrollbar-thin">
               <AnimatePresence initial={false}>
                 {items.length === 0 ? (
-                  <motion.div
+                  <MotionDiv
                     key="empty"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -84,10 +87,10 @@ export default function CartSidebar() {
                     >
                       Browse Rooms & Services →
                     </Link>
-                  </motion.div>
+                  </MotionDiv>
                 ) : (
                   items.map((item) => (
-                    <motion.div
+                    <MotionDiv
                       key={item.id}
                       layout
                       initial={{ opacity: 0, x: 30 }}
@@ -111,7 +114,7 @@ export default function CartSidebar() {
                           <p className="text-sm font-semibold text-foreground truncate">
                             {item.name}
                           </p>
-                          <motion.button
+                          <MotionButton
                             onClick={() => {
                               dispatch(removeItem(item.id));
                               toast.warning(`${item.name} removed from cart`);
@@ -119,7 +122,7 @@ export default function CartSidebar() {
                             className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
                           >
                             <Trash2 size={14} />
-                          </motion.button>
+                          </MotionButton>
                         </div>
 
                         {item.nights && (
@@ -131,7 +134,7 @@ export default function CartSidebar() {
                         <div className="flex items-center justify-between mt-3">
                           {/* Quantity Controls */}
                           <div className="flex items-center gap-2 bg-background/60 rounded-full px-2 py-1 border border-border/40">
-                            <motion.button
+                            <MotionButton
                               onClick={() => {
                                 dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }));
                                 if (item.quantity - 1 === 0) {
@@ -143,9 +146,9 @@ export default function CartSidebar() {
                               className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors text-foreground/70"
                             >
                               <Minus size={11} />
-                            </motion.button>
+                            </MotionButton>
                             <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                            <motion.button
+                            <MotionButton
                               onClick={() => {
                                 dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }));
                                 toast.info(`Updated ${item.name} quantity`);
@@ -153,7 +156,7 @@ export default function CartSidebar() {
                               className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors text-foreground/70"
                             >
                               <Plus size={11} />
-                            </motion.button>
+                            </MotionButton>
                           </div>
 
                           {/* Price */}
@@ -162,7 +165,7 @@ export default function CartSidebar() {
                           </p>
                         </div>
                       </div>
-                    </motion.div>
+                    </MotionDiv>
                   ))
                 )}
               </AnimatePresence>
@@ -181,18 +184,18 @@ export default function CartSidebar() {
 
                 {/* Clear + Checkout */}
                 <div className="flex gap-3">
-                  <motion.button
+                  <MotionButton
                     onClick={() => {
                       dispatch(clearCart());
                       toast.error("Cart cleared");
                     }}
                     className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border/50
-                               text-foreground/70 hover:bg-muted transition-colors"
+                               text-foreground/70 hover:bg-muted transition-colors cursor-pointer "
                   >
                     Clear All
-                  </motion.button>
+                  </MotionButton>
 
-                  <motion.div className="flex-2">
+                  <MotionDiv className="flex-2">
                     <Link
                       to="/cart"
                       onClick={() => dispatch(closeCart())}
@@ -203,11 +206,11 @@ export default function CartSidebar() {
                       Go To Cart
                       <ArrowRight size={16} />
                     </Link>
-                  </motion.div>
+                  </MotionDiv>
                 </div>
               </div>
             )}
-          </motion.aside>
+          </MotionAside>
         </>
       )}
     </AnimatePresence>
