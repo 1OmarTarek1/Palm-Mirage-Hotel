@@ -51,7 +51,7 @@ export default function LoginButton() {
           `}
         >
           <motion.div>
-            <LogIn className="w-4 h-4 md:w-[18px] md:h-[18px]" />
+            <LogIn className="w-4 h-4 md:w-4.5 md:h-4.5" />
           </motion.div>
         </NavLink>
       </NavTooltip>
@@ -86,7 +86,7 @@ export default function LoginButton() {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <User className="w-4 h-4 md:w-[18px] md:h-[18px] text-white/60" />
+          <User className="w-4 h-4 md:w-4.5 md:h-4.5 text-white/60" />
         )}
       </button>
 

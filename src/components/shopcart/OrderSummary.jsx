@@ -41,7 +41,11 @@ export default function OrderSummary({ cartItems, totalPrice }) {
         * Price is per night. Final total may vary based on stay duration.
       </p>
 
-      <Button onClick={()=> navigate("/cart/checkout")} className="w-full h-12 bg-primary hover:bg-secondary text-white font-bold rounded-xl text-sm transition-colors shadow-sm">
+      <Button
+        onClick={() => navigate("/cart/checkout")}
+        variant="palmPrimary"
+        className="w-full h-12 rounded-xl text-sm font-bold shadow-sm"
+      >
         <Link to="/cart/checkout">Proceed to Checkout</Link>
       </Button>
 
