@@ -1,12 +1,14 @@
 import { ToastContainer } from "react-toastify";
 import { RouterProvider } from "react-router-dom";
 
+import AuthBootstrap from "./components/auth/AuthBootstrap";
 import { routes } from "./routes/AppRoutes";
 import FlyToCartOverlay from "./components/common/FlyToCartOverlay";
 
 export default function App() {
   return (
     <>
+      <AuthBootstrap />
       <ToastContainer
         position="top-left"
         autoClose={3000}

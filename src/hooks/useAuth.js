@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import {
   selectCurrentUser,
-  selectAccessToken,
   selectIsAuthenticated,
+  selectIsHydrating,
   setCredentials,
   logout,
 } from '@/store/slices/authSlice.js';
@@ -12,15 +12,15 @@ import {
 const useAuth = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
-  const accessToken = useSelector(selectAccessToken);
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isHydrating = useSelector(selectIsHydrating);
 
   useDebugValue(user, (u) => (u ? 'Logged In' : 'Logged Out'));
 
   return {
     user,
-    accessToken,
     isAuthenticated,
+    isHydrating,
     setCredentials: (data) => dispatch(setCredentials(data)),
     logout: () => dispatch(logout()),
   };

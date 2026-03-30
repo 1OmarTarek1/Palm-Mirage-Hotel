@@ -35,7 +35,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
 ) {
   const dispatch = useDispatch();
   const axiosPrivate = useAxiosPrivate();
-  const { accessToken, isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const isCreating = useSelector(selectCreatingActivityBooking);
   const isCancelling = useSelector(selectCancellingActivityBooking);
   const myActiveBookings = useSelector(selectActiveActivityBookings);
@@ -79,9 +79,9 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   }, []);
 
   useEffect(() => {
-    if (!accessToken || !isAuthenticated) return;
+    if (!isAuthenticated) return;
     void dispatch(fetchMyActivityBookings(axiosPrivate));
-  }, [accessToken, axiosPrivate, dispatch, isAuthenticated]);
+  }, [axiosPrivate, dispatch, isAuthenticated]);
 
   useEffect(() => {
     if (!initialActivityId) return;
@@ -203,7 +203,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!selectedScheduleData) return;
-    if (!accessToken || !isAuthenticated) {
+    if (!isAuthenticated) {
       toast.error("Please sign in first to manage activity bookings.");
       return;
     }

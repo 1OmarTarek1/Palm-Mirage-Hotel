@@ -42,7 +42,9 @@ function InfoCard({ icon: Icon, label, value, index }) {
 }
 
 export default function Profile() {
-  const { user, isAuthenticated } = useSelector((s) => s.auth);
+  const { user, isAuthenticated, isHydrating } = useSelector((s) => s.auth);
+
+  if (isHydrating) return null;
 
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
 

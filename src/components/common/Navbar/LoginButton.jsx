@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import NavTooltip from "./NavTooltip";
 import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
+import axiosInstance from "@/services/axiosInstance";
 
 export default function LoginButton() {
   const { isAuthenticated, user } = useSelector((s) => s.auth);
@@ -25,11 +26,17 @@ export default function LoginButton() {
     timeoutRef.current = setTimeout(() => setOpen(false), 200);
   }, []);
 
-  const handleLogout = useCallback(() => {
-    dispatch(logout());
-    setOpen(false);
-    toast.success("You've been logged out.");
-    navigate("/");
+  const handleLogout = useCallback(async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+    } catch {
+      // Clear frontend auth state even if the server logout request fails.
+    } finally {
+      dispatch(logout());
+      setOpen(false);
+      toast.success("You've been logged out.");
+      navigate("/");
+    }
   }, [dispatch, navigate]);
 
   if (!isAuthenticated) {

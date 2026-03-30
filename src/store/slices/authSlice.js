@@ -2,8 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   user: null,
-  accessToken: null,
   isAuthenticated: false,
+  isHydrating: true,
 };
 
 const authSlice = createSlice({
@@ -11,27 +11,27 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, accessToken } = action.payload;
+      const { user } = action.payload;
       state.user = user;
-      state.accessToken = accessToken;
-      state.isAuthenticated = true;
+      state.isAuthenticated = Boolean(user);
+      state.isHydrating = false;
     },
-    updateAccessToken: (state, action) => {
-      state.accessToken = action.payload;
+    finishHydration: (state) => {
+      state.isHydrating = false;
     },
     logout: (state) => {
       state.user = null;
-      state.accessToken = null;
       state.isAuthenticated = false;
+      state.isHydrating = false;
     },
   },
 });
 
-export const { setCredentials, updateAccessToken, logout } = authSlice.actions;
+export const { setCredentials, finishHydration, logout } = authSlice.actions;
 
 // Selectors
 export const selectCurrentUser = (state) => state.auth.user;
-export const selectAccessToken = (state) => state.auth.accessToken;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
+export const selectIsHydrating = (state) => state.auth.isHydrating;
 
 export default authSlice.reducer;
