@@ -710,19 +710,6 @@ export default function RoomDetails() {
                   </Button>
                 </div>
               </div>
-
-              <div className="bg-card p-6 rounded-xl transition-colors duration-300">
-                <h3 className="text-sm font-bold mb-4 text-foreground">Book through our trusted partners</h3>
-                <div className="flex items-center gap-4">
-                  {TRUSTED_PARTNERS.map((partner) => (
-                    <div key={partner.name}
-                      className="w-10 h-10 flex items-center justify-center shadow-sm cursor-pointer rounded-full bg-background">
-                      <img src={partner.logo} alt={partner.name}
-                        className={`w-full transition-all ${partner.rounded ? "opacity-60 hover:opacity-100" : ""}`} />
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
