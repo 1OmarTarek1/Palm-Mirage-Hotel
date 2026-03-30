@@ -8,7 +8,6 @@ import RoomFilter from "@/components/rooms/RoomFilter";
 import BookingBar from "@/components/rooms/BookingBar";
 import Sidebar from "@/components/common/Sidebar";
 import MobileDrawer from "@/components/common/MobileDrawer";
-// import { DUMMY_ROOMS } from "@/utils/constants";
 import {
   fetchAllRooms,
   selectListError,
@@ -70,8 +69,6 @@ export default function Rooms() {
   useEffect(() => {
     dispatch(fetchAllRooms());
   }, [dispatch]);
-
-  console.log(rooms[0]);
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
