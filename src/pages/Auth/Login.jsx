@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
 import AuthButton from "@/components/auth/AuthButton";
@@ -13,12 +12,6 @@ import PasswordField from "@/components/auth/PasswordField";
 import { loginSchema } from "@/features/auth/authSchema";
 import { setCredentials } from "@/store/slices/authSlice";
 import axiosInstance from "@/services/axiosInstance";
-
-const getCookieOptions = () => ({
-  expires: 10,
-  secure: window.location.protocol === "https:",
-  sameSite: "Lax",
-});
 
 export default function Login() {
   const navigate = useNavigate();
@@ -36,26 +29,12 @@ export default function Login() {
 
   const onSubmit = async (formData) => {
     try {
-      const { data } = await axiosInstance.post("/auth/login", formData);
-      const accessToken = data?.data?.accessToken;
-      const refreshToken = data?.data?.refreshToken;
-
-      Cookies.set("accessToken", accessToken, getCookieOptions());
-      Cookies.set("refreshToken", refreshToken, {
-        ...getCookieOptions(),
-        expires: 365,
-      });
-
-      const profileResponse = await axiosInstance.get("/auth/me", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axiosInstance.post("/auth/login", formData);
+      const profileResponse = await axiosInstance.get("/auth/profile");
 
       dispatch(
         setCredentials({
           user: profileResponse?.data?.data?.user ?? null,
-          accessToken,
         }),
       );
 
@@ -102,7 +81,8 @@ export default function Login() {
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      <GoogleAuthButton mode="login" />
+      <GoogleAuthButton />
     </section>
   );
 }
+

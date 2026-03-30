@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { toast } from "react-toastify";
 
 import AuthButton from "@/components/auth/AuthButton";
@@ -11,6 +10,7 @@ import PasswordField from "@/components/auth/PasswordField";
 import FormInputField from "@/components/auth/FormInputField";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { registerSchema } from "@/features/auth/authSchema";
+import axiosInstance from "@/services/axiosInstance";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export default function Register() {
   const onSubmit = async (formData) => {
     setServerError("");
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE}/auth/signup`, formData);
+      await axiosInstance.post("/auth/signup", formData);
       toast.success("Account created! Please check your email to verify.");
       navigate("/auth/login");
     } catch (error) {
@@ -123,7 +123,7 @@ export default function Register() {
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      <GoogleAuthButton mode="register" />
+      <GoogleAuthButton />
     </section>
   );
 }
