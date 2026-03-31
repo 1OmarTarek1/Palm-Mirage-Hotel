@@ -134,6 +134,7 @@ export default function Rooms() {
         <div className="hidden lg:block lg:col-span-3">
           <Sidebar>
             <RoomFilter
+              rooms={rooms}
               onFilter={(criteria) => {
                 applyFilter(criteria);
                 setIsFilterOpen(false);
@@ -150,6 +151,7 @@ export default function Rooms() {
         title="Filter Rooms"
       >
         <RoomFilter
+          rooms={rooms}
           onFilter={(criteria) => {
             applyFilter(criteria);
             setIsFilterOpen(false);

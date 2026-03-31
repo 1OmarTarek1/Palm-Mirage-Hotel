@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -6,20 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Star } from "lucide-react";
 
 const roomTypes = [
-  { value: "deluxe", label: "Deluxe Room", count: 13 },
-  { value: "double", label: "Double Room", count: 11 },
-  { value: "family", label: "Family Room", count: 15 },
-  { value: "single", label: "Single Room", count: 7 },
-  { value: "twin", label: "Twin Room", count: 5 },
+  { value: "deluxe", label: "Deluxe Room" },
+  { value: "double", label: "Double Room" },
+  { value: "family", label: "Family Room" },
+  { value: "single", label: "Single Room" },
+  { value: "twin", label: "Twin Room" },
 ];
 
-const ratings = [
-  { value: 1, count: 1 },
-  { value: 2, count: 0 },
-  { value: 3, count: 0 },
-  { value: 4, count: 3 },
-  { value: 5, count: 2 },
-];
+const ratingValues = [1, 2, 3, 4, 5];
 
 const defaultState = {
   price: [0, 1000],
@@ -28,11 +22,44 @@ const defaultState = {
   unrated: false,
 };
 
-export default function RoomFilter({ onFilter }) {
+export default function RoomFilter({ rooms = [], onFilter }) {
   const [price, setPrice] = useState(defaultState.price);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
   const [unrated, setUnrated] = useState(false);
+
+  const roomTypeCounts = useMemo(() => {
+    const tally = (rooms || []).reduce((acc, room) => {
+      const t = (room.roomType || "").toLowerCase();
+      if (!t) return acc;
+      acc[t] = (acc[t] || 0) + 1;
+      return acc;
+    }, {});
+
+    return roomTypes.map((type) => ({
+      ...type,
+      count: tally[type.value] || 0,
+    }));
+  }, [rooms]);
+
+  const ratingCounts = useMemo(() => {
+    const tally = (rooms || []).reduce((acc, room) => {
+      const r = Number(room.rating) || 0;
+      if (r >= 1 && r <= 5) {
+        acc[r] = (acc[r] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    return ratingValues.map((value) => ({
+      value,
+      count: tally[value] || 0,
+    }));
+  }, [rooms]);
+
+  const unratedCount = useMemo(() => {
+    return (rooms || []).filter((room) => !room.rating || Number(room.rating) === 0).length;
+  }, [rooms]);
 
   const toggleItem = (setter, value) =>
     setter((prev) =>
@@ -85,7 +112,7 @@ export default function RoomFilter({ onFilter }) {
           Room Types
         </h4>
         <ul className="space-y-2.5">
-          {roomTypes.map((type) => (
+          {roomTypeCounts.map((type) => (
             <li key={type.value} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -115,7 +142,7 @@ export default function RoomFilter({ onFilter }) {
           Rating
         </h4>
         <ul className="space-y-2.5">
-          {ratings.map(({ value, count }) => (
+          {ratingCounts.map(({ value, count }) => (
             <li key={value} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -164,7 +191,7 @@ export default function RoomFilter({ onFilter }) {
                 Unrated
               </Label>
             </div>
-            <span className="text-xs text-stone-400">17</span>
+            <span className="text-xs text-stone-400">{unratedCount}</span>
           </li>
         </ul>
       </div>
