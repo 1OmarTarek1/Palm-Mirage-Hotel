@@ -10,6 +10,7 @@ import activityBookingsReducer from "@/services/activityBookings/activityBooking
 import menuReducer from "@/services/menu/menuSlice";
 import userReducer from "@/services/user/userSlice";
 import bookingReducer from "@/services/booking/bookingSlice";
+import restaurantBookingsReducer from "@/services/restaurantBookings/restaurantBookingsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -24,5 +25,6 @@ export const store = configureStore({
     menu: menuReducer,
     user: userReducer,
     booking: bookingReducer,
+    restaurantBookings: restaurantBookingsReducer,
   },
 });

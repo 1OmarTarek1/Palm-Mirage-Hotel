@@ -46,7 +46,7 @@ export const routes = createBrowserRouter([
       { path: 'services/Meetings', element: <Meetings /> },
       { path: 'services/menu', element: <Menu /> },
       { path: 'services/restaurant', element: <Restaurant /> },
-      { path: 'services/relax', element: <Relax /> },
+      // { path: 'services/relax', element: <Relax /> },
       { path: 'blog', element: <Blog /> },
       { path: 'blog/:id', element: <BlogDetails /> },
       { path: 'services/activities', element: <Activities /> },
