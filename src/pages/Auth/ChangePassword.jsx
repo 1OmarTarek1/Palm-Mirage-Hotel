@@ -1,9 +1,5 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-<<<<<<< HEAD
-=======
-import { useNavigate } from "react-router-dom";
->>>>>>> 0ff1257 (feat(auth): create ChangePassword component with api integration and cookie fallback)
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -38,8 +34,6 @@ export default function ChangePassword({ isOpen, onClose }) {
     },
     resolver: zodResolver(changePasswordSchema),
   });
-
-  if (!isOpen) return null;
 
   const onSubmit = async (formData) => {
     setServerError("");
@@ -81,6 +75,8 @@ export default function ChangePassword({ isOpen, onClose }) {
       toast.error(msg);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div
