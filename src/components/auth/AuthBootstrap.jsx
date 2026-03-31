@@ -12,7 +12,7 @@ export default function AuthBootstrap() {
 
     const bootstrapAuth = async () => {
       try {
-        const { data } = await axiosInstance.get("/auth/profile");
+        const { data } = await axiosInstance.get("/auth/account");
         if (isMounted) {
           dispatch(setCredentials({ user: data?.data?.user ?? null }));
         }
