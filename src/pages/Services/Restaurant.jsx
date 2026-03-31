@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import RestaurantBooking from "@/components/restaurant/RestaurantBooking";
 
 const menuItems = [
   {
@@ -187,7 +188,7 @@ export default function Restaurant() {
                 {/* Buttons */}
                 <div className="flex flex-col gap-4 text-center mt-4">
                   <Button asChild variant="palmPrimary">
-                    <NavLink to="/contact">Book A Table</NavLink>
+                    <a href="#table-booking">Book A Table</a>
                   </Button>
                   <Button asChild variant="palmSecondary">
                     <NavLink to="/services/menu">Browse Menus</NavLink>
@@ -263,7 +264,7 @@ export default function Restaurant() {
                 {/* button*/}
                 <div className="mt-8 flex justify-center lg:justify-start">
                   <Button asChild variant="palmSecondary" size="lg">
-                    <NavLink to="/contact">Reserve Now</NavLink>
+                    <a href="#table-booking">Reserve Now</a>
                   </Button>
                 </div>
               </div>
@@ -306,7 +307,7 @@ export default function Restaurant() {
                 {/* button*/}
                 <div className="mt-8 flex justify-center lg:justify-start">
                   <Button asChild variant="palmSecondary" size="lg">
-                    <NavLink to="/contact">Reserve Now</NavLink>
+                    <a href="#table-booking">Reserve Now</a>
                   </Button>
                 </div>
               </div>
@@ -382,7 +383,7 @@ export default function Restaurant() {
                 {/* button*/}
                 <div className="mt-8 flex justify-center lg:justify-start">
                   <Button asChild variant="palmSecondary" size="lg">
-                    <NavLink to="/contact">Reserve Now</NavLink>
+                    <a href="#table-booking">Reserve Now</a>
                   </Button>
                 </div>
               </div>
@@ -437,11 +438,14 @@ export default function Restaurant() {
                   variant="palmPrimary"
                   className="w-full"
                 >
-                  <Link to="/contact">Reserve Now</Link>
+                  <a href="#table-booking">Reserve Now</a>
                 </Button>
               </div>
             </div>
           </div>
+          
+          {/* section-5 : Table Booking Form */}
+          <RestaurantBooking />
         </div>
       </section>
     </>
