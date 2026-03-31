@@ -30,7 +30,6 @@ export default function ResetPassword() {
 
   const onSubmit = async (formData) => {
     try {
-      console.log({ ...formData, ...state });
       await axiosInstance.patch("/auth/reset-password", {
         ...formData,
         ...state,
