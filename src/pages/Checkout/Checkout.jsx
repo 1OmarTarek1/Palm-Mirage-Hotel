@@ -13,6 +13,12 @@ import OrderReceived from '@/components/Checkout/OrderReceived';
 import BillingDetails from '@/components/Checkout/BillingDetails';
 import { checkoutSchema } from './checkoutSchema';
 import { selectCartItems, selectCartTotal, clearCart } from '@/store/slices/cartSlice';
+import { 
+  createBooking, 
+  selectBookingLoading, 
+  selectBookingError 
+} from '@/services/booking/bookingSlice';
+import { toast } from 'react-toastify';
 
 const Checkout = () => {
   const dispatch = useDispatch();
@@ -22,6 +28,9 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('check');
   const [orderReceived, setOrderReceived] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const isBookingLoading = useSelector(selectBookingLoading);
+  const bookingError = useSelector(selectBookingError);
 
   // Prevention of scroll when modal is open
   useEffect(() => {
@@ -103,17 +112,43 @@ const Checkout = () => {
                   handleSubmitHook={handleSubmit}
                   getValues={getValues}
                   paymentMethod={paymentMethod}
-                  onSuccess={(data) => {
-                    setOrderReceived({
-                      ...data,
-                      orderNumber: Math.floor(10000 + Math.random() * 90000).toString(),
-                      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                      items: cartItems,
-                      total: cartTotal,
-                      paymentMethod: paymentMethod === 'check' ? 'Check payments' : 'Stripe'
-                    });
-                    setIsModalOpen(true);
-                    dispatch(clearCart());
+                  onSuccess={async (data) => {
+                    // Process bookings for any rooms in the cart
+                    const bookingPromises = cartItems
+                      .filter(item => item.checkInDate)
+                      .map(item => {
+                        const bookingData = {
+                          roomId: item.id,
+                          checkInDate: item.checkInDate,
+                          checkOutDate: item.checkOutDate,
+                          guests: item.guests || 1,
+                          paymentMethod: paymentMethod === 'check' ? 'cash' : 'online',
+                          specialRequests: data.orderNotes || "Booked from Website"
+                        };
+                        return dispatch(createBooking(bookingData)).unwrap();
+                      });
+
+                    try {
+                      if (bookingPromises.length > 0) {
+                        await Promise.all(bookingPromises);
+                        toast.success('Your room(s) have been reserved successfully!');
+                      }
+
+                      setOrderReceived({
+                        ...data,
+                        orderNumber: Math.floor(10000 + Math.random() * 90000).toString(),
+                        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        items: cartItems,
+                        total: cartTotal,
+                        paymentMethod: paymentMethod === 'check' ? 'Check payments' : 'Stripe'
+                      });
+                      setIsModalOpen(true);
+                      dispatch(clearCart());
+                    } catch (err) {
+                      console.error('Booking failed:', err);
+                      toast.error('Reservation failed. Please check your details and try again.');
+                      // We don't clear the cart if booking failed so they can try again
+                    }
                   }}
                   resetForm={reset}
                 />
