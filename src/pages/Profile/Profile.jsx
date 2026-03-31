@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -9,7 +10,9 @@ import {
   Calendar,
   Shield,
   BadgeCheck,
+  Lock,
 } from "lucide-react";
+import ChangePassword from "@/pages/Auth/ChangePassword";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -33,7 +36,7 @@ function InfoCard({ icon: Icon, label, value, index }) {
       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
         <Icon size={20} />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
         <p className="text-sm font-medium text-foreground truncate">{value}</p>
       </div>
@@ -44,7 +47,9 @@ function InfoCard({ icon: Icon, label, value, index }) {
 export default function Profile() {
   const { user, isAuthenticated, isHydrating } = useSelector((s) => s.auth);
 
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   if (isHydrating) return null;
+  // const { user, isAuthenticated } = useSelector((s) => s.auth);
 
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
 
@@ -106,7 +111,33 @@ export default function Profile() {
         {infoItems.map((item, i) => (
           <InfoCard key={item.label} {...item} index={i} />
         ))}
+        
+        {/* Change Password Trigger Card */}
+        {user?.provider !== "google" && (
+          <motion.button
+            custom={infoItems.length}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            onClick={() => setIsPasswordModalOpen(true)}
+            className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all text-left"
+          >
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-primary-foreground shrink-0">
+              <Lock size={20} />
+            </div>
+            <div>
+              <p className="text-xs text-primary uppercase font-bold tracking-wider">Security</p>
+              <p className="text-sm font-medium text-foreground">Change Password</p>
+            </div>
+          </motion.button>
+        )}
       </div>
+
+      {/* The Reusable Modal */}
+      <ChangePassword 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </section>
   );
 }
