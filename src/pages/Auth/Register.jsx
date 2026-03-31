@@ -35,9 +35,9 @@ export default function Register() {
   const onSubmit = async (formData) => {
     setServerError("");
     try {
-      await axiosInstance.post("/auth/signup", formData);
+      const { data } = await axiosInstance.post("/auth/signup", formData);
       toast.success("Account created! Please check your email to verify.");
-      navigate("/auth/login");
+       navigate("/auth/confirm-email" , { state: { email: data.email ?? formData.email } });
     } catch (error) {
       const msg = error.response?.data?.message || "Registration failed. Please try again.";
       setServerError(msg);

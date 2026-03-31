@@ -91,7 +91,9 @@ export const changePasswordSchema = z
   .object({
     oldPassword: passwordValidator,
     newPassword: passwordValidator,
-    confirmPassword: z.string().min(1, { message: "Confirm password is required" }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Confirm password is required" }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
@@ -101,3 +103,9 @@ export const changePasswordSchema = z
     message: "New password must be different from old password",
     path: ["newPassword"],
   });
+
+// Confirm Email Schema
+export const ConfirmEmailSchema = z.object({
+  email: emailValidator,
+  code: z.string().min(4, { message: "OTP is required" }),
+});
