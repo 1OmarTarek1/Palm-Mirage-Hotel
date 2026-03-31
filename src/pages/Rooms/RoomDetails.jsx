@@ -65,6 +65,12 @@ import {
   selectRoomError,
   clearRoom,
 } from "@/services/rooms/roomsSlice";
+import { 
+  createBooking, 
+  selectBookingLoading, 
+  selectBookingError,
+  clearBookingState
+} from "@/services/booking/bookingSlice";
 
 // Map icon name strings → actual Lucide components
 const ICON_MAP = {
@@ -131,6 +137,9 @@ export default function RoomDetails() {
   const apiRoom = useSelector(selectRoom);
   const isLoadingApi = useSelector(selectRoomLoading);
   const apiError = useSelector(selectRoomError);
+  
+  const isBookingInProgress = useSelector(selectBookingLoading);
+  const bookingError = useSelector(selectBookingError);
 
   // Map API response to match the structure expected by the UI
   const room = apiRoom
@@ -234,35 +243,38 @@ export default function RoomDetails() {
   const { flyToCart } = useFlyToCart();
 
   const handleBooking = async (e) => {
-    flyToCart(e.currentTarget);
-    setIsLoading(true);
-    try {
-      // Calculate nights
-      const start = new Date(checkIn);
-      const end = new Date(checkOut);
-      const diffTime = Math.abs(end - start);
-      const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-
-      // Dispatch to Redux cart
-      dispatch(addItem({
-        id: room.id,
-        name: room.name,
-        image: room.images[0],
-        price: room.price,
-        quantity: 1,
-        nights: nights
-      }));
-
-      toast.success("Room added to cart! Redirecting...");
-
-      setTimeout(() => {
-        navigate("/cart");
-      }, 1500);
-    } catch (error) {
-      toast.error("Booking failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+    // Basic validation
+    if (!checkIn || !checkOut) {
+      toast.error("Please select check-in and check-out dates");
+      return;
     }
+
+    flyToCart(e.currentTarget);
+    
+    // Calculate nights
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const diffTime = Math.abs(end - start);
+    const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+
+    // Add to cart with booking data
+    dispatch(addItem({
+      id: room.id,
+      name: room.name,
+      image: room.images[0],
+      price: room.price,
+      quantity: 1,
+      nights: nights,
+      checkInDate: new Date(checkIn).toISOString(),
+      checkOutDate: new Date(checkOut).toISOString(),
+      guests: Number(adults) + Number(children)
+    }));
+
+    toast.success("Room added to cart! Proceeding to checkout...");
+    
+    setTimeout(() => {
+      navigate("/cart");
+    }, 1500);
   };
 
   if (isLoadingApi) {
@@ -703,10 +715,10 @@ export default function RoomDetails() {
                     <span className="text-lg font-bold text-foreground">${(room.price || 0).toFixed(1)}</span>
                   </div>
 
-                  <Button onClick={handleBooking} disabled={isLoading}
+                  <Button onClick={handleBooking} disabled={isBookingInProgress}
                     className="w-full h-12 bg-[#8c9e8d] hover:bg-[#7a8c7b] text-white font-bold rounded-lg transition-colors mt-4 flex items-center justify-center gap-2">
-                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {isLoading ? "Booking..." : "Book Room"}
+                    {isBookingInProgress && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isBookingInProgress ? "Processing..." : "Book Room"}
                   </Button>
                 </div>
               </div>
