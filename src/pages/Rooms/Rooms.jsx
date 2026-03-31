@@ -8,6 +8,7 @@ import RoomFilter from "@/components/rooms/RoomFilter";
 import BookingBar from "@/components/rooms/BookingBar";
 import Sidebar from "@/components/common/Sidebar";
 import MobileDrawer from "@/components/common/MobileDrawer";
+import { RoomCardSkeleton } from "../../components/rooms/RoomCardSkeleton";
 import {
   fetchAllRooms,
   selectListError,
@@ -70,7 +71,17 @@ export default function Rooms() {
     dispatch(fetchAllRooms());
   }, [dispatch]);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading)
+    return (
+      <section className="text-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: roomsPerPage }).map((_, index) => (
+            <RoomCardSkeleton key={index} />
+          ))}
+        </div>
+      </section>
+    );
+
   if (error) return <p>Error: {error}</p>;
 
   return (
