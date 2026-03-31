@@ -27,7 +27,7 @@ import {
 const formatScheduleLabel = (schedule) =>
   `${schedule.date} - ${schedule.startTime} to ${schedule.endTime}`;
 
-const phonePattern = /^(\+?[1-9]\d{7,14}|00[1-9]\d{7,14})$/;
+const phonePattern = /^[\d\s()+-]+$/;
 
 const ActivityBooking = forwardRef(function ActivityBooking(
   { activities = [], initialActivityId = "", initialScheduleId = "" },
@@ -210,6 +210,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
 
     if (!existingBooking) {
       const normalizedPhone = phone.trim();
+      const compactPhone = normalizedPhone.replace(/[^\d+]/g, "");
       const guestCount = Number(guests);
 
       if (!Number.isInteger(guestCount) || guestCount < 1) {
@@ -222,8 +223,8 @@ const ActivityBooking = forwardRef(function ActivityBooking(
         return;
       }
 
-      if (!phonePattern.test(normalizedPhone)) {
-        toast.error("Use a valid phone number, for example +201012345678.");
+      if (!phonePattern.test(normalizedPhone) || compactPhone.replace(/\D/g, "").length < 7) {
+        toast.error("Use a valid phone number.");
         return;
       }
     }
@@ -320,7 +321,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="w-full space-y-6">
+          <form onSubmit={handleSubmit} noValidate className="w-full space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Activity*</label>
@@ -392,7 +393,6 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                   type="tel"
                   autoComplete="tel"
                   placeholder="+201012345678"
-                  pattern="^(\\+?[1-9]\\d{7,14}|00[1-9]\\d{7,14})$"
                   value={existingBooking ? existingBooking.contactPhone : phone}
                   onChange={(event) => setPhone(event.target.value)}
                   disabled={Boolean(existingBooking)}
