@@ -29,7 +29,7 @@ import ForgotPassword from '@/pages/Auth/ForgotPassword';
 import Login from '@/pages/Auth/Login';
 import Register from '@/pages/Auth/Register';
 import ResetPassword from '@/pages/Auth/ResetPassword';
-import ChangePassword from'@/pages/Auth/ChangePassword';
+import ChangePassword from '@/pages/Auth/ChangePassword';
 import Restaurant from '../pages/Services/Restaurant.jsx';
 // import ProtectedRoute from './ProtectedRoute'
 

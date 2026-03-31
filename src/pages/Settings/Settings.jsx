@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sun, Moon, Lock, Trash2 } from "lucide-react";
 import { toggleTheme, selectIsDark } from "@/store/slices/themeSlice";
-import ChangePassword from "@/pages/Auth/ChangePassword";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -17,7 +15,6 @@ const fadeUp = {
 
 export default function Settings() {
   const { user, isAuthenticated, isHydrating } = useSelector((s) => s.auth);
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const isDark = useSelector(selectIsDark);
   const dispatch = useDispatch();
 
@@ -87,12 +84,12 @@ export default function Settings() {
                 <p className="text-xs text-muted-foreground">Update your account password</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsChangePasswordOpen(true)}
+            <Link
+              to="/auth/change-password"
               className="px-4 py-2 text-xs font-medium rounded-xl border border-border/50 text-foreground/80 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
             >
               Change
-            </button>
+            </Link>
           </motion.div>
         )}
 
@@ -118,11 +115,6 @@ export default function Settings() {
           </button>
         </motion.div>
       </div>
-
-      <ChangePassword
-        isOpen={isChangePasswordOpen}
-        onClose={() => setIsChangePasswordOpen(false)}
-      />
     </section>
   );
 }

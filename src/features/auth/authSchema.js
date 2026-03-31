@@ -89,22 +89,15 @@ export const resetPasswordSchema = z
 // Change Password Schema
 export const changePasswordSchema = z
   .object({
-    oldPassword: z
-      .string()
-      .min(8, { message: "Old password must be at least 8 characters" }),
-
-    newPassword: z
-      .string()
-      .min(8, { message: "New password must be at least 8 characters" })
-      .max(50, { message: "New password is too long" })
-      .regex(
-        /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-        "Password must contain at least 8 characters, one uppercase, one lowercase, and one number"
-      ),
-
-    confirmNewPassword: z.string(),
+    oldPassword: passwordValidator,
+    newPassword: passwordValidator,
+    confirmPassword: z.string().min(1, { message: "Confirm password is required" }),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "New passwords do not match",
-    path: ["confirmNewPassword"],
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.oldPassword !== data.newPassword, {
+    message: "New password must be different from old password",
+    path: ["newPassword"],
   });
