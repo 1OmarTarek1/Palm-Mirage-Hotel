@@ -1,46 +1,36 @@
-import { toast } from "react-toastify";
-import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-import axiosInstance from "@/services/axiosInstance";
 import AuthButton from "@/components/auth/AuthButton";
 import AuthHeader from "@/components/auth/AuthHeader";
-import { setCredentials } from "@/store/slices/authSlice";
 import FormInputField from "@/components/auth/FormInputField";
 import { ConfirmEmailSchema } from "@/features/auth/authSchema";
+import axiosInstance from "@/services/axiosInstance";
 
 export default function ConfirmEmail() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { state } = useLocation();
+  const initialEmail = state?.email || state?.data?.email || "";
 
   const {
     register,
     handleSubmit,
     formState: { isSubmitting, errors },
   } = useForm({
-    defaultValues: { email: state?.data?.email || "", code: "" },
+    defaultValues: { email: initialEmail, code: "" },
     resolver: zodResolver(ConfirmEmailSchema),
   });
 
   const onSubmit = async (formData) => {
     try {
-      await axiosInstance.patch("/auth/confirm-email", {
-        ...formData,
-        ...state,
-      });
-      console.log( {
-        ...formData,
-        ...state,
-      })
+      const payload = {
+        email: formData.email || initialEmail,
+        code: formData.code,
+      };
 
-      // dispatch(
-      //   setCredentials({
-      //     user: profileResponse?.data?.data?.user ?? null,
-      //   }),
-      // );
+      await axiosInstance.patch("/auth/confirm-email", payload);
 
       toast.success("Signed in successfully.");
       navigate("/");
@@ -60,10 +50,11 @@ export default function ConfirmEmail() {
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+
         <FormInputField
           type="text"
           id="code"
-          label="code"
+          label="Code"
           placeholder="Enter 4-digit code"
           register={register("code")}
           error={errors.code}
