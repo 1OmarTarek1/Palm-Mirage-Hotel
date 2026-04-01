@@ -19,7 +19,7 @@ import {
 export default function Rooms() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filter, setFilter] = useState({
-    price: [0, 1000],
+    price: [0, Number.MAX_SAFE_INTEGER],
     roomTypes: [],
     ratings: [],
     unrated: false,
@@ -28,6 +28,10 @@ export default function Rooms() {
   const rooms = useSelector(selectRooms);
   const isLoading = useSelector(selectListLoading);
   const error = useSelector(selectListError);
+  const maxRoomPrice = useMemo(() => {
+    if (!rooms?.length) return Number.MAX_SAFE_INTEGER;
+    return Math.max(...rooms.map((room) => Number(room.price) || 0), 0);
+  }, [rooms]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const roomsPerPage = 8;
@@ -53,7 +57,7 @@ export default function Rooms() {
 
   const applyFilter = (criteria) => {
     setFilter({
-      price: criteria?.price ?? [0, 1000],
+      price: criteria?.price ?? [0, maxRoomPrice || Number.MAX_SAFE_INTEGER],
       roomTypes: criteria?.roomTypes ?? [],
       ratings: criteria?.ratings ?? [],
       unrated: criteria?.unrated ?? false,

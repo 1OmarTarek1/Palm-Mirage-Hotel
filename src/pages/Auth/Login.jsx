@@ -23,7 +23,7 @@ export default function Login() {
     handleSubmit,
     formState: { isSubmitting, errors },
   } = useForm({
-    defaultValues: { email: "mohamedahmedkhalaf68@gmail.com", password: "moAhmed123" },
+    defaultValues: { email: "cr7omartarek@gmail.com", password: "moAhmed123" },
     resolver: zodResolver(loginSchema),
   });
 
