@@ -1,16 +1,114 @@
-# React + Vite
+# 🌴 Palm Mirage Hotel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern hotel booking web application inspired by Egyptian luxury and hospitality.  
+Built with a scalable architecture using React, Redux, Tailwind CSS, and shadcn/ui.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Overview
 
-## React Compiler
+Palm Mirage Hotel is a fully responsive hotel website that allows users to:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Browse rooms and view detailed information
+- Explore hotel services (Relax, Restaurant, Amenities, Wellness & Fitness, Events, Meetings)
+- Read blog articles
+- Contact the hotel
+- Register / Login
+- Book rooms (Authenticated users only)
+- Manage reservations
 
-## Expanding the ESLint configuration
+This project follows a clean, scalable folder structure and production-level routing architecture.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠 Tech Stack
+
+- **React**
+- **React Router**
+- **Redux Toolkit**
+- **Tailwind CSS**
+- **shadcn/ui**
+- **Axios**
+- **Vite**
+
+---
+
+## 📁 Project Structure
+
+src/
+├── app/ # Redux store setup
+├── layouts/ # MainLayout, AuthLayout
+├── pages/ # Route-based pages
+├── features/ # Redux slices
+├── routes/ # App routes + ProtectedRoute
+├── components/ # Shared & reusable components
+├── services/ # API logic
+├── hooks/ # Custom hooks
+├── utils/ # Helper functions
+
+
+---
+
+## 🔐 Authentication
+
+- Guests can browse public pages (Home, Rooms, Services, Blog, Contact).
+- Authenticated users can:
+  - Book rooms
+  - Access profile
+  - View reservations
+
+Protected routes are handled using a custom `ProtectedRoute` component.
+
+---
+
+## 🚀 Features
+
+### 🏠 Home Page
+- Hero section
+- Featured rooms
+- Services preview
+- Call-to-action
+
+### 🛏 Rooms
+- Room listing
+- Room details page
+- Booking system
+
+### 🌴 Services
+- Relax
+- Restaurant
+- Amenities
+- Wellness & Fitness
+- Events & Meetings
+- Our Products
+
+### 📰 Blog
+- Blog listing
+- Blog details page
+
+### 📞 Contact
+- Contact form
+- Hotel information
+
+### ❌ 404 Page
+- Custom Not Found page
+
+---
+
+## 🧠 Architecture Highlights
+
+- Feature-based folder structure
+- Reusable layout system
+- Protected routing system
+- Centralized Redux state management
+- Modular and scalable design
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/your-username/palm-mirage-hotel.git
+cd palm-mirage-hotel
+npm install
+npm run dev
