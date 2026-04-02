@@ -143,8 +143,8 @@ const InvoicePDF = ({ orderReceived }) => (
           <Text style={styles.value}>${orderReceived.total.toFixed(2)}</Text>
         </View>
         <View style={styles.headerCol}>
-          <Text style={styles.label}>PAYMENT METHOD:</Text>
-          <Text style={styles.value}>{orderReceived.paymentMethod}</Text>
+          <Text style={styles.label}>PAYMENT:</Text>
+          <Text style={styles.value}>{orderReceived.paymentCategory || orderReceived.paymentMethod}</Text>
         </View>
       </View>
 
@@ -168,8 +168,10 @@ const InvoicePDF = ({ orderReceived }) => (
           <Text style={styles.tableFooterRight}>${orderReceived.total.toFixed(2)}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={styles.tableFooterLeft}>Payment method:</Text>
-          <Text style={styles.tableFooterRight}>{orderReceived.paymentMethod}</Text>
+          <Text style={styles.tableFooterLeft}>Payment plan:</Text>
+          <Text style={styles.tableFooterRight}>
+            {(orderReceived.paymentCategory || 'Payment')} / {orderReceived.paymentMethod}
+          </Text>
         </View>
         
         <View style={[styles.tableFooter, { backgroundColor: '#C6A969' }]}>

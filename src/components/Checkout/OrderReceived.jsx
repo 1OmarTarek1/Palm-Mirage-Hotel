@@ -97,10 +97,17 @@ const OrderReceived = ({ orderReceived }) => {
             <p className="text-sm font-bold text-foreground">${orderReceived.total.toFixed(2)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Payment Method:</p>
-            <p className="text-sm font-bold text-foreground">{orderReceived.paymentMethod}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Payment:</p>
+            <p className="text-sm font-bold text-foreground">{orderReceived.paymentCategory || orderReceived.paymentMethod}</p>
           </div>
         </div>
+
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 px-6 py-5">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Payment Note</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {orderReceived.paymentNote || `Reservation only. Please complete payment via ${orderReceived.paymentMethod} on arrival.`}
+        </p>
+      </div>
 
       <div className="space-y-8">
         <h2 className="text-3xl font-serif text-foreground">Order Details</h2>
@@ -128,8 +135,10 @@ const OrderReceived = ({ orderReceived }) => {
                 <td className="px-6 py-4 text-right text-foreground font-bold italic">${orderReceived.total.toFixed(2)}</td>
               </tr>
               <tr>
-                <th className="px-6 py-4 font-bold text-foreground">Payment method:</th>
-                <td className="px-6 py-4 text-right text-muted-foreground">{orderReceived.paymentMethod}</td>
+                <th className="px-6 py-4 font-bold text-foreground">Payment plan:</th>
+                <td className="px-6 py-4 text-right text-muted-foreground">
+                  {orderReceived.paymentCategory || 'Check payments'} / {orderReceived.paymentMethod}
+                </td>
               </tr>
               <tr className="bg-primary/70">
                 <th className="px-6 py-4 font-bold text-lg text-white">Total:</th>

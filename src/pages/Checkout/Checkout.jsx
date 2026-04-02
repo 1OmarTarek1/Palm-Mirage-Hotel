@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -15,22 +16,21 @@ import { checkoutSchema } from './checkoutSchema';
 import { selectCartItems, selectCartTotal, clearCart } from '@/store/slices/cartSlice';
 import { 
   createBooking, 
-  selectBookingLoading, 
-  selectBookingError 
 } from '@/services/booking/bookingSlice';
 import { toast } from 'react-toastify';
 
+const PENDING_CHECKOUT_KEY = 'pendingCheckoutSession';
+
 const Checkout = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
   
-  const [paymentMethod, setPaymentMethod] = useState('check');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const isBookingLoading = useSelector(selectBookingLoading);
-  const bookingError = useSelector(selectBookingError);
 
   // Prevention of scroll when modal is open
   useEffect(() => {
@@ -45,7 +45,6 @@ const Checkout = () => {
   const {
     register,
     handleSubmit,
-    trigger,
     reset,
     getValues,
     control,
@@ -70,6 +69,109 @@ const Checkout = () => {
       agreeTerms: false,
     }
   });
+
+  const buildOrderReceived = (data, items, total, method) => {
+    const isCardPayment = method === 'card';
+
+    return {
+      ...data,
+      orderNumber: Math.floor(10000 + Math.random() * 90000).toString(),
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      items,
+      total,
+      paymentCategory: isCardPayment ? 'Visa / Stripe' : 'Check payments',
+      paymentMethod: isCardPayment ? 'Visa card - paid online' : 'Cash on arrival',
+      paymentNote: isCardPayment
+        ? 'Your payment was completed securely via Stripe and your reservation has been confirmed.'
+        : 'Reservation only. Please complete your payment in cash when you arrive at the hotel.',
+    };
+  };
+
+  const createReservations = async ({ items, data, method }) => {
+    const bookingPromises = items
+      .filter(item => item.checkInDate)
+      .map(item => {
+        const bookingData = {
+          roomId: item.id,
+          checkInDate: item.checkInDate,
+          checkOutDate: item.checkOutDate,
+          guests: item.guests || 1,
+          paymentMethod: method === 'card' ? 'card' : 'cash',
+          paymentStatus: method === 'card' ? 'paid' : 'unpaid',
+          specialRequests: data.orderNotes || 'Booked from Website',
+        };
+        return dispatch(createBooking(bookingData)).unwrap();
+      });
+
+    if (bookingPromises.length > 0) {
+      await Promise.all(bookingPromises);
+    }
+  };
+
+  const storePendingCheckout = (formData) => {
+    if (typeof window === 'undefined') return;
+
+    const snapshot = {
+      formData,
+      cartItems,
+      cartTotal,
+      paymentMethod,
+      createdAt: Date.now(),
+    };
+
+    window.sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify(snapshot));
+  };
+
+  useEffect(() => {
+    const paymentState = searchParams.get('payment');
+    const paymentMethodParam = searchParams.get('method');
+
+    if (paymentState === 'cancel' && paymentMethodParam === 'card') {
+      toast.info('Visa payment was cancelled.');
+      navigate('/cart/checkout', { replace: true });
+      return;
+    }
+
+    if (paymentState !== 'success' || paymentMethodParam !== 'card') return;
+
+    const finalizeStripeCheckout = async () => {
+      try {
+        const rawSnapshot = window.sessionStorage.getItem(PENDING_CHECKOUT_KEY);
+        if (!rawSnapshot) {
+          toast.error('Payment succeeded, but checkout data could not be restored.');
+          navigate('/cart/checkout', { replace: true });
+          return;
+        }
+
+        const snapshot = JSON.parse(rawSnapshot);
+        await createReservations({
+          items: snapshot.cartItems || [],
+          data: snapshot.formData || {},
+          method: 'card',
+        });
+
+        setOrderReceived(
+          buildOrderReceived(
+            snapshot.formData || {},
+            snapshot.cartItems || [],
+            snapshot.cartTotal || 0,
+            'card'
+          )
+        );
+        setIsModalOpen(true);
+        dispatch(clearCart());
+        window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+        toast.success('Payment completed and your reservation is confirmed.');
+      } catch (err) {
+        console.error('Stripe checkout finalization failed:', err);
+        toast.error('Payment succeeded, but reservation confirmation failed. Please contact support.');
+      } finally {
+        navigate('/cart/checkout', { replace: true });
+      }
+    };
+
+    void finalizeStripeCheckout();
+  }, [dispatch, navigate, searchParams]);
 
   return (
     <div className="relative min-h-screen">
@@ -108,46 +210,32 @@ const Checkout = () => {
                 {errors.agreeTerms && <p className="text-red-500 text-xs -mt-4 ml-7">{errors.agreeTerms.message}</p>}
 
                 <CheckoutForm 
-                  amount={cartTotal} 
                   handleSubmitHook={handleSubmit}
                   getValues={getValues}
                   paymentMethod={paymentMethod}
+                  checkoutItems={cartItems.map((item) => ({
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                  }))}
+                  successUrl={`${window.location.origin}/cart/checkout?payment=success&method=card`}
+                  cancelUrl={`${window.location.origin}/cart/checkout?payment=cancel&method=card`}
+                  onBeforeStripeRedirect={storePendingCheckout}
                   onSuccess={async (data) => {
-                    // Process bookings for any rooms in the cart
-                    const bookingPromises = cartItems
-                      .filter(item => item.checkInDate)
-                      .map(item => {
-                        const bookingData = {
-                          roomId: item.id,
-                          checkInDate: item.checkInDate,
-                          checkOutDate: item.checkOutDate,
-                          guests: item.guests || 1,
-                          paymentMethod: paymentMethod === 'check' ? 'cash' : 'online',
-                          specialRequests: data.orderNotes || "Booked from Website"
-                        };
-                        return dispatch(createBooking(bookingData)).unwrap();
-                      });
-
                     try {
-                      if (bookingPromises.length > 0) {
-                        await Promise.all(bookingPromises);
-                        toast.success('Your room(s) have been reserved successfully!');
-                      }
-
-                      setOrderReceived({
-                        ...data,
-                        orderNumber: Math.floor(10000 + Math.random() * 90000).toString(),
-                        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                      await createReservations({
                         items: cartItems,
-                        total: cartTotal,
-                        paymentMethod: paymentMethod === 'check' ? 'Check payments' : 'Stripe'
+                        data,
+                        method: 'cash',
                       });
+
+                      setOrderReceived(buildOrderReceived(data, cartItems, cartTotal, 'cash'));
                       setIsModalOpen(true);
                       dispatch(clearCart());
+                      toast.success('Your room(s) have been reserved successfully.');
                     } catch (err) {
                       console.error('Booking failed:', err);
                       toast.error('Reservation failed. Please check your details and try again.');
-                      // We don't clear the cart if booking failed so they can try again
                     }
                   }}
                   resetForm={reset}

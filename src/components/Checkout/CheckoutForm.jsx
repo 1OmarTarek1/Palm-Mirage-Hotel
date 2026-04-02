@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
+import axiosInstance from '@/services/axiosInstance';
 
-const CheckoutForm = ({ amount, paymentMethod, resetForm, onSuccess, getValues, handleSubmitHook }) => {
+const CheckoutForm = ({
+  paymentMethod,
+  resetForm,
+  onSuccess,
+  getValues,
+  handleSubmitHook,
+  checkoutItems,
+  successUrl,
+  cancelUrl,
+  onBeforeStripeRedirect,
+}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -12,34 +22,30 @@ const CheckoutForm = ({ amount, paymentMethod, resetForm, onSuccess, getValues, 
     setError(null);
 
     try {
-      if (paymentMethod === 'stripe') {
-        // 2a. Create Stripe Checkout Session
-        const response = await axios.post('/create-checkout-session', {
-          amount: amount * 100, // Amount in cents
+      const data = getValues();
+
+      if (paymentMethod === 'card') {
+        onBeforeStripeRedirect(data);
+
+        const response = await axiosInstance.post('/payment/create-checkout-session', {
+          items: checkoutItems,
+          successUrl,
+          cancelUrl,
         });
 
-        if (response.data?.url) {
-          window.location.href = response.data.url;
-        } else {
+        const redirectUrl = response?.data?.data?.url;
+        if (!redirectUrl) {
           throw new Error('Failed to retrieve checkout URL');
         }
-      } else {
-        // 2b. Handle Check Payments
-        // In a real app, this would call /create-order or similar
-        // For now, we'll simulate a slight delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Capture data before reset
-        const data = getValues();
-        
-        // Reset the form on success
-        resetForm();
-        
-        // Notify parent of success with captured data
-        onSuccess(data);
-        
-        toast.success('Order placed successfully! Please send your check to the address provided.');
+
+        window.location.href = redirectUrl;
+        return;
       }
+
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      resetForm();
+      onSuccess(data);
+      toast.success('Reservation confirmed. You can pay in cash on arrival.');
     } catch (err) {
       setError('An error occurred while processing your order. Please try again.');
       console.error('Order error:', err);
@@ -71,7 +77,7 @@ const CheckoutForm = ({ amount, paymentMethod, resetForm, onSuccess, getValues, 
             </svg>
             Processing...
           </div>
-        ) : (paymentMethod === 'stripe' ? 'Pay with Stripe' : 'Place Order')}
+        ) : (paymentMethod === 'card' ? 'Pay with Visa' : 'Reserve Now, Pay on Arrival')}
       </Button>
 
       <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed">
