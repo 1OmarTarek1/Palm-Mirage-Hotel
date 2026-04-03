@@ -3,27 +3,31 @@ import ActivityHero from "@/components/activities/ActivityHero";
 import ActivityCategories from "@/components/activities/ActivityCategories";
 import ActivityDetails from "@/components/activities/ActivityDetails";
 import ActivityBooking from "@/components/activities/ActivityBooking";
+import SharedPagination from "@/components/common/SharedPagination";
+import { usePagination } from "@/hooks/usePagination";
 import { fetchActivities } from "@/services/activityService";
+
+const PAGE_SIZE = 6;
 
 export default function Activities() {
   const [activeCategory, setActiveCategory] = useState(null);
-  const [activities, setActivities] = useState([]);
+  const [allActivities, setAllActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const bookingRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadActivities = async () => {
+    const loadAllActivities = async () => {
       try {
         setIsLoading(true);
         const apiActivities = await fetchActivities();
         if (isMounted) {
-          setActivities(apiActivities);
+          setAllActivities(apiActivities);
         }
       } catch {
         if (isMounted) {
-          setActivities([]);
+          setAllActivities([]);
         }
       } finally {
         if (isMounted) {
@@ -32,20 +36,32 @@ export default function Activities() {
       }
     };
 
-    loadActivities();
+    void loadAllActivities();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const filtered = useMemo(
+  const filteredActivities = useMemo(
     () =>
       activeCategory
-        ? activities.filter((activity) => activity.category === activeCategory)
-        : activities,
-    [activities, activeCategory]
+        ? allActivities.filter((activity) => activity.category === activeCategory)
+        : allActivities,
+    [allActivities, activeCategory]
   );
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    paginatedItems: paginatedActivities,
+    resetPage,
+  } = usePagination(filteredActivities, PAGE_SIZE);
+
+  useEffect(() => {
+    resetPage();
+  }, [activeCategory, resetPage]);
 
   const handleBookActivity = (activityId) => {
     bookingRef.current?.selectActivity(activityId);
@@ -54,19 +70,32 @@ export default function Activities() {
   return (
     <div className="text-foreground antialiased overflow-x-hidden transition-colors duration-300">
       <ActivityHero />
-      <ActivityCategories
-        active={activeCategory}
-        onChange={setActiveCategory}
-        activities={activities}
-      />
+      <div>
+        <ActivityCategories
+          active={activeCategory}
+          onChange={setActiveCategory}
+          activities={allActivities}
+        />
+      </div>
       {isLoading ? (
         <section className="pb-16 text-center text-sm text-muted-foreground">
           Loading activities...
         </section>
       ) : (
-        <ActivityDetails activities={filtered} onBookActivity={handleBookActivity} />
+        <>
+          <ActivityDetails
+            key={`${activeCategory ?? "all"}-${currentPage}`}
+            activities={paginatedActivities}
+            onBookActivity={handleBookActivity}
+          />
+          <SharedPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
-      <ActivityBooking ref={bookingRef} activities={activities} />
+      <ActivityBooking ref={bookingRef} activities={allActivities} />
     </div>
   );
 }

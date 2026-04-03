@@ -2,7 +2,9 @@ import { useMemo, useState, useEffect } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 
+import SharedPagination from "@/components/common/SharedPagination";
 import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/usePagination";
 import RoomCard from "@/components/rooms/RoomCard";
 import RoomFilter from "@/components/rooms/RoomFilter";
 import BookingBar from "@/components/rooms/BookingBar";
@@ -33,7 +35,6 @@ export default function Rooms() {
     return Math.max(...rooms.map((room) => Number(room.price) || 0), 0);
   }, [rooms]);
 
-  const [currentPage, setCurrentPage] = useState(1);
   const roomsPerPage = 8;
 
   const filteredRooms = useMemo(() => {
@@ -62,14 +63,16 @@ export default function Rooms() {
       ratings: criteria?.ratings ?? [],
       unrated: criteria?.unrated ?? false,
     });
-    setCurrentPage(1);
+    resetPage();
   };
 
-  const totalPages = Math.max(1, Math.ceil(filteredRooms.length / roomsPerPage));
-  const paginatedRooms = filteredRooms.slice(
-    (currentPage - 1) * roomsPerPage,
-    currentPage * roomsPerPage,
-  );
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    paginatedItems: paginatedRooms,
+    resetPage,
+  } = usePagination(filteredRooms, roomsPerPage);
 
   useEffect(() => {
     dispatch(fetchAllRooms());
@@ -123,27 +126,6 @@ export default function Rooms() {
             )}
           </div>
 
-          <div className="col-span-full mt-6 flex justify-center items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-stone-600">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
         </div>
 
         <div className="hidden lg:block lg:col-span-3">
@@ -156,6 +138,15 @@ export default function Rooms() {
               }}
             />
           </Sidebar>
+        </div>
+
+        <div className="col-span-12">
+          <SharedPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            className="mt-2"
+          />
         </div>
       </div>
 

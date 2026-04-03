@@ -46,10 +46,38 @@ const mapSchedule = (schedule) => ({
   notes: schedule.notes ?? "",
 });
 
-export async function fetchActivities() {
+export async function fetchActivities(options = {}) {
+  const {
+    page,
+    limit,
+    category,
+    search,
+    sort,
+    withPagination = false,
+  } = options;
+
   try {
-    const { data } = await axiosInstance.get("/activity");
-    return (data?.data?.activities ?? []).map(mapActivity);
+    const params = {};
+
+    if (page) params.page = page;
+    if (limit) {
+      params.limit = limit;
+    } else if (!withPagination) {
+      params.limit = 100;
+    }
+    if (category) params.category = category;
+    if (search) params.search = search;
+    if (sort) params.sort = sort;
+
+    const { data } = await axiosInstance.get("/activity", { params });
+    const activities = (data?.data?.activities ?? []).map(mapActivity);
+    const pagination = data?.data?.pagination ?? null;
+
+    if (withPagination) {
+      return { activities, pagination };
+    }
+
+    return activities;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.message || error.message);
