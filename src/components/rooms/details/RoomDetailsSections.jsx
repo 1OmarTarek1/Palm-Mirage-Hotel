@@ -94,7 +94,7 @@ function SectionCard({ children, className = "" }) {
 
 export function RoomHeroGallery({ room }) {
   if (!room.images.length) {
-    return <div className="flex aspect-video items-center justify-center rounded-[28px] border border-dashed border-border bg-card text-muted-foreground">No room gallery available yet.</div>;
+    return <div className="flex aspect-[4/3] items-center justify-center rounded-[24px] border border-dashed border-border bg-card px-4 text-center text-muted-foreground sm:aspect-[16/10] sm:rounded-[28px] lg:aspect-video">No room gallery available yet.</div>;
   }
 
   return (
@@ -102,15 +102,15 @@ export function RoomHeroGallery({ room }) {
       <CarouselContent>
         {room.images.map((image, index) => (
           <CarouselItem key={`${room.id}-image-${index}`}>
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] border border-border bg-card shadow-xl sm:aspect-video">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] border border-border bg-card shadow-xl sm:aspect-[16/10] sm:rounded-[28px] lg:aspect-video">
               <img src={image} alt={`${room.name} image ${index + 1}`} className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent" />
             </div>
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="left-5 cursor-pointer border-none bg-card/90 text-foreground shadow-md" />
-      <CarouselNext className="right-5 cursor-pointer border-none bg-card/90 text-foreground shadow-md" />
+      <CarouselPrevious className="left-3 h-9 w-9 cursor-pointer border-none bg-card/90 text-foreground shadow-md sm:left-5 sm:h-10 sm:w-10" />
+      <CarouselNext className="right-3 h-9 w-9 cursor-pointer border-none bg-card/90 text-foreground shadow-md sm:right-5 sm:h-10 sm:w-10" />
     </Carousel>
   );
 }
@@ -118,47 +118,40 @@ export function RoomHeroGallery({ room }) {
 export function RoomOverviewSection({ room }) {
   return (
     <SectionCard>
-      <div className="flex flex-wrap items-start justify-between gap-6">
+      <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:gap-8">
         <div className="space-y-4">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">{room.type} {room.floor ? `| Floor ${room.floor}` : ""}</p>
-          <h1 className="font-header text-3xl font-bold tracking-tight text-foreground sm:text-5xl">{room.name}</h1>
-          <div className="flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              {room.rating ? room.rating.toFixed(1) : "New"}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground">
-              <Bed className="h-4 w-4 text-primary" />
-              {room.beds} {room.bedType}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground">
-              <Maximize2 className="h-4 w-4 text-primary" />
-              {room.size} sqm
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground">
-              <Users className="h-4 w-4 text-primary" />
-              {room.adults} Adults
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">{room.reviewsCount || 0}</span>
-              <span className="text-sm text-muted-foreground">reviews</span>
-            </div>
-            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-card px-4 py-2">
+          <h1 className="font-header text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">{room.name}</h1>
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-primary/15 bg-card px-4 py-2">
               <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />
               <span className="text-sm font-semibold text-foreground">
                 {room.reviewsCount > 0 ? `${room.reviewsCount}+ recent guest impressions` : "Freshly listed and ready for new stays"}
               </span>
-              <span className="text-sm text-muted-foreground">
-                {room.rating > 0 ? `Rated ${room.rating.toFixed(1)}/5` : "No rating yet"}
-              </span>
-            </div>
+            </span>
+            <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-4 py-2">
+              <Users className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">{room.reviewsCount || 0}</span>
+              <span className="text-sm text-muted-foreground">reviews</span>
+            </span>
+            <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-foreground sm:px-4">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              {room.rating ? room.rating.toFixed(1) : "New"}
+            </span>
+            <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-foreground sm:px-4">
+              <Bed className="h-4 w-4 text-primary" />
+              {room.beds} {room.bedType}
+            </span>
+            <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-foreground sm:px-4">
+              <Maximize2 className="h-4 w-4 text-primary" />
+              {room.size} sqm
+            </span>
+            <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-foreground sm:px-4">
+              <Users className="h-4 w-4 text-primary" />
+              {room.adults} Adults
+            </span>
           </div>
           <p className="max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">{room.description}</p>
-        </div>
-        <div className="grid min-w-[240px] gap-3 sm:grid-cols-1">
         </div>
       </div>
     </SectionCard>
@@ -178,7 +171,7 @@ export function AmenitiesSection({ amenityCollections }) {
         {groups.map((group) => (
           <div key={group.title}>
             <h2 className="text-2xl font-bold text-foreground">{group.title}</h2>
-            <div className="mt-6 grid gap-x-10 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid gap-x-6 gap-y-4 md:grid-cols-2 sm:gap-x-8 xl:grid-cols-3">
               {group.items.map((item, index) => {
                 const DetailIcon = DETAIL_ICON_MAP[item.iconName] || resolveAmenityIcon(item.label);
                 return (
@@ -210,17 +203,17 @@ export function AvailabilitySection({
 }) {
   return (
     <SectionCard>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Rates & Availability</h2>
           <p className="mt-2 text-sm text-muted-foreground">Choose dates and see blocked periods instantly.</p>
         </div>
-        <div className={`rounded-full bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${!checkIn || !checkOut ? "text-muted-foreground" : availabilityLoading || availabilityRangeKey !== selectedRangeKey ? "text-muted-foreground" : effectiveAvailability?.isBookable ? "text-primary" : "text-destructive"}`}>
+        <div className={`inline-flex w-fit rounded-full bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${!checkIn || !checkOut ? "text-muted-foreground" : availabilityLoading || availabilityRangeKey !== selectedRangeKey ? "text-muted-foreground" : effectiveAvailability?.isBookable ? "text-primary" : "text-destructive"}`}>
           {!checkIn || !checkOut ? "Choose dates" : availabilityLoading || availabilityRangeKey !== selectedRangeKey ? "Checking" : effectiveAvailability?.isBookable ? "Available" : "Unavailable"}
         </div>
       </div>
       <div className="mt-8 space-y-4">
-        <div className="flex items-center justify-between gap-4 rounded-[26px] border border-border bg-card px-5 py-4">
+        <div className="flex flex-col items-start justify-between gap-3 rounded-[22px] border border-border bg-card px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:rounded-[26px] sm:px-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Stay dates</p>
             <p className="mt-2 text-sm font-semibold text-foreground">
@@ -230,8 +223,8 @@ export function AvailabilitySection({
           </div>
           <CalendarDays className="h-5 w-5 text-primary" />
         </div>
-        <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="rounded-[26px] border border-border bg-card shadow-sm">
+        <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="min-w-0 rounded-[22px] border border-border bg-card shadow-sm sm:rounded-[26px]">
             <DatePicker
               key={`${checkIn || "none"}-${checkOut || "none"}`}
               checkIn={datePickerState.checkIn}
@@ -243,7 +236,7 @@ export function AvailabilitySection({
               onInvalidRangeSelection={() => toast.error("This stay overlaps booked dates or the next checkout day is unavailable. Please choose another range.")}
             />
           </div>
-          <div className="flex h-full flex-col rounded-[26px] border border-border bg-card p-4 shadow-sm">
+          <div className="flex min-w-0 h-full flex-col rounded-[22px] border border-border bg-card p-4 shadow-sm sm:rounded-[26px]">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Booked periods</p>
             <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto pr-1">
               {(availability?.bookedRanges || []).length > 0 ? availability.bookedRanges.map((range, index) => (
@@ -257,7 +250,7 @@ export function AvailabilitySection({
           </div>
         </div>
       </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-border bg-card px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Selected Stay</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{checkIn ? formatBookingDateLabel(checkIn) : "Select check-in"} {checkOut ? `- ${formatBookingDateLabel(checkOut)}` : "- Select check-out"}</p>
@@ -283,7 +276,7 @@ export function PoliciesSection() {
         {BOOKING_POLICIES.map((policy, index) => {
           const PolicyIcon = POLICY_ICON_MAP[policy.title] || CheckCircle2;
           return (
-            <div key={policy.title} className="relative pl-14">
+            <div key={policy.title} className="relative pl-12 sm:pl-14">
               {index !== BOOKING_POLICIES.length - 1 ? <div className="absolute left-[18px] top-10 h-[calc(100%-1rem)] w-px bg-border" /> : null}
               <div className="absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground">
                 <PolicyIcon className="h-4 w-4" />
@@ -321,7 +314,7 @@ export function FAQSection({ openFaqIndex, setOpenFaqIndex }) {
             className="w-full py-5 text-left"
           >
             <div className="flex items-center justify-between gap-4">
-              <span className="text-base font-medium text-foreground">{faq.question}</span>
+              <span className="pr-4 text-sm font-medium text-foreground sm:text-base">{faq.question}</span>
               <ChevronDown className={`h-4 w-4 cursor-pointer text-muted-foreground transition-transform ${openFaqIndex === index ? "rotate-180" : ""}`} />
             </div>
             <AnimatePresence initial={false}>
@@ -348,10 +341,10 @@ export function ReviewsSection({ room, reviewBars }) {
   return (
     <SectionCard>
       <h2 className="text-2xl font-bold text-foreground">Reviews</h2>
-      <div className="mt-6 rounded-[28px] border border-border bg-card p-6">
+      <div className="mt-6 rounded-[24px] border border-border bg-card p-5 sm:rounded-[28px] sm:p-6">
         <div className="grid gap-8 lg:grid-cols-[180px_minmax(0,1fr)]">
           <div>
-            <p className="text-6xl font-bold text-foreground">{room.reviewsCount > 0 ? room.rating.toFixed(1) : "0"}/5</p>
+            <p className="text-5xl font-bold text-foreground sm:text-6xl">{room.reviewsCount > 0 ? room.rating.toFixed(1) : "0"}/5</p>
             <p className="mt-3 text-sm uppercase tracking-[0.18em] text-muted-foreground">{room.reviewsCount || 0} reviews</p>
           </div>
           <div className="space-y-3">
@@ -402,15 +395,15 @@ export function BookingSidebar({
 }) {
   return (
     <aside className="lg:sticky lg:top-24 lg:self-start">
-      <div className="space-y-6 rounded-[28px] border border-border bg-card p-6 shadow-sm">
+      <div className="space-y-5 rounded-[24px] border border-border bg-card p-4 shadow-sm sm:space-y-6 sm:rounded-[28px] sm:p-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-foreground">Book This Room</h2>
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Book This Room</h2>
           <p className="text-sm text-muted-foreground">Dates are required before this booking can continue.</p>
         </div>
-        <div className="rounded-[24px] border border-primary/15 bg-card px-5 py-4">
+        <div className="rounded-[20px] border border-primary/15 bg-card px-4 py-4 sm:rounded-[24px] sm:px-5">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Current rate</p>
           <div className="mt-2 flex items-end gap-2">
-            <span className="text-3xl font-bold text-foreground">${room.price.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-foreground sm:text-3xl">${room.price.toFixed(2)}</span>
             <span className="pb-1 text-sm text-muted-foreground">/ night</span>
           </div>
           {room.hasOffer && room.basePrice > room.price ? <p className="mt-2 text-sm text-muted-foreground">Regular rate <span className="line-through">${room.basePrice.toFixed(2)}</span></p> : null}
@@ -421,7 +414,7 @@ export function BookingSidebar({
             <button
               type="button"
               onClick={() => setRangeSelectionStep("start")}
-              className="flex h-auto w-full flex-col items-start gap-1 rounded-2xl border border-border bg-card px-4 py-3 text-left transition hover:border-primary/40"
+              className="flex h-auto w-full flex-col items-start gap-1 rounded-[20px] border border-border bg-card px-4 py-3 text-left transition hover:border-primary/40 sm:rounded-2xl"
             >
               <span className="text-sm font-semibold text-foreground">
                 {checkIn ? formatBookingDateLabel(checkIn) : "Select check-in"}
@@ -447,7 +440,7 @@ export function BookingSidebar({
             <Input type="number" min="1" max="5" value={roomsCount} onChange={(event) => setRoomsCount(event.target.value)} className="h-11 bg-card" />
           </label>
         </div>
-        <div className="space-y-3 rounded-[24px] border border-border bg-card p-4">
+        <div className="space-y-3 rounded-[20px] border border-border bg-card p-4 sm:rounded-[24px]">
           <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Room subtotal</span><span className="font-semibold text-foreground">${subtotal.toFixed(2)}</span></div>
           <div className="flex items-center justify-between border-t border-border pt-3"><span className="text-sm font-semibold text-foreground">Estimated total</span><span className="text-xl font-bold text-foreground">${total.toFixed(2)}</span></div>
         </div>
@@ -465,9 +458,9 @@ export function BookingSidebar({
 export function SimilarRoomsSection({ similarRooms, listLoading }) {
   return (
     <section className="mb-10 mt-0">
-      <div className="mb-8 flex items-center justify-between gap-4">
+      <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Similar Rooms</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Similar Rooms</h2>
           <p className="mt-2 text-sm text-muted-foreground">Real rooms from your inventory, linked to their live pages.</p>
         </div>
         <Button asChild variant="palmSecondary" className="hidden sm:inline-flex">
@@ -478,9 +471,9 @@ export function SimilarRoomsSection({ similarRooms, listLoading }) {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 3 }).map((_, index) => <div key={`similar-room-loading-${index}`} className="aspect-[4/5] rounded-[28px] border border-border bg-card" />)}</div>
       ) : similarRooms.length > 0 ? (
         <Carousel className="w-full">
-          <CarouselContent className="-ml-6">
+          <CarouselContent className="-ml-4 sm:-ml-6">
             {similarRooms.map((similarRoom) => (
-              <CarouselItem key={similarRoom._id || similarRoom.id || similarRoom.roomNumber} className="pl-6 md:basis-1/2 xl:basis-1/3">
+              <CarouselItem key={similarRoom._id || similarRoom.id || similarRoom.roomNumber} className="pl-4 sm:pl-6 md:basis-1/2 xl:basis-1/3">
                 <RoomCard room={similarRoom} />
               </CarouselItem>
             ))}

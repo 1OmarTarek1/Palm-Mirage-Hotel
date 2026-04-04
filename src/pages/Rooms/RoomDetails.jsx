@@ -62,12 +62,12 @@ export default function RoomDetails() {
 
   return (
     <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="min-h-screen text-foreground">
-      <div className="container pb-10 font-main">
+      <div className="w-full pb-10 font-main">
         <MotionDiv initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1, duration: 0.45 }} className="mb-10">
           <RoomHeroGallery room={room} />
         </MotionDiv>
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(340px,0.9fr)]">
+        <div className="grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
           <div className="space-y-10">
             <RoomOverviewSection room={room} />
             <SectionDivider />

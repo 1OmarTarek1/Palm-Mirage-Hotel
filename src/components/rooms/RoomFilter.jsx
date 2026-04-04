@@ -15,24 +15,27 @@ const roomTypes = [
 
 const ratingValues = [1, 2, 3, 4, 5];
 
-const defaultState = {
-  price: [0, 1000],
-  roomTypes: [],
-  ratings: [],
-  unrated: false,
-};
-
 export default function RoomFilter({ rooms = [], onFilter, onReset }) {
+  const prices = useMemo(
+    () => (rooms || []).map((room) => Number(room.price ?? 0)).filter((price) => Number.isFinite(price) && price > 0),
+    [rooms]
+  );
+
+  const minPrice = useMemo(() => {
+    if (!prices.length) return 0;
+    return Math.floor(Math.min(...prices) / 100) * 100;
+  }, [prices]);
+
   const maxPrice = useMemo(() => {
-    if (!rooms?.length) return 1000;
-    return Math.max(...rooms.map((room) => Number(room.finalPrice ?? room.price ?? 0)), 1000);
-  }, [rooms]);
+    if (!prices.length) return 1000;
+    return Math.ceil(Math.max(...prices) / 100) * 100;
+  }, [prices]);
 
   const [price, setPrice] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
   const [unrated, setUnrated] = useState(false);
-  const activePrice = price ?? [0, maxPrice];
+  const activePrice = price ?? [minPrice, maxPrice];
 
   const roomTypeCounts = useMemo(() => {
     const tally = (rooms || []).reduce((acc, room) => {
@@ -79,8 +82,10 @@ export default function RoomFilter({ rooms = [], onFilter, onReset }) {
     setUnrated(false);
     onReset?.();
     onFilter?.({
-      ...defaultState,
-      price: [0, maxPrice],
+      price: [minPrice, maxPrice],
+      roomTypes: [],
+      ratings: [],
+      unrated: false,
     });
   };
 
@@ -101,9 +106,9 @@ export default function RoomFilter({ rooms = [], onFilter, onReset }) {
           Price
         </h4>
         <Slider
-          min={5}
+          min={minPrice}
           max={maxPrice}
-          step={5}
+          step={100}
           value={activePrice}
           onValueChange={setPrice}
           className="w-full"

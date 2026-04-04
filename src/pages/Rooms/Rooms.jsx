@@ -45,10 +45,20 @@ export default function Rooms() {
   const selectedChildren = Math.max(0, Number(searchParams.get("children") || 0));
   const totalGuests = selectedAdults + selectedChildren;
   const hasAvailabilitySearch = Boolean(selectedCheckIn && selectedCheckOut);
+  const roomPrices = useMemo(
+    () => rooms.map((room) => Number(room.price ?? 0)).filter((price) => Number.isFinite(price) && price > 0),
+    [rooms]
+  );
+
+  const minRoomPrice = useMemo(() => {
+    if (!roomPrices.length) return 0;
+    return Math.floor(Math.min(...roomPrices) / 100) * 100;
+  }, [roomPrices]);
+
   const maxRoomPrice = useMemo(() => {
-    if (!rooms?.length) return Number.MAX_SAFE_INTEGER;
-    return Math.max(...rooms.map((room) => Number(room.price) || 0), 0);
-  }, [rooms]);
+    if (!roomPrices.length) return Number.MAX_SAFE_INTEGER;
+    return Math.ceil(Math.max(...roomPrices) / 100) * 100;
+  }, [roomPrices]);
 
   const roomsPerPage = 8;
 
@@ -57,7 +67,7 @@ export default function Rooms() {
     const [minPrice, maxPrice] = filter.price;
 
     return rooms.filter((room) => {
-      const roomPrice = Number(room.finalPrice ?? room.price ?? 0);
+      const roomPrice = Number(room.price ?? 0);
       const inPrice = roomPrice >= minPrice && roomPrice <= maxPrice;
       const typeMatch =
         !filter.roomTypes.length || filter.roomTypes.includes(String(room.roomType || "").toLowerCase());
@@ -81,7 +91,7 @@ export default function Rooms() {
 
   const applyFilter = (criteria) => {
     setFilter({
-      price: criteria?.price ?? [0, maxRoomPrice || Number.MAX_SAFE_INTEGER],
+      price: criteria?.price ?? [minRoomPrice, maxRoomPrice || Number.MAX_SAFE_INTEGER],
       roomTypes: criteria?.roomTypes ?? [],
       ratings: criteria?.ratings ?? [],
       unrated: criteria?.unrated ?? false,

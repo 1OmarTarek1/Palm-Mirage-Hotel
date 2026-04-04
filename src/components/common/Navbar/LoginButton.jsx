@@ -8,6 +8,8 @@ import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
 import axiosInstance from "@/services/axiosInstance";
 
+const MotionDiv = motion.div;
+
 export default function LoginButton() {
   const { isAuthenticated, user } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
@@ -44,15 +46,16 @@ export default function LoginButton() {
       <NavTooltip label="Login">
         <NavLink
           to="/auth/login"
+          aria-label="Login"
           className={({ isActive }) => `
             flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/10
             transition-all duration-300 hover:bg-primary/20
             ${isActive ? "text-primary bg-primary/20 shadow-inner border border-primary/20" : "text-white/60 bg-primary/5"}
           `}
         >
-          <motion.div>
+          <MotionDiv>
             <LogIn className="w-4 h-4 md:w-4.5 md:h-4.5" />
-          </motion.div>
+          </MotionDiv>
         </NavLink>
       </NavTooltip>
     );
@@ -92,7 +95,7 @@ export default function LoginButton() {
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -136,7 +139,7 @@ export default function LoginButton() {
                 Logout
               </button>
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </div>

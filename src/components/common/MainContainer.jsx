@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 import DynamicTitle from './DynamicTitle';
 
 
-const MainContainer = ({ children, className = "", showBreadcrumb = true, title: customTitle }) => {
+const MainContainer = ({ children, className = "", showBreadcrumb = true, showHeader = true, title: customTitle }) => {
   const { pathname } = useLocation();
   const isHome = pathname === "/";
-  const hideHeader = isHome || pathname === "/services/activities";
+  const hideHeader = isHome || pathname === "/services/activities" || !showHeader;
 
   return (
     <div className={cn(

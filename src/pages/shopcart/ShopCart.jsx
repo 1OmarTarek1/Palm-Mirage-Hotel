@@ -47,7 +47,7 @@ export default function ShopCart() {
         {cartItems.length === 0 ? (
           <CartEmpty />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
             {/* Cart Items List */}
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => (
@@ -62,7 +62,9 @@ export default function ShopCart() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <OrderSummary cartItems={cartItems} totalPrice={totalPrice} />
+              <div className="sticky top-24 space-y-8">
+                <OrderSummary cartItems={cartItems} totalPrice={totalPrice} />
+              </div>
             </div>
           </div>
         )}
