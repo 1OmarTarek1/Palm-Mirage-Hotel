@@ -14,7 +14,7 @@ const OrderReceived = ({ orderReceived }) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Hotel-Invoice-${orderReceived.orderNumber}.pdf`;
+      link.download = `${orderReceived.filePrefix || 'Hotel-Invoice'}-${orderReceived.orderNumber}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -78,7 +78,7 @@ const OrderReceived = ({ orderReceived }) => {
               <svg className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              <span>Download Invoice (PDF)</span>
+              <span>{orderReceived.downloadLabel || 'Download Invoice (PDF)'}</span>
             </>
           )}
         </Button>
@@ -93,24 +93,24 @@ const OrderReceived = ({ orderReceived }) => {
             <p className="text-sm font-bold text-foreground">{orderReceived.date}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total:</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{orderReceived.amountLabel || 'Total'}:</p>
             <p className="text-sm font-bold text-foreground">${orderReceived.total.toFixed(2)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Payment:</p>
-            <p className="text-sm font-bold text-foreground">{orderReceived.paymentCategory || orderReceived.paymentMethod}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Status:</p>
+            <p className="text-sm font-bold text-foreground">{orderReceived.paymentStatus || orderReceived.paymentCategory || orderReceived.paymentMethod}</p>
           </div>
         </div>
 
       <div className="rounded-2xl border border-primary/20 bg-primary/5 px-6 py-5">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Payment Note</p>
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">{orderReceived.documentTitle || 'Payment Note'}</p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {orderReceived.paymentNote || `Reservation only. Please complete payment via ${orderReceived.paymentMethod} on arrival.`}
         </p>
       </div>
 
       <div className="space-y-8">
-        <h2 className="text-3xl font-serif text-foreground">Order Details</h2>
+        <h2 className="text-3xl font-serif text-foreground">Reservation Details</h2>
         <div className="border border-border rounded-lg overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead className="bg-primary/70 text-white uppercase text-[11px] font-bold tracking-wider">
@@ -137,11 +137,11 @@ const OrderReceived = ({ orderReceived }) => {
               <tr>
                 <th className="px-6 py-4 font-bold text-foreground">Payment plan:</th>
                 <td className="px-6 py-4 text-right text-muted-foreground">
-                  {orderReceived.paymentCategory || 'Check payments'} / {orderReceived.paymentMethod}
+                  {(orderReceived.paymentCategory || 'Payment')} / {orderReceived.paymentMethod}
                 </td>
               </tr>
               <tr className="bg-primary/70">
-                <th className="px-6 py-4 font-bold text-lg text-white">Total:</th>
+                <th className="px-6 py-4 font-bold text-lg text-white">{orderReceived.amountLabel || 'Total'}:</th>
                 <td className="px-6 py-4 text-right text-white font-bold text-lg italic">${orderReceived.total.toFixed(2)}</td>
               </tr>
             </tbody>

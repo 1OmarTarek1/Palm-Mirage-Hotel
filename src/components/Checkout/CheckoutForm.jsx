@@ -10,14 +10,20 @@ const CheckoutForm = ({
   getValues,
   handleSubmitHook,
   checkoutItems,
-  successUrl,
-  cancelUrl,
   onBeforeStripeRedirect,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const isCartEmpty = !Array.isArray(checkoutItems) || checkoutItems.length === 0;
 
   const onSubmit = async () => {
+    if (isCartEmpty) {
+      const message = 'Your cart is empty. Please add a room before checkout.';
+      setError(message);
+      toast.error(message);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -29,11 +35,18 @@ const CheckoutForm = ({
 
         const response = await axiosInstance.post('/payment/create-checkout-session', {
           items: checkoutItems,
-          successUrl,
-          cancelUrl,
+          customerEmail: data.email,
         });
 
+        const checkoutStatus = response?.data?.data?.status;
         const redirectUrl = response?.data?.data?.url;
+        const sessionId = response?.data?.data?.sessionId;
+
+        if (!redirectUrl && checkoutStatus === 'fulfilled' && sessionId) {
+          window.location.href = `/cart/checkout?payment=success&method=card&session_id=${encodeURIComponent(sessionId)}`;
+          return;
+        }
+
         if (!redirectUrl) {
           throw new Error('Failed to retrieve checkout URL');
         }
@@ -43,13 +56,19 @@ const CheckoutForm = ({
       }
 
       await new Promise(resolve => setTimeout(resolve, 1200));
+      await onSuccess(data);
       resetForm();
-      onSuccess(data);
-      toast.success('Reservation confirmed. You can pay in cash on arrival.');
     } catch (err) {
-      setError('An error occurred while processing your order. Please try again.');
+      const statusCode = err?.response?.status;
+      const apiMessage = err?.response?.data?.message;
+      const fallbackMessage =
+        statusCode === 401
+          ? 'Please login before continuing to checkout.'
+          : apiMessage || 'An error occurred while processing your order. Please try again.';
+
+      setError(fallbackMessage);
       console.error('Order error:', err);
-      toast.error('Processing failed');
+      toast.error(fallbackMessage);
     } finally {
       setLoading(false);
     }
@@ -65,7 +84,7 @@ const CheckoutForm = ({
       
       <Button
         type="submit"
-        disabled={loading}
+        disabled={loading || isCartEmpty}
         variant="palmPrimary"
         className="w-full h-12 rounded-md font-bold transition-all shadow-lg hover:shadow-primary/20 tracking-wider uppercase text-sm"
       >

@@ -1,9 +1,7 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Select, 
   SelectContent, 
@@ -166,33 +164,6 @@ const BillingDetails = ({ register, errors, control }) => {
             className={errors.email ? 'border-destructive' : ''} 
           />
           {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
-        </div>
-
-        <div className="flex items-center space-x-2 pt-4">
-          <Controller
-            name="createAccount"
-            control={control}
-            render={({ field }) => (
-              <Checkbox 
-                id="create-account" 
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            )}
-          />
-          <Label htmlFor="create-account" className="text-sm font-medium text-muted-foreground">Create an account?</Label>
-        </div>
-
-        <div className="space-y-4 pt-8 border-t border-border">
-          <h3 className="text-xl font-header text-foreground">Additional Information</h3>
-          <div className="space-y-2">
-            <Label htmlFor="notes" className="text-muted-foreground">Order notes (optional)</Label>
-            <Textarea 
-              id="notes" 
-              {...register('orderNotes')}
-              placeholder="Notes about your order, e.g. special notes for delivery." 
-            />
-          </div>
         </div>
       </div>
     </div>

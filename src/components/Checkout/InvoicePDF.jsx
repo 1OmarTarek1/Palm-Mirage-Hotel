@@ -127,7 +127,9 @@ const InvoicePDF = ({ orderReceived }) => (
     <Page size="A4" style={styles.page}>
       
       <Text style={styles.title}>Palm Mirage Hotel</Text>
-      <Text style={styles.subtitle}>Thank you. Your order has been received.</Text>
+      <Text style={styles.subtitle}>
+        {orderReceived.documentTitle || 'Thank you. Your order has been received.'}
+      </Text>
 
       <View style={styles.headerRow}>
         <View style={styles.headerCol}>
@@ -139,16 +141,18 @@ const InvoicePDF = ({ orderReceived }) => (
           <Text style={styles.value}>{orderReceived.date}</Text>
         </View>
         <View style={styles.headerCol}>
-          <Text style={styles.label}>TOTAL:</Text>
+          <Text style={styles.label}>{(orderReceived.amountLabel || 'TOTAL').toUpperCase()}:</Text>
           <Text style={styles.value}>${orderReceived.total.toFixed(2)}</Text>
         </View>
         <View style={styles.headerCol}>
-          <Text style={styles.label}>PAYMENT:</Text>
-          <Text style={styles.value}>{orderReceived.paymentCategory || orderReceived.paymentMethod}</Text>
+          <Text style={styles.label}>STATUS:</Text>
+          <Text style={styles.value}>
+            {orderReceived.paymentStatus || orderReceived.paymentCategory || orderReceived.paymentMethod}
+          </Text>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Order Details</Text>
+      <Text style={styles.sectionTitle}>Reservation Details</Text>
       
       <View style={styles.table}>
         <View style={styles.tableHeader}>
@@ -175,7 +179,9 @@ const InvoicePDF = ({ orderReceived }) => (
         </View>
         
         <View style={[styles.tableFooter, { backgroundColor: '#C6A969' }]}>
-          <Text style={[styles.tableFooterLeft, { color: 'white', fontSize: 12 }]}>Total:</Text>
+          <Text style={[styles.tableFooterLeft, { color: 'white', fontSize: 12 }]}>
+            {orderReceived.amountLabel || 'Total'}:
+          </Text>
           <Text style={[styles.tableFooterRight, { color: 'white', fontSize: 12 }]}>${orderReceived.total.toFixed(2)}</Text>
         </View>
       </View>

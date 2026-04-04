@@ -12,8 +12,6 @@ export const checkoutSchema = z.object({
   postcode: z.string().min(3, 'Postcode is required'),
   phone: z.string().min(8, 'Valid phone number is required'),
   email: z.string().email('Invalid email address'),
-  createAccount: z.boolean().optional(),
-  orderNotes: z.string().optional(),
   agreeTerms: z.boolean().refine((val) => val === true, {
     message: 'You must agree to the terms and conditions',
   }),

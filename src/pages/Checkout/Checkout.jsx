@@ -13,6 +13,7 @@ import CheckoutForm from '@/components/Checkout/CheckoutForm';
 import OrderReceived from '@/components/Checkout/OrderReceived';
 import BillingDetails from '@/components/Checkout/BillingDetails';
 import { checkoutSchema } from './checkoutSchema';
+import axiosInstance from '@/services/axiosInstance';
 import {
   selectCartItems,
   selectCartTotal,
@@ -30,6 +31,7 @@ const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get('session_id');
   const MotionDiv = motion.div;
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
@@ -38,6 +40,14 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCloseOrderModal = () => {
+    setIsModalOpen(false);
+
+    if (cartItems.length === 0) {
+      navigate('/cart', { replace: true });
+    }
+  };
 
   // Prevention of scroll when modal is open
   useEffect(() => {
@@ -71,8 +81,6 @@ const Checkout = () => {
       postcode: '',
       phone: '',
       email: '',
-      createAccount: false,
-      orderNotes: '',
       agreeTerms: false,
     }
   });
@@ -86,11 +94,16 @@ const Checkout = () => {
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       items,
       total,
-      paymentCategory: isCardPayment ? 'Visa / Stripe' : 'Check payments',
+      documentTitle: isCardPayment ? 'Invoice & Payment Receipt' : 'Reservation Confirmation',
+      downloadLabel: isCardPayment ? 'Download Invoice (PDF)' : 'Download Reservation Confirmation (PDF)',
+      filePrefix: isCardPayment ? 'Hotel-Invoice' : 'Reservation-Confirmation',
+      paymentCategory: isCardPayment ? 'Visa / Stripe' : 'Pay on arrival',
       paymentMethod: isCardPayment ? 'Visa card - paid online' : 'Cash on arrival',
+      paymentStatus: isCardPayment ? 'Paid' : 'Unpaid',
+      amountLabel: isCardPayment ? 'Amount paid' : 'Amount due on arrival',
       paymentNote: isCardPayment
         ? 'Your payment was completed securely via Stripe and your reservation has been confirmed.'
-        : 'Reservation only. Please complete your payment in cash when you arrive at the hotel.',
+        : 'Your reservation is confirmed. Please pay the amount due in cash when you arrive at the hotel.',
     };
   };
 
@@ -108,8 +121,7 @@ const Checkout = () => {
           checkOutDate: item.checkOutDate,
           guests: item.guests || 1,
           paymentMethod: method === 'card' ? 'card' : 'cash',
-          paymentStatus: method === 'card' ? 'paid' : 'unpaid',
-          specialRequests: data.orderNotes || 'Booked from Website',
+          specialRequests: 'Booked from Website',
         };
         return dispatch(createBooking(bookingData)).unwrap();
       });
@@ -134,16 +146,25 @@ const Checkout = () => {
   };
 
   useEffect(() => {
+    if (isModalOpen || orderReceived) {
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast.info('Your cart is empty. Please add a room before checkout.');
+      navigate('/cart', { replace: true });
+      return;
+    }
+
     if (cartItems.length > 0 && cartRequiresAttention) {
       toast.info('Please review your cart dates before checkout.');
       navigate('/cart', { replace: true });
     }
-  }, [cartItems.length, cartRequiresAttention, navigate]);
+  }, [cartItems.length, cartRequiresAttention, isModalOpen, navigate, orderReceived]);
 
   useEffect(() => {
     const paymentState = searchParams.get('payment');
     const paymentMethodParam = searchParams.get('method');
-
     if (paymentState === 'cancel' && paymentMethodParam === 'card') {
       toast.info('Visa payment was cancelled.');
       navigate('/cart/checkout', { replace: true });
@@ -155,42 +176,53 @@ const Checkout = () => {
     const finalizeStripeCheckout = async () => {
       try {
         const rawSnapshot = window.sessionStorage.getItem(PENDING_CHECKOUT_KEY);
-        if (!rawSnapshot) {
-          toast.error('Payment succeeded, but checkout data could not be restored.');
-          navigate('/cart/checkout', { replace: true });
+        const snapshot = rawSnapshot ? JSON.parse(rawSnapshot) : null;
+
+        if (!sessionId) {
+          toast.error('Payment succeeded, but the checkout session id is missing.');
           return;
         }
 
-        const snapshot = JSON.parse(rawSnapshot);
-        await createReservations({
-          items: snapshot.cartItems || [],
-          data: snapshot.formData || {},
-          method: 'card',
-        });
+        const maxAttempts = 15;
 
-        setOrderReceived(
-          buildOrderReceived(
-            snapshot.formData || {},
-            snapshot.cartItems || [],
-            snapshot.cartTotal || 0,
-            'card'
-          )
-        );
-        setIsModalOpen(true);
-        dispatch(clearCart());
-        window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
-        toast.success('Payment completed and your reservation is confirmed.');
+        for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+          const response = await axiosInstance.get(`/payment/checkout-session/${sessionId}`);
+          const status = response?.data?.data?.status;
+
+          if (status === 'fulfilled') {
+            setOrderReceived(
+              buildOrderReceived(
+                snapshot?.formData || {},
+                snapshot?.cartItems || [],
+                snapshot?.cartTotal || 0,
+                'card'
+              )
+            );
+            setIsModalOpen(true);
+            dispatch(clearCart());
+            window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+            toast.success('Payment completed and your reservation is confirmed.');
+            return;
+          }
+
+          if (status === 'failed' || status === 'expired' || status === 'cancelled') {
+            toast.error('Payment was received, but reservation confirmation requires review. Please contact support.');
+            return;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+
+        toast.info('Payment is confirmed. Reservation sync is still processing and should appear shortly.');
       } catch (err) {
         console.error('Stripe checkout finalization failed:', err);
         toast.error('Payment succeeded, but reservation confirmation failed. Please contact support.');
-      } finally {
-        navigate('/cart/checkout', { replace: true });
       }
     };
 
     void finalizeStripeCheckout();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, navigate, searchParams]);
+  }, [dispatch, navigate, searchParams, sessionId]);
 
   return (
     <div className="relative min-h-screen">
@@ -233,12 +265,11 @@ const Checkout = () => {
                   getValues={getValues}
                   paymentMethod={paymentMethod}
                   checkoutItems={cartItems.map((item) => ({
-                    name: item.name,
-                    price: item.price,
-                    quantity: item.quantity,
+                    roomId: item.id,
+                    checkInDate: item.checkInDate,
+                    checkOutDate: item.checkOutDate,
+                    guests: item.guests || 1,
                   }))}
-                  successUrl={`${window.location.origin}/cart/checkout?payment=success&method=card`}
-                  cancelUrl={`${window.location.origin}/cart/checkout?payment=cancel&method=card`}
                   onBeforeStripeRedirect={storePendingCheckout}
                   onSuccess={async (data) => {
                     try {
@@ -284,7 +315,7 @@ const Checkout = () => {
             >
               <div className="sticky top-0 right-0 z-20 flex justify-end p-6 bg-linear-to-b from-background via-background/80 to-transparent pointer-events-none">
                 <Button 
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseOrderModal}
                   variant="ghost"
                   size="icon"
                   className="bg-muted/50 hover:bg-muted border border-border pointer-events-auto shadow-sm"
