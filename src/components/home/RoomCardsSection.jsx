@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import RoomCard from "@/components/rooms/RoomCard";
+import { HomeFeaturedRoomsSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 import {
   fetchAllRooms,
   selectListError,
@@ -138,9 +139,7 @@ export default function RoomCardsSection() {
 
           <div className="overflow-hidden p-1">
             {isLoading ? (
-              <div className="py-10 text-center text-muted-foreground">
-                Loading rooms...
-              </div>
+              <HomeFeaturedRoomsSkeleton />
             ) : error ? (
               <div className="py-10 text-center text-destructive">
                 Failed to load rooms.

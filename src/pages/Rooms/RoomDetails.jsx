@@ -31,7 +31,7 @@ import {
   Loader2,
   ChevronRight,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import {
   Carousel,
@@ -43,6 +43,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RoomDetailsPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
@@ -66,10 +67,7 @@ import {
   clearRoom,
 } from "@/services/rooms/roomsSlice";
 import { 
-  createBooking, 
-  selectBookingLoading, 
-  selectBookingError,
-  clearBookingState
+  selectBookingLoading
 } from "@/services/booking/bookingSlice";
 
 // Map icon name strings → actual Lucide components
@@ -92,6 +90,26 @@ function RoomIcon({ name, className = "w-5 h-5 text-[#018058]" }) {
   const iconKey = name?.toLowerCase().trim();
   const IconComponent = ICON_MAP[iconKey] || ICON_MAP[name] || CheckCircle2;
   return <IconComponent className={className} />;
+}
+
+function normalizeRoomAmenities(source) {
+  return (source || [])
+    .map((item) => {
+      if (typeof item === "string") {
+        return { name: item, icon: item };
+      }
+
+      if (item && typeof item === "object") {
+        return {
+          name: item.name || "Amenity",
+          icon: item.icon || item.name || "CheckCircle2",
+          description: item.description || "",
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
 }
 
 function PolicyContent({ policy }) {
@@ -130,17 +148,17 @@ function PolicyContent({ policy }) {
 }
 
 export default function RoomDetails() {
+  const MotionDiv = motion.div;
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const apiRoom = useSelector(selectRoom);
   const isLoadingApi = useSelector(selectRoomLoading);
   const apiError = useSelector(selectRoomError);
   
   const isBookingInProgress = useSelector(selectBookingLoading);
-  const bookingError = useSelector(selectBookingError);
-
   // Map API response to match the structure expected by the UI
   const room = apiRoom
     ? {
@@ -170,7 +188,17 @@ export default function RoomDetails() {
           }
           return [apiRoom.image, apiRoom.room?.image].filter(Boolean);
         })() : MOCK_ROOM_DATA.images,
-        facilities: (apiRoom.facilities || apiRoom.room?.facilities || apiRoom._doc?.facilities || apiRoom.data?.facilities || []).map(f => typeof f === 'string' ? { name: f, icon: f } : f),
+        facilities: normalizeRoomAmenities(
+          apiRoom.amenities ||
+          apiRoom.room?.amenities ||
+          apiRoom._doc?.amenities ||
+          apiRoom.data?.amenities ||
+          apiRoom.facilities ||
+          apiRoom.room?.facilities ||
+          apiRoom._doc?.facilities ||
+          apiRoom.data?.facilities ||
+          []
+        ),
       }
     : null;
 
@@ -238,11 +266,15 @@ export default function RoomDetails() {
   const [roomsCount, setRoomsCount] = useState("1");
   const [wifiSg, setWifiSg] = useState(true);
   const [wifiSgCount, setWifiSgCount] = useState("1");
-  const [isLoading, setIsLoading] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const { flyToCart } = useFlyToCart();
 
   const handleBooking = async (e) => {
+    if (!isAuthenticated) {
+      toast.info("Please sign in first to book this room.");
+      return;
+    }
+
     // Basic validation
     if (!checkIn || !checkOut) {
       toast.error("Please select check-in and check-out dates");
@@ -278,12 +310,7 @@ export default function RoomDetails() {
   };
 
   if (isLoadingApi) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <span className="ml-3 text-lg font-medium">Loading room details...</span>
-      </div>
-    );
+    return <RoomDetailsPageSkeleton />;
   }
 
   if (apiError) {
@@ -314,7 +341,7 @@ export default function RoomDetails() {
   }
 
   return (
-    <motion.div 
+    <MotionDiv 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -324,7 +351,7 @@ export default function RoomDetails() {
       <div className="container pb-8 font-main">
 
         {/* Hero Carousel */}
-        <motion.div 
+        <MotionDiv 
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
@@ -345,7 +372,7 @@ export default function RoomDetails() {
             <CarouselNext className="right-6 bg-white/90 hover:bg-white hover:text-black text-gray-800 border-none shadow-md h-10 w-10 opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Room Summary Card */}
-            <motion.div 
+            <MotionDiv 
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.8 }}
@@ -386,9 +413,9 @@ export default function RoomDetails() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </MotionDiv>
           </Carousel>
-        </motion.div>
+        </MotionDiv>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-10">
@@ -765,6 +792,6 @@ export default function RoomDetails() {
         </section>
 
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }

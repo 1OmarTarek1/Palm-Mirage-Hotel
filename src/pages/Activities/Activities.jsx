@@ -4,6 +4,7 @@ import ActivityCategories from "@/components/activities/ActivityCategories";
 import ActivityDetails from "@/components/activities/ActivityDetails";
 import ActivityBooking from "@/components/activities/ActivityBooking";
 import SharedPagination from "@/components/common/SharedPagination";
+import { ActivitiesPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 import { usePagination } from "@/hooks/usePagination";
 import { fetchActivities } from "@/services/activityService";
 
@@ -78,9 +79,7 @@ export default function Activities() {
         />
       </div>
       {isLoading ? (
-        <section className="pb-16 text-center text-sm text-muted-foreground">
-          Loading activities...
-        </section>
+        <ActivitiesPageSkeleton />
       ) : (
         <>
           <ActivityDetails

@@ -12,6 +12,32 @@ import {
   selectIsInWishlist,
 } from "@/store/slices/wishlistSlice";
 
+const normalizeRoomAmenities = (room) => {
+  const rawAmenities =
+    room?.amenities ||
+    room?.room?.amenities ||
+    room?._doc?.amenities ||
+    room?.data?.amenities ||
+    room?.facilities ||
+    room?.room?.facilities ||
+    room?._doc?.facilities ||
+    room?.data?.facilities ||
+    [];
+
+  return rawAmenities
+    .map((item) => {
+      if (typeof item === "string") return { name: item };
+      if (item && typeof item === "object") {
+        return {
+          name: item.name || item.label || "Amenity",
+        };
+      }
+      return null;
+    })
+    .filter(Boolean)
+    .slice(0, 3);
+};
+
 const resolveRoomImage = (room) => {
   if (typeof room?.image === "string" && room.image) return room.image;
   if (typeof room?.image?.secure_url === "string" && room.image.secure_url) {
@@ -41,6 +67,7 @@ export default function RoomCard({ room, className }) {
   const roomName = room?.roomName || room?.name || "Room";
   const roomType = room?.roomType || room?.type || "Room";
   const roomImage = resolveRoomImage(room);
+  const roomAmenities = normalizeRoomAmenities(room);
 
   const isInWishlist = useSelector((state) =>
     selectIsInWishlist(state, roomId),
@@ -153,6 +180,19 @@ export default function RoomCard({ room, className }) {
             </span>
           </div>
         </div>
+
+        {!!roomAmenities.length && (
+          <div className="flex flex-wrap gap-2">
+            {roomAmenities.map((amenity, index) => (
+              <span
+                key={`${amenity.name}-${index}`}
+                className="rounded-full bg-primary/8 px-3 py-1 text-[11px] font-semibold text-primary"
+              >
+                {amenity.name}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Buttons & Partners */}
         <div className="flex items-center justify-between gap-4 mt-auto pt-2">

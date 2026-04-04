@@ -4,6 +4,7 @@ import ActivityDetailHero from "@/components/activities/ActivityDetailHero";
 import ActivityDetailOverview from "@/components/activities/ActivityDetailOverview";
 import ActivityHighlightsSection from "@/components/activities/ActivityHighlightsSection";
 import ActivitySessionsSection from "@/components/activities/ActivitySessionsSection";
+import { ActivityDetailPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 import { fetchActivityById, fetchActivitySchedules } from "@/services/activityService";
 import { useParams } from "react-router-dom";
 
@@ -70,11 +71,7 @@ export default function ActivityDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <section className="px-4 py-24 text-center text-sm text-muted-foreground">
-        Loading activity...
-      </section>
-    );
+    return <ActivityDetailPageSkeleton />;
   }
 
   if (!activity) {

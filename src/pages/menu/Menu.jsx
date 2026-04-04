@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import MenuTabs from "../../components/menu/MenuTabs";
 import MenuGrid from "../../components/menu/MenuGrid";
 import MenuReservationHero from "../../components/menu/MenuReservationHero";
-import { Loader2 } from "lucide-react";
 import menuApi from "../../services/menuApi";
+import { MenuPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 
 export default function MenuPage() {
   const [activeIndex, setActiveIndex] = useState(0); 
@@ -49,10 +49,7 @@ export default function MenuPage() {
       {/* <MenuHeader /> */}
       
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium">Loading delicious menu...</p>
-        </div>
+        <MenuPageSkeleton />
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <p className="text-red-500 font-medium">{error}</p>

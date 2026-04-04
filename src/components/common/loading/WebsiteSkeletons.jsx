@@ -1,0 +1,431 @@
+import { Skeleton } from "@/components/ui/skeleton";
+import { RoomCardSkeleton } from "@/components/rooms/RoomCardSkeleton";
+
+function SectionIntroSkeleton({ compact = false }) {
+  return (
+    <div className={compact ? "space-y-2" : "space-y-3"}>
+      <Skeleton className="h-3 w-28 rounded-full" />
+      <Skeleton className="h-9 w-56 rounded-xl" />
+      <Skeleton className="h-4 w-full max-w-2xl rounded-full" />
+      {!compact ? <Skeleton className="h-4 w-4/5 max-w-xl rounded-full" /> : null}
+    </div>
+  );
+}
+
+function PillRowSkeleton({ count = 5 }) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {Array.from({ length: count }).map((_, index) => (
+        <Skeleton
+          key={`pill-skeleton-${index}`}
+          className="h-14 min-w-[120px] flex-1 rounded-2xl sm:flex-none sm:w-[150px]"
+        />
+      ))}
+    </div>
+  );
+}
+
+function StatsRowSkeleton({ count = 4 }) {
+  return (
+    <div className={`grid gap-6 ${count >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={`stat-skeleton-${index}`} className="space-y-2">
+          <Skeleton className="h-8 w-24 rounded-xl" />
+          <Skeleton className="h-3 w-20 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActivityCardSkeleton({ reverse = false }) {
+  return (
+    <div
+      className={`flex flex-col gap-10 lg:items-center lg:gap-16 ${
+        reverse ? "lg:flex-row-reverse" : "lg:flex-row"
+      }`}
+    >
+      <div className="w-full lg:basis-[55%]">
+        <Skeleton className="aspect-3/2 w-full rounded-[2.5rem]" />
+      </div>
+
+      <div className="space-y-6 lg:basis-[45%]">
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-24 rounded-full" />
+          <Skeleton className="h-10 w-3/4 rounded-xl" />
+        </div>
+
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full rounded-full" />
+          <Skeleton className="h-4 w-5/6 rounded-full" />
+          <Skeleton className="h-4 w-4/5 rounded-full" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 border-t border-border/50 pt-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={`activity-metric-${index}`} className="space-y-2">
+              <Skeleton className="h-7 w-20 rounded-xl" />
+              <Skeleton className="h-3 w-16 rounded-full" />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+          <Skeleton className="h-11 flex-1 rounded-xl" />
+          <Skeleton className="h-11 flex-1 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SessionCardSkeleton() {
+  return (
+    <div className="rounded-[2rem] border border-border bg-card p-6 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-40 rounded-xl" />
+          <Skeleton className="h-4 w-28 rounded-full" />
+        </div>
+        <Skeleton className="h-10 w-28 rounded-full" />
+      </div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Skeleton className="h-16 rounded-2xl" />
+        <Skeleton className="h-16 rounded-2xl" />
+        <Skeleton className="h-16 rounded-2xl" />
+        <Skeleton className="h-16 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+function BookingBarSkeleton() {
+  return (
+    <div className="w-full">
+      <div className="border border-border/50 rounded-[2.5rem] bg-card p-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="grid flex-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={`booking-segment-${index}`} className="rounded-3xl px-6 py-4">
+                <Skeleton className="h-3 w-24 rounded-full" />
+                <Skeleton className="mt-2 h-4 w-32 rounded-full" />
+              </div>
+            ))}
+          </div>
+          <Skeleton className="h-12 w-full rounded-full lg:w-44" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoomFilterSkeleton() {
+  return (
+    <div className="space-y-7 rounded-[2rem] border border-border bg-card p-6">
+      {Array.from({ length: 3 }).map((_, sectionIndex) => (
+        <div key={`filter-section-${sectionIndex}`} className="space-y-3">
+          <Skeleton className="h-6 w-28 rounded-full" />
+          <Skeleton className="h-4 w-full rounded-full" />
+          <Skeleton className="h-4 w-5/6 rounded-full" />
+          <Skeleton className="h-4 w-2/3 rounded-full" />
+        </div>
+      ))}
+      <div className="space-y-3">
+        <Skeleton className="h-11 w-full rounded-xl" />
+        <Skeleton className="h-11 w-full rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+export function MenuPageSkeleton() {
+  return (
+    <div className="w-full min-h-[50vh]">
+      <div className="mt-2 mb-8">
+        <PillRowSkeleton count={5} />
+      </div>
+
+      <div className="mb-20">
+        <div className="flex items-center gap-3 mb-6">
+          <Skeleton className="h-8 w-40 rounded-xl" />
+          <Skeleton className="h-px flex-1 rounded-full" />
+          <Skeleton className="h-4 w-16 rounded-full" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-9">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={`menu-item-${index}`} className="rounded-2xl border border-border/60 px-3 py-5">
+              <div className="flex items-start gap-4">
+                <Skeleton className="h-[68px] w-[68px] shrink-0 rounded-full" />
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <Skeleton className="h-5 w-32 rounded-full" />
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                  </div>
+                  <Skeleton className="h-px w-full rounded-full" />
+                  <Skeleton className="h-4 w-full rounded-full" />
+                  <Skeleton className="h-4 w-4/5 rounded-full" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-20">
+        <div className="relative min-h-[500px] overflow-hidden rounded-3xl">
+          <Skeleton className="absolute inset-0 rounded-none" />
+          <div className="absolute top-8 left-1/2 -translate-x-1/2">
+            <Skeleton className="h-8 w-36 rounded-full bg-white/20" />
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-10 sm:px-8 md:px-12 md:pb-12">
+            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              <div className="space-y-3">
+                <Skeleton className="h-3 w-32 rounded-full bg-white/20" />
+                <Skeleton className="h-12 w-56 rounded-xl bg-white/20" />
+                <Skeleton className="h-12 w-48 rounded-xl bg-white/20" />
+              </div>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-72 rounded-full bg-white/20" />
+                  <Skeleton className="h-4 w-64 rounded-full bg-white/20" />
+                </div>
+                <Skeleton className="h-11 w-36 rounded-full bg-white/20" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ActivitiesPageSkeleton() {
+  return (
+    <div className="overflow-x-hidden text-foreground">
+      <section className="relative mt-20 h-[60vh] overflow-hidden rounded-2xl lg:h-[75vh]">
+        <Skeleton className="absolute inset-0 rounded-none" />
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <div className="flex flex-col items-center space-y-3">
+            <Skeleton className="h-5 w-48 rounded-full bg-white/20" />
+            <Skeleton className="h-12 w-72 rounded-xl bg-white/20" />
+          </div>
+        </div>
+      </section>
+
+      <section className="py-15">
+        <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <SectionIntroSkeleton />
+          <div className="flex gap-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <Skeleton className="h-12 w-12 rounded-full" />
+          </div>
+        </div>
+        <PillRowSkeleton count={6} />
+      </section>
+
+      <section className="space-y-20 pb-16 sm:pb-20 lg:space-y-28">
+        <ActivityCardSkeleton />
+        <ActivityCardSkeleton reverse />
+        <ActivityCardSkeleton />
+      </section>
+
+      <div className="flex items-center justify-center gap-2 pb-8">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={`activity-page-dot-${index}`} className="h-10 w-10 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function ActivityDetailPageSkeleton() {
+  return (
+    <div className="overflow-x-hidden text-foreground">
+      <section className="relative overflow-hidden rounded-[2.5rem]">
+        <Skeleton className="h-[55vh] w-full rounded-none" />
+        <div className="absolute inset-0 flex items-end">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-10">
+            <Skeleton className="h-10 w-44 rounded-full bg-white/20" />
+            <div className="max-w-3xl space-y-3">
+              <Skeleton className="h-3 w-24 rounded-full bg-white/20" />
+              <Skeleton className="h-12 w-80 rounded-xl bg-white/20" />
+              <Skeleton className="h-4 w-full max-w-2xl rounded-full bg-white/20" />
+              <Skeleton className="h-4 w-5/6 max-w-xl rounded-full bg-white/20" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
+        <div className="border-b border-border/50 pb-10">
+          <StatsRowSkeleton count={4} />
+        </div>
+
+        <div className="pt-14">
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-4">
+              <SectionIntroSkeleton compact />
+              <Skeleton className="h-4 w-full rounded-full" />
+              <Skeleton className="h-4 w-5/6 rounded-full" />
+              <Skeleton className="h-4 w-4/5 rounded-full" />
+            </div>
+            <Skeleton className="min-h-[20rem] rounded-[2rem]" />
+          </div>
+        </div>
+
+        <div className="pt-14">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionIntroSkeleton compact />
+          </div>
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <SessionCardSkeleton />
+            <SessionCardSkeleton />
+            <SessionCardSkeleton />
+            <SessionCardSkeleton />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function RoomsPageSkeleton({ count = 8 }) {
+  return (
+    <section className="text-center">
+      <div className="mb-10">
+        <div className="mt-12">
+          <BookingBarSkeleton />
+        </div>
+      </div>
+
+      <div className="mb-6 flex justify-end px-4 lg:hidden">
+        <Skeleton className="h-10 w-36 rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-12 gap-8">
+        <div className="col-span-12 lg:col-span-9">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {Array.from({ length: count }).map((_, index) => (
+              <RoomCardSkeleton key={`rooms-page-card-${index}`} />
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden lg:col-span-3 lg:block">
+          <RoomFilterSkeleton />
+        </div>
+
+        <div className="col-span-12">
+          <div className="mt-2 flex items-center justify-center gap-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={`rooms-pagination-${index}`} className="h-10 w-10 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function RoomDetailsPageSkeleton() {
+  return (
+    <div className="min-h-screen text-foreground">
+      <div className="container pb-8 font-main">
+        <div className="relative mb-12">
+          <Skeleton className="aspect-video w-full rounded-xl" />
+          <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-auto sm:min-w-[550px]">
+            <div className="rounded-2xl border border-white/20 bg-card/55 p-6 backdrop-blur-md">
+              <Skeleton className="h-10 w-64 rounded-xl" />
+              <div className="mt-6 flex flex-wrap gap-4">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Skeleton key={`room-summary-${index}`} className="h-4 w-20 rounded-full" />
+                ))}
+              </div>
+              <Skeleton className="mt-6 h-7 w-36 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
+          <div className="space-y-12 lg:col-span-2">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full rounded-full" />
+              <Skeleton className="h-4 w-5/6 rounded-full" />
+              <Skeleton className="h-4 w-4/5 rounded-full" />
+            </div>
+
+            {Array.from({ length: 4 }).map((_, sectionIndex) => (
+              <section key={`room-detail-section-${sectionIndex}`}>
+                <Skeleton className="mb-6 h-8 w-48 rounded-xl" />
+                <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-3">
+                  {Array.from({ length: 6 }).map((__, itemIndex) => (
+                    <div key={`room-detail-item-${sectionIndex}-${itemIndex}`} className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-lg" />
+                      <Skeleton className="h-4 w-24 rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            <section>
+              <Skeleton className="mb-8 h-8 w-56 rounded-xl" />
+              <Skeleton className="min-h-[28rem] w-full rounded-2xl" />
+            </section>
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="space-y-6 rounded-xl bg-card p-6">
+              <Skeleton className="h-8 w-40 rounded-xl" />
+              <Skeleton className="h-10 w-32 rounded-xl" />
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={`booking-field-${index}`} className="space-y-2">
+                  <Skeleton className="h-3 w-24 rounded-full" />
+                  <Skeleton className="h-11 w-full rounded-xl" />
+                </div>
+              ))}
+              <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+
+        <section className="mt-24 mb-16">
+          <Skeleton className="mx-auto mb-12 h-10 w-60 rounded-xl" />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <RoomCardSkeleton key={`similar-room-${index}`} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export function HomeFeaturedRoomsSkeleton() {
+  return (
+    <section id="rooms" className="py-10 overflow-hidden mb-25">
+      <div className="flex flex-col mb-8">
+        <SectionIntroSkeleton />
+      </div>
+
+      <div className="relative">
+        <div className="overflow-hidden p-1">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <RoomCardSkeleton />
+            <RoomCardSkeleton />
+          </div>
+        </div>
+
+        <div className="mt-8 flex items-center justify-center gap-2">
+          <Skeleton className="h-9 w-9 rounded-full sm:hidden" />
+          <Skeleton className="h-2.5 w-7 rounded-full" />
+          <Skeleton className="h-2.5 w-2.5 rounded-full" />
+          <Skeleton className="h-2.5 w-2.5 rounded-full" />
+          <Skeleton className="h-9 w-9 rounded-full sm:hidden" />
+        </div>
+      </div>
+    </section>
+  );
+}
