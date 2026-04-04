@@ -2,39 +2,21 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   selectCartItems,
   selectCartTotal,
-  updateQuantity,
   removeItem,
-  clearCart,
+  updateItemBookingDates,
 } from "@/store/slices/cartSlice";
 import { toast } from "react-toastify";
 import CartItem from "@/components/shopcart/CartItem";
 import CartEmpty from "@/components/shopcart/CartEmpty";
 import OrderSummary from "@/components/shopcart/OrderSummary";
+import RoomBookingModal from "@/components/rooms/RoomBookingModal";
+import { useState } from "react";
 
 export default function ShopCart() {
   const dispatch = useDispatch();
   const cartItems = useSelector(selectCartItems);
   const totalPrice = useSelector(selectCartTotal);
-
-  const increase = (id) => {
-    const item = cartItems.find((i) => i.id === id);
-    if (item) {
-      dispatch(updateQuantity({ id, quantity: item.quantity + 1 }));
-      toast.info(`Updated ${item.name} quantity`);
-    }
-  };
-
-  const decrease = (id) => {
-    const item = cartItems.find((i) => i.id === id);
-    if (item) {
-      dispatch(updateQuantity({ id, quantity: item.quantity - 1 }));
-      if (item.quantity - 1 === 0) {
-        toast.warning(`${item.name} removed from cart`);
-      } else {
-        toast.info(`Updated ${item.name} quantity`);
-      }
-    }
-  };
+  const [editingItem, setEditingItem] = useState(null);
 
   const remove = (id) => {
     const item = cartItems.find((i) => i.id === id);
@@ -44,9 +26,18 @@ export default function ShopCart() {
     }
   };
 
-  const clearAll = () => {
-    dispatch(clearCart());
-    toast.error("Cart cleared");
+  const handleConfirmDates = (bookingDraft) => {
+    if (!editingItem) return;
+
+    dispatch(
+      updateItemBookingDates({
+        id: editingItem.id,
+        bookingDraft,
+      })
+    );
+
+    toast.success(`${editingItem.name} booking dates updated.`);
+    setEditingItem(null);
   };
 
   return (
@@ -63,8 +54,7 @@ export default function ShopCart() {
                 <CartItem
                   key={item.id}
                   item={item}
-                  onIncrease={increase}
-                  onDecrease={decrease}
+                  onEditDates={setEditingItem}
                   onRemove={remove}
                 />
               ))}
@@ -77,6 +67,14 @@ export default function ShopCart() {
           </div>
         )}
       </div>
+
+      <RoomBookingModal
+        isOpen={Boolean(editingItem)}
+        room={editingItem}
+        initialDraft={editingItem}
+        onClose={() => setEditingItem(null)}
+        onConfirm={handleConfirmDates}
+      />
     </div>
   );
 }

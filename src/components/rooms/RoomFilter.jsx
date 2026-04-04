@@ -22,11 +22,17 @@ const defaultState = {
   unrated: false,
 };
 
-export default function RoomFilter({ rooms = [], onFilter }) {
-  const [price, setPrice] = useState(defaultState.price);
+export default function RoomFilter({ rooms = [], onFilter, onReset }) {
+  const maxPrice = useMemo(() => {
+    if (!rooms?.length) return 1000;
+    return Math.max(...rooms.map((room) => Number(room.finalPrice ?? room.price ?? 0)), 1000);
+  }, [rooms]);
+
+  const [price, setPrice] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
   const [unrated, setUnrated] = useState(false);
+  const activePrice = price ?? [0, maxPrice];
 
   const roomTypeCounts = useMemo(() => {
     const tally = (rooms || []).reduce((acc, room) => {
@@ -67,16 +73,20 @@ export default function RoomFilter({ rooms = [], onFilter }) {
     );
 
   const handleReset = () => {
-    setPrice(defaultState.price);
+    setPrice(null);
     setSelectedTypes([]);
     setSelectedRatings([]);
     setUnrated(false);
-    onFilter?.(defaultState);
+    onReset?.();
+    onFilter?.({
+      ...defaultState,
+      price: [0, maxPrice],
+    });
   };
 
   const handleFilter = () => {
     onFilter?.({
-      price,
+      price: activePrice,
       roomTypes: selectedTypes,
       ratings: selectedRatings,
       unrated,
@@ -92,15 +102,15 @@ export default function RoomFilter({ rooms = [], onFilter }) {
         </h4>
         <Slider
           min={5}
-          max={1000}
+          max={maxPrice}
           step={5}
-          value={price}
+          value={activePrice}
           onValueChange={setPrice}
           className="w-full"
         />
         <div className="flex gap-2 text-accent-foreground font-bold">
-          <span>${price[0]} - </span>
-          <span>${price[1].toLocaleString()}</span>
+          <span>${activePrice[0]} - </span>
+          <span>${activePrice[1].toLocaleString()}</span>
         </div>
       </div>
 

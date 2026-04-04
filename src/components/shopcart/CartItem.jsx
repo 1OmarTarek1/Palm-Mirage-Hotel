@@ -1,79 +1,143 @@
-import { Trash2, Plus, Minus, BedDouble } from "lucide-react";
+import { Trash2, BedDouble, CalendarDays, Users, MoonStar, Edit3 } from "lucide-react";
+import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
+import { Button } from "@/components/ui/button";
 
-export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
+export default function CartItem({ item, onEditDates, onRemove }) {
+  const isAvailable = item.availabilityStatus === "available";
+
   return (
-    <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden flex flex-col sm:flex-row hover:shadow-md dark:hover:shadow-black/30 transition-shadow">
+    <div className="group overflow-hidden rounded-[30px] border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+      <div className="flex flex-col lg:flex-row">
+        <div className="relative h-56 w-full shrink-0 overflow-hidden lg:h-auto lg:w-[250px]">
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+          <div className="absolute left-4 top-4 z-20 flex flex-wrap gap-2">
+            <span className="rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white shadow-lg">
+              {item.category}
+            </span>
+            <span
+              className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] shadow-lg ${
+                isAvailable
+                  ? "bg-secondary text-white"
+                  : "bg-destructive text-white"
+              }`}
+            >
+              {isAvailable ? "Available" : "Needs check"}
+            </span>
+          </div>
+          <div className="absolute bottom-4 left-4 z-20 rounded-2xl border border-white/15 bg-black/35 px-3 py-2 backdrop-blur-sm">
+            <p className="text-[11px] font-medium text-white/70">Booking total</p>
+            <p className="text-xl font-bold text-white">
+              ${calculateCartItemTotal(item).toFixed(2)}
+            </p>
+          </div>
 
-      <div className="sm:w-44 w-full h-44 sm:h-auto flex-shrink-0 overflow-hidden">
         {item.image ? (
           <img
             src={item.image}
             alt={item.name}
-            className="w-full h-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full bg-[#f0f3ef] dark:bg-[#1e2b1e] flex items-center justify-center">
-            <BedDouble className="w-10 h-10 text-[#8c9e8d]" />
+            <div className="flex h-full w-full items-center justify-center bg-muted">
+              <BedDouble className="h-10 w-10 text-primary" />
           </div>
         )}
       </div>
 
-      {/* Info */}
-      <div className="flex-1 p-5 flex flex-col justify-between gap-4">
-        {/* Top Row: name + delete */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c9e8d] bg-[#f0f3ef] dark:bg-[#1e2b1e] px-2 py-0.5 rounded mb-2 inline-block">
-              {item.category}
-            </span>
-            <h3 className="text-base font-bold text-[#1a1a1a] dark:text-white">
-              {item.name}
-            </h3>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-6 p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h3 className="font-header text-2xl font-bold leading-tight text-foreground">
+                {item.name}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
               ${item.price.toFixed(2)} / night
             </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="rounded-full border border-border bg-muted/35 px-3 py-1.5 text-xs font-medium text-foreground">
+                  {formatBookingDateLabel(item.checkInDate)} - {formatBookingDateLabel(item.checkOutDate)}
+                </span>
+                <span className="rounded-full border border-border bg-muted/35 px-3 py-1.5 text-xs font-medium text-foreground">
+                  {item.adults} adults, {item.children} children
+                </span>
+                <span className="rounded-full border border-border bg-muted/35 px-3 py-1.5 text-xs font-medium text-foreground">
+                  {item.roomsCount} room(s)
+                </span>
+                <span className="rounded-full border border-border bg-muted/35 px-3 py-1.5 text-xs font-medium text-foreground">
+                  {item.nights || 0} night(s)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start">
+              <Button
+                type="button"
+                variant="palmSecondary"
+                size="icon"
+                onClick={() => onEditDates(item)}
+                className="h-10 w-10"
+                aria-label="Edit booking dates"
+                title="Edit booking dates"
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="light"
+                size="icon"
+                onClick={() => onRemove(item.id)}
+                className="h-10 w-10 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                aria-label="Remove item"
+                title="Remove item"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-
-          <button
-            onClick={() => onRemove(item.id)}
-            className="text-gray-300 dark:text-gray-600 hover:text-red-400 dark:hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0"
-            aria-label="Remove item"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Bottom Row: quantity + subtotal */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          {/* Quantity Controls */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => onDecrease(item.id)}
-              className="w-8 h-8 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-[#8c9e8d] hover:text-[#8c9e8d] dark:hover:border-[#8c9e8d] dark:hover:text-[#8c9e8d] transition-colors"
-              aria-label="Decrease"
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
-            <span className="w-6 text-center font-bold text-[#1a1a1a] dark:text-white text-sm">
-              {item.quantity}
-            </span>
-            <button
-              onClick={() => onIncrease(item.id)}
-              className="w-8 h-8 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-[#8c9e8d] hover:text-[#8c9e8d] dark:hover:border-[#8c9e8d] dark:hover:text-[#8c9e8d] transition-colors"
-              aria-label="Increase"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Subtotal */}
-          <div className="text-right">
-            <span className="text-[11px] text-gray-400 dark:text-gray-500 block">
-              Subtotal
-            </span>
-            <span className="text-lg font-bold text-[#1a1a1a] dark:text-white">
-              ${(item.price * item.quantity).toFixed(2)}
-            </span>
+          <div className="grid gap-4 border-t border-border/70 pt-5 sm:grid-cols-3">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-primary/10 p-2 text-primary">
+                <CalendarDays className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Stay dates
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {formatBookingDateLabel(item.checkInDate)} - {formatBookingDateLabel(item.checkOutDate)}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-primary/10 p-2 text-primary">
+                <Users className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Guests
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {item.adults} adults, {item.children} children
+                </p>
+                <p className="text-xs text-muted-foreground">{item.roomsCount} room(s)</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-primary/10 p-2 text-primary">
+                <MoonStar className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Stay summary
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {item.nights || 0} night(s)
+                </p>
+                <p className={`text-xs font-medium ${isAvailable ? "text-secondary" : "text-destructive"}`}>
+                  {isAvailable ? "Available" : "Needs date check"}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

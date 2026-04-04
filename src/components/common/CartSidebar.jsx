@@ -1,10 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingCart, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
+import { X, ShoppingCart, Trash2, ArrowRight, CalendarDays } from "lucide-react";
 import {
   closeCart,
   removeItem,
-  updateQuantity,
   clearCart,
   selectCartItems,
   selectCartIsOpen,
@@ -14,6 +13,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
 
 export default function CartSidebar() {
   const dispatch = useDispatch();
@@ -127,43 +127,23 @@ export default function CartSidebar() {
                           </MotionButton>
                         </div>
 
-                        {item.nights && (
+                        {item.checkInDate && item.checkOutDate ? (
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {item.nights} night{item.nights > 1 ? "s" : ""}
+                            <span className="inline-flex items-center gap-1">
+                              <CalendarDays size={12} className="text-primary" />
+                              {formatBookingDateLabel(item.checkInDate)} - {formatBookingDateLabel(item.checkOutDate)}
+                            </span>
                           </p>
-                        )}
+                        ) : null}
 
                         <div className="flex items-center justify-between mt-3">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-2 bg-background/60 rounded-full px-2 py-1 border border-border/40">
-                            <MotionButton
-                              onClick={() => {
-                                dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }));
-                                if (item.quantity - 1 === 0) {
-                                  toast.warning(`${item.name} removed from cart`);
-                                } else {
-                                  toast.info(`Updated ${item.name} quantity`);
-                                }
-                              }}
-                              className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors text-foreground/70"
-                            >
-                              <Minus size={11} />
-                            </MotionButton>
-                            <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                            <MotionButton
-                              onClick={() => {
-                                dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }));
-                                toast.info(`Updated ${item.name} quantity`);
-                              }}
-                              className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors text-foreground/70"
-                            >
-                              <Plus size={11} />
-                            </MotionButton>
+                          <div className="rounded-full border border-border/40 bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+                            {item.nights || 0} night{item.nights === 1 ? "" : "s"}
                           </div>
 
                           {/* Price */}
                           <p className="text-sm font-bold text-primary">
-                            ${(item.price * item.quantity).toLocaleString()}
+                            ${calculateCartItemTotal(item).toLocaleString()}
                           </p>
                         </div>
                       </div>

@@ -1,4 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
+import {
+  buildCartBookingItem,
+  calculateCartItemTotal,
+  calculateNights,
+  formatBookingDate,
+  isCartItemReady,
+} from "@/utils/roomBooking";
 
 const resolveCartItemImage = (item) => {
   if (typeof item?.image === "string" && item.image) return item.image;
@@ -41,6 +48,12 @@ const normalizeCartItem = (item) => {
   const price = Number(item?.price || 0);
   const quantity = Math.max(1, Number(item?.quantity || 1));
   const nights = Number(item?.nights || 0);
+  const checkInDate = formatBookingDate(item?.checkInDate);
+  const checkOutDate = formatBookingDate(item?.checkOutDate);
+  const roomsCount = Math.max(1, Number(item?.roomsCount || 1));
+  const adults = Math.max(1, Number(item?.adults || 1));
+  const children = Math.max(0, Number(item?.children || 0));
+  const availabilityStatus = item?.availabilityStatus || "unknown";
 
   return {
     ...item,
@@ -50,7 +63,14 @@ const normalizeCartItem = (item) => {
     image,
     price,
     quantity,
-    nights,
+    nights: nights || calculateNights(checkInDate, checkOutDate),
+    checkInDate,
+    checkOutDate,
+    roomsCount,
+    adults,
+    children,
+    guests: adults + children,
+    availabilityStatus,
   };
 };
 
@@ -114,15 +134,32 @@ const cartSlice = createSlice({
       const incomingItem = normalizeCartItem(action.payload);
       const existing = state.items.find((i) => i.id === incomingItem.id);
       if (existing) {
-        existing.quantity += incomingItem.quantity;
-        if (!existing.image && incomingItem.image) existing.image = incomingItem.image;
-        if (!existing.name && incomingItem.name) existing.name = incomingItem.name;
-        if (!existing.category && incomingItem.category) existing.category = incomingItem.category;
-        if (!existing.nights && incomingItem.nights) existing.nights = incomingItem.nights;
-        if (!existing.price && incomingItem.price) existing.price = incomingItem.price;
+        Object.assign(existing, {
+          ...existing,
+          ...incomingItem,
+          quantity: 1,
+        });
       } else {
         state.items.push(incomingItem);
       }
+      saveCartToStorage(state.items);
+    },
+
+    upsertRoomBooking: (state, action) => {
+      const incomingItem = buildCartBookingItem(action.payload.room, action.payload.bookingDraft);
+      if (!incomingItem) return;
+
+      const existingIndex = state.items.findIndex((item) => item.id === incomingItem.id);
+
+      if (existingIndex >= 0) {
+        state.items[existingIndex] = {
+          ...state.items[existingIndex],
+          ...incomingItem,
+        };
+      } else {
+        state.items.push(incomingItem);
+      }
+
       saveCartToStorage(state.items);
     },
 
@@ -138,10 +175,28 @@ const cartSlice = createSlice({
         if (quantity <= 0) {
           state.items = state.items.filter((i) => i.id !== id);
         } else {
-          item.quantity = quantity;
+          item.quantity = 1;
         }
         saveCartToStorage(state.items);
       }
+    },
+
+    updateItemBookingDates: (state, action) => {
+      const { id, bookingDraft } = action.payload;
+      const item = state.items.find((entry) => entry.id === id);
+      if (!item) return;
+
+      item.checkInDate = formatBookingDate(bookingDraft?.checkInDate);
+      item.checkOutDate = formatBookingDate(bookingDraft?.checkOutDate);
+      item.adults = Math.max(1, Number(bookingDraft?.adults || item.adults || 1));
+      item.children = Math.max(0, Number(bookingDraft?.children || item.children || 0));
+      item.guests = item.adults + item.children;
+      item.roomsCount = Math.max(1, Number(bookingDraft?.roomsCount || item.roomsCount || 1));
+      item.nights = calculateNights(item.checkInDate, item.checkOutDate);
+      item.availabilityStatus = bookingDraft?.availabilityStatus || item.availabilityStatus || "unknown";
+      item.availabilityCheckedAt = bookingDraft?.availabilityCheckedAt || new Date().toISOString();
+
+      saveCartToStorage(state.items);
     },
 
     clearCart: (state) => {
@@ -151,14 +206,28 @@ const cartSlice = createSlice({
   },
 });
 
-export const { openCart, closeCart, toggleCart, addItem, removeItem, updateQuantity, clearCart } = cartSlice.actions;
+export const {
+  openCart,
+  closeCart,
+  toggleCart,
+  addItem,
+  upsertRoomBooking,
+  removeItem,
+  updateQuantity,
+  updateItemBookingDates,
+  clearCart,
+} = cartSlice.actions;
 
 // Selectors
 export const selectCartItems = (state) => state.cart.items;
 export const selectCartIsOpen = (state) => state.cart.isOpen;
 export const selectCartCount = (state) =>
-  state.cart.items.reduce((sum, item) => sum + item.quantity, 0);
+  state.cart.items.length;
 export const selectCartTotal = (state) =>
-  state.cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  state.cart.items.reduce((sum, item) => sum + calculateCartItemTotal(item), 0);
+export const selectCartItemById = (state, id) =>
+  state.cart.items.find((item) => item.id === id) || null;
+export const selectCartRequiresAttention = (state) =>
+  state.cart.items.some((item) => !isCartItemReady(item));
 
 export default cartSlice.reducer;

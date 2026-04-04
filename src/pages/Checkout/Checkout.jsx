@@ -13,7 +13,12 @@ import CheckoutForm from '@/components/Checkout/CheckoutForm';
 import OrderReceived from '@/components/Checkout/OrderReceived';
 import BillingDetails from '@/components/Checkout/BillingDetails';
 import { checkoutSchema } from './checkoutSchema';
-import { selectCartItems, selectCartTotal, clearCart } from '@/store/slices/cartSlice';
+import {
+  selectCartItems,
+  selectCartTotal,
+  selectCartRequiresAttention,
+  clearCart,
+} from '@/store/slices/cartSlice';
 import { 
   createBooking, 
 } from '@/services/booking/bookingSlice';
@@ -25,8 +30,10 @@ const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const MotionDiv = motion.div;
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
+  const cartRequiresAttention = useSelector(selectCartRequiresAttention);
   
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
@@ -88,6 +95,10 @@ const Checkout = () => {
   };
 
   const createReservations = async ({ items, data, method }) => {
+    if (items.some((item) => !item.checkInDate || !item.checkOutDate || item.availabilityStatus !== 'available')) {
+      throw new Error('Some rooms are missing valid available dates.');
+    }
+
     const bookingPromises = items
       .filter(item => item.checkInDate)
       .map(item => {
@@ -121,6 +132,13 @@ const Checkout = () => {
 
     window.sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify(snapshot));
   };
+
+  useEffect(() => {
+    if (cartItems.length > 0 && cartRequiresAttention) {
+      toast.info('Please review your cart dates before checkout.');
+      navigate('/cart', { replace: true });
+    }
+  }, [cartItems.length, cartRequiresAttention, navigate]);
 
   useEffect(() => {
     const paymentState = searchParams.get('payment');
@@ -171,6 +189,7 @@ const Checkout = () => {
     };
 
     void finalizeStripeCheckout();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, navigate, searchParams]);
 
   return (
@@ -249,14 +268,14 @@ const Checkout = () => {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-            <motion.div 
+            <MotionDiv 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
             
-            <motion.div 
+            <MotionDiv 
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
@@ -277,7 +296,7 @@ const Checkout = () => {
               <div className="px-8 pb-12 md:px-16 md:pb-20 -mt-12">
                 <OrderReceived orderReceived={orderReceived} />
               </div>
-            </motion.div>
+            </MotionDiv>
           </div>
         )}
       </AnimatePresence>

@@ -16,15 +16,24 @@ export default function AuthBootstrap() {
 
     let isMounted = true;
 
+    const applyAccount = async () => {
+      const { data } = await axiosInstance.get("/auth/account");
+      if (isMounted) {
+        dispatch(setCredentials({ user: data?.data?.user ?? null }));
+      }
+    };
+
     const bootstrapAuth = async () => {
       try {
-        const { data } = await axiosInstance.get("/auth/account");
-        if (isMounted) {
-          dispatch(setCredentials({ user: data?.data?.user ?? null }));
-        }
+        await applyAccount();
       } catch {
-        if (isMounted) {
-          dispatch(logout());
+        try {
+          await axiosInstance.get("/auth/refresh-token");
+          await applyAccount();
+        } catch {
+          if (isMounted) {
+            dispatch(logout());
+          }
         }
       } finally {
         if (isMounted) {

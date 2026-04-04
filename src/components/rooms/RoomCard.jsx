@@ -1,16 +1,22 @@
+import React from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { BedDouble, Maximize2, Users, ShoppingCart, Heart } from "lucide-react";
 
-import { addItem } from "@/store/slices/cartSlice";
+import {
+  selectCartItemById,
+  upsertRoomBooking,
+} from "@/store/slices/cartSlice";
 import { useFlyToCart } from "@/hooks/useFlyToCart";
 import { Button } from "@/components/ui/button";
 import {
   toggleWishlist,
   selectIsInWishlist,
 } from "@/store/slices/wishlistSlice";
+import RoomBookingModal from "@/components/rooms/RoomBookingModal";
+import { normalizeRoomForBooking } from "@/utils/roomBooking";
 
 const normalizeRoomAmenities = (room) => {
   const rawAmenities =
@@ -72,28 +78,40 @@ export default function RoomCard({ room, className }) {
   const isInWishlist = useSelector((state) =>
     selectIsInWishlist(state, roomId),
   );
+  const cartItem = useSelector((state) => selectCartItemById(state, roomId));
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
+  const cartTriggerRef = React.useRef(null);
 
   if (!room) return null;
 
-  const handleAddToCart = (e) => {
+  const normalizedRoom = normalizeRoomForBooking(room);
+
+  const handleOpenBookingModal = (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
       toast.info("Please sign in first to use cart.");
       return;
     }
-    flyToCart(e.currentTarget, "navbar-cart-button");
+
+    setIsBookingModalOpen(true);
+  };
+
+  const handleConfirmBooking = (bookingDraft) => {
     dispatch(
-      addItem({
-        id: roomId,
-        name: roomName,
-        image: roomImage,
-        price: room.price,
-        category: roomType,
-        quantity: 1,
-        nights: 1,
-      }),
+      upsertRoomBooking({
+        room: {
+          ...normalizedRoom,
+          image: roomImage,
+        },
+        bookingDraft,
+      })
     );
-    toast.success(`${roomName} added to cart`);
+
+    setIsBookingModalOpen(false);
+    if (cartTriggerRef.current) {
+      flyToCart(cartTriggerRef.current);
+    }
+    toast.success(cartItem ? `${roomName} booking updated in cart` : `${roomName} added to cart`);
   };
 
   const handleToggleWishlist = (e) => {
@@ -143,7 +161,7 @@ export default function RoomCard({ room, className }) {
         {/* Price Tag Overlay */}
         <div className="absolute bottom-0 left-0 bg-card px-5 py-3 rounded-tr-3xl transition-colors duration-300">
           <p className="text-foreground font-semibold text-base leading-none">
-            <span className="text-xl font-bold">${room.price}.00</span>
+            <span className="text-xl font-bold">${Number(room.price || 0).toFixed(2)}</span>
             <span className="text-sm font-normal text-muted-foreground">
               {" "}
               /night
@@ -171,7 +189,7 @@ export default function RoomCard({ room, className }) {
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
             <Maximize2 size={16} className="text-primary/60" />
-            <span>{room.size}sqm m²</span>
+            <span>{room.size} sqm</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
             <Users size={16} className="text-primary/60" />
@@ -201,12 +219,13 @@ export default function RoomCard({ room, className }) {
               <Link to={`/rooms/${roomId}`}>Book Now</Link>
             </Button>
             <Button
-              onClick={handleAddToCart}
-              variant="palmSecondary"
+              onClick={handleOpenBookingModal}
+              variant={cartItem ? "palmPrimary" : "palmSecondary"}
               size="icon"
               className="h-9 w-9 shrink-0"
-              aria-label="Add to cart"
-              title="Add to cart"
+              aria-label={cartItem ? "Update booking in cart" : "Add booking to cart"}
+              title={cartItem ? "Update booking in cart" : "Add booking to cart"}
+              ref={cartTriggerRef}
             >
               <ShoppingCart size={16} />
             </Button>
@@ -231,6 +250,16 @@ export default function RoomCard({ room, className }) {
           </div>
         </div>
       </div>
+
+      <RoomBookingModal
+        key={`${roomId}-${isBookingModalOpen ? "open" : "closed"}-${cartItem?.checkInDate || "none"}-${cartItem?.checkOutDate || "none"}`}
+        isOpen={isBookingModalOpen}
+        room={normalizedRoom}
+        initialDraft={cartItem}
+        onClose={() => setIsBookingModalOpen(false)}
+        onConfirm={handleConfirmBooking}
+      />
     </div>
   );
 }
+

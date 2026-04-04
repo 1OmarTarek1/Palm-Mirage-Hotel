@@ -1,35 +1,67 @@
-import { useState, useRef, useEffect } from "react";
+import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, Users, Home, UserPlus } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "./booking/DatePicker";
 import BookingCounter from "./booking/BookingCounter";
-import { useFlyToCart } from "@/hooks/useFlyToCart";
 import { cn } from "@/lib/utils";
+import { formatBookingDate } from "@/utils/roomBooking";
+import { toast } from "react-toastify";
 
-export default function BookingBar({ className, variant = "overlay" }) {
-  const { flyToCart } = useFlyToCart();
+const createDefaultBookingState = (search) => {
+  const defaultCheckIn = new Date();
+  defaultCheckIn.setHours(0, 0, 0, 0);
+  const defaultCheckOut = new Date(defaultCheckIn);
+  defaultCheckOut.setDate(defaultCheckIn.getDate() + 1);
+
+  const params = new URLSearchParams(search);
+  const checkInParam = params.get("checkIn");
+  const checkOutParam = params.get("checkOut");
+  const adultsParam = Number(params.get("adults") || 1);
+  const childrenParam = Number(params.get("children") || 0);
+  const roomsParam = Number(params.get("rooms") || 1);
+
+  return {
+    checkIn: checkInParam ? new Date(`${checkInParam}T00:00:00`) : defaultCheckIn,
+    checkOut: checkOutParam ? new Date(`${checkOutParam}T00:00:00`) : defaultCheckOut,
+    adults: params.has("adults") && Number.isFinite(adultsParam) ? Math.max(1, adultsParam) : 1,
+    children: params.has("children") && Number.isFinite(childrenParam) ? Math.max(0, childrenParam) : 0,
+    rooms: params.has("rooms") && Number.isFinite(roomsParam) ? Math.max(1, roomsParam) : 1,
+  };
+};
+
+const BookingBar = forwardRef(function BookingBar({ className, variant = "overlay" }, ref) {
+  const MotionDiv = motion.div;
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activePopover, setActivePopover] = useState(null);
-  const [bookingState, setBookingState] = useState({
-    checkIn: new Date(),
-    checkOut: new Date(new Date().setDate(new Date().getDate() + 1)),
-    adults: 1,
-    children: 0,
-    rooms: 1,
-  });
+  const [bookingState, setBookingState] = useState(() => createDefaultBookingState(location.search));
 
   const barRef = useRef(null);
+  const popoverRef = useRef(null);
 
   // Close popover when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
-      if (barRef.current && !barRef.current.contains(event.target)) {
+      const clickedInsideBar = barRef.current?.contains(event.target);
+      const clickedInsidePopover = popoverRef.current?.contains(event.target);
+
+      if (!clickedInsideBar && !clickedInsidePopover) {
         setActivePopover(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    resetToDefaults() {
+      setBookingState(createDefaultBookingState(""));
+      setActivePopover(null);
+    },
+  }), []);
 
   const formatDate = (date) => {
     if (!date) return "Select date";
@@ -74,8 +106,52 @@ export default function BookingBar({ className, variant = "overlay" }) {
     },
   ];
 
+  const renderPopoverContent = (segmentId) => {
+    if (segmentId === "dates") {
+      return (
+        <DatePicker
+          checkIn={bookingState.checkIn}
+          checkOut={bookingState.checkOut}
+          setBookingState={setBookingState}
+          setActivePopover={setActivePopover}
+        />
+      );
+    }
+
+    if (segmentId === "adults") {
+      return (
+        <BookingCounter
+          label="Adults"
+          value={bookingState.adults}
+          onMinus={() => updateCount("adults", -1)}
+          onPlus={() => updateCount("adults", 1)}
+        />
+      );
+    }
+
+    if (segmentId === "children") {
+      return (
+        <BookingCounter
+          label="Children"
+          value={bookingState.children}
+          onMinus={() => updateCount("children", -1)}
+          onPlus={() => updateCount("children", 1)}
+        />
+      );
+    }
+
+    return (
+      <BookingCounter
+        label="Rooms"
+        value={bookingState.rooms}
+        onMinus={() => updateCount("rooms", -1)}
+        onPlus={() => updateCount("rooms", 1)}
+      />
+    );
+  };
+
   return (
-    <motion.div
+    <MotionDiv
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.8, duration: 0.6 }}
@@ -127,59 +203,6 @@ export default function BookingBar({ className, variant = "overlay" }) {
               )}
 
               {/* Popover */}
-              <AnimatePresence>
-                {activePopover === segment.id && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className={cn(
-                      "absolute bg-card border border-border shadow-2xl rounded-3xl overflow-hidden z-50",
-                      variant === "overlay"
-                        ? "top-full mt-4 left-1/2 -translate-x-1/2 w-[95vw] md:w-auto xl:bottom-full xl:mb-4 xl:top-auto xl:mt-0 xl:left-0 xl:translate-x-0"
-                        : "top-full mt-4 md:bottom-full md:mb-4 md:top-auto md:mt-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 lg:left-0 lg:right-auto w-[95vw] md:w-auto"
-                    )}
-                    style={{ minWidth: segment.id === 'dates' ? 'min(320px, 90vw)' : 'min(260px, 90vw)' }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="p-2">
-                       {segment.id === 'dates' && (
-                         <DatePicker 
-                           checkIn={bookingState.checkIn} 
-                           checkOut={bookingState.checkOut} 
-                           setBookingState={setBookingState} 
-                           setActivePopover={setActivePopover}
-                         />
-                       )}
-                       {segment.id === 'adults' && (
-                         <BookingCounter 
-                           label="Adults" 
-                           value={bookingState.adults} 
-                           onMinus={() => updateCount('adults', -1)} 
-                           onPlus={() => updateCount('adults', 1)} 
-                         />
-                       )}
-                       {segment.id === 'children' && (
-                         <BookingCounter 
-                           label="Children" 
-                           value={bookingState.children} 
-                           onMinus={() => updateCount('children', -1)} 
-                           onPlus={() => updateCount('children', 1)} 
-                         />
-                       )}
-                       {segment.id === 'rooms' && (
-                         <BookingCounter 
-                           label="Rooms" 
-                           value={bookingState.rooms} 
-                           onMinus={() => updateCount('rooms', -1)} 
-                           onPlus={() => updateCount('rooms', 1)} 
-                         />
-                       )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           ))}
         </div>
@@ -190,19 +213,64 @@ export default function BookingBar({ className, variant = "overlay" }) {
               "w-full px-5 h-12 text-xs font-bold uppercase tracking-widest transition-all",
               variant === "overlay" ? "xl:w-auto" : "lg:w-auto"
             )}
-            onClick={(e) => {
-              flyToCart(e.currentTarget);
+            onClick={() => {
               if (!bookingState.checkIn || !bookingState.checkOut) {
-                alert("Please select both check-in and check-out dates.");
+                toast.error("Please select both check-in and check-out dates.");
                 return;
               }
-              alert(`Booking Request:\nDates: ${formatDate(bookingState.checkIn)} to ${formatDate(bookingState.checkOut)}\nGuests: ${bookingState.adults} Adults, ${bookingState.children} Children\nRooms: ${bookingState.rooms}`);
+
+              const search = new URLSearchParams({
+                checkIn: formatBookingDate(bookingState.checkIn),
+                checkOut: formatBookingDate(bookingState.checkOut),
+                adults: String(bookingState.adults),
+                children: String(bookingState.children),
+                rooms: String(bookingState.rooms),
+              }).toString();
+
+              navigate(`/rooms?${search}`);
+              setActivePopover(null);
             }}
           >
             Check Availability
           </Button>
         </div>
       </div>
-    </motion.div>
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {activePopover ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="fixed inset-0 z-[70] flex items-center justify-center p-4 md:p-6 pointer-events-none"
+                >
+                  <motion.div
+                    ref={popoverRef}
+                    initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                    transition={{ duration: 0.2 }}
+                    className="pointer-events-auto max-h-[calc(100vh-2rem)] overflow-auto rounded-3xl border border-border bg-card shadow-2xl"
+                    style={{
+                      width:
+                        activePopover === "dates"
+                          ? "min(380px, calc(100vw - 2rem))"
+                          : "min(280px, calc(100vw - 2rem))",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-2">{renderPopoverContent(activePopover)}</div>
+                  </motion.div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
+    </MotionDiv>
   );
-}
+});
+
+export default BookingBar;
