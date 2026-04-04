@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import { useSelector } from "react-redux";
 import { navLinks } from "./navLinks";
 import Logo from "./Logo";
 
@@ -11,6 +12,9 @@ import MegaMenu from "./Desktop/MegaMenu";
 import CartButton from "./CartButton";
 import LoginButton from "./LoginButton";
 import WishlistButton from "./WishlistButton";
+
+const MotionNav = motion.nav;
+const MotionDiv = motion.div;
 
 const CIRCLE_RADIUS = 28;
 
@@ -80,6 +84,7 @@ const slideInUp = {
 };
 
 export default function Navbar() {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [isOpen, setIsOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [hidden, setHidden] = useState(false);
@@ -136,7 +141,7 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 px-1 sm:px-2 md:px-3! lg:px-5 py-3">
       <div className="px-2 md:px-0 lg:max-w-7xl mx-auto relative lg:px-2 pl-1">
         <div className="relative flex justify-center">
-        <motion.nav
+        <MotionNav
           variants={!introDone ? introVariants : scrollVariants}
           initial={!introDone ? "initial" : false}
           animate={
@@ -157,16 +162,16 @@ export default function Navbar() {
           style={{ willChange: "transform" }}
           className="relative flex items-center justify-between w-full px-2 h-12 md:h-14 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20"
         >
-          <motion.div
+          <MotionDiv
             className="flex items-center justify-between w-full h-full"
             initial="hidden"
             animate={introDone ? "visible" : "hidden"}
             variants={contentVariants}
             style={{ pointerEvents: introDone ? "auto" : "none" }}
           >
-            <motion.div variants={slideInLeft}>
+            <MotionDiv variants={slideInLeft}>
               <Logo />
-            </motion.div>
+            </MotionDiv>
             
             <DesktopNav
               navLinks={navLinks}
@@ -181,17 +186,17 @@ export default function Navbar() {
               onLeave={handleMouseLeave}
             />
             
-            <motion.div
+            <MotionDiv
               variants={slideInUp}
               className="flex items-center md:hidden gap-1 md:gap-2"
             >
-              <WishlistButton />
-              <CartButton />
+              {isAuthenticated && <WishlistButton />}
+              {isAuthenticated && <CartButton />}
               <LoginButton />
               <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />
-            </motion.div>
-          </motion.div>
-        </motion.nav>
+            </MotionDiv>
+          </MotionDiv>
+        </MotionNav>
         </div>
 
         <AnimatePresence>

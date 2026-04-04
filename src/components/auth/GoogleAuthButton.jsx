@@ -12,6 +12,15 @@ export default function GoogleAuthButton() {
   const dispatch = useDispatch();
   const isDark = useSelector(selectIsDark);
   const [error, setError] = useState("");
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  if (!clientId) {
+    return (
+      <p className="text-center text-xs text-muted-foreground">
+        Google sign-in is unavailable right now.
+      </p>
+    );
+  }
 
   const handleSuccess = async (credentialResponse) => {
     setError("");
@@ -41,7 +50,7 @@ export default function GoogleAuthButton() {
     <div className="flex flex-col items-center gap-2">
       <GoogleLogin
         onSuccess={handleSuccess}
-        onError={() => setError("Google sign-in was cancelled.")}
+        onError={() => setError("Google sign-in is unavailable right now.")}
         size="large"
         width={200}
         text="continue_with"

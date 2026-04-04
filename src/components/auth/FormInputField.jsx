@@ -7,6 +7,7 @@ export default function FormInputField({
   label = "Email",
   type = "text",
   placeholder = "Enter your email",
+  autoComplete,
   register,
   error,
   className,
@@ -23,6 +24,7 @@ export default function FormInputField({
         id={id}
         type={type}
         placeholder={placeholder}
+        autoComplete={autoComplete ?? (id === "email" ? "email" : undefined)}
         className={cn(
           "md:py-6",
           className,

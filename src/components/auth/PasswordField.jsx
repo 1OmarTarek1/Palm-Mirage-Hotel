@@ -7,6 +7,7 @@ export default function PasswordField({
   id = "password",
   label = "Password",
   placeholder = "Enter your password",
+  autoComplete = "current-password",
   register,
   error,
 }) {
@@ -23,6 +24,7 @@ export default function PasswordField({
           id={id}
           type={showPassword ? "text" : "password"}
           placeholder={placeholder}
+          autoComplete={autoComplete}
           className="pr-12 md:py-6"
           {...register}
         />

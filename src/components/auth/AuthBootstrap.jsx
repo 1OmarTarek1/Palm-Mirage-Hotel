@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 
 import axiosInstance from "@/services/axiosInstance";
@@ -6,8 +6,14 @@ import { finishHydration, logout, setCredentials } from "@/store/slices/authSlic
 
 export default function AuthBootstrap() {
   const dispatch = useDispatch();
+  const hasBootstrapped = useRef(false);
 
   useEffect(() => {
+    if (hasBootstrapped.current) {
+      return;
+    }
+    hasBootstrapped.current = true;
+
     let isMounted = true;
 
     const bootstrapAuth = async () => {

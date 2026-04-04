@@ -36,20 +36,24 @@ const resolveRoomImage = (room) => {
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
   const { flyToCart } = useFlyToCart();
-
-  if (!room) return null;
-
-  const roomId = room._id || room.id || room.roomNumber;
-  const roomName = room.roomName || room.name || "Room";
-  const roomType = room.roomType || room.type || "Room";
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const roomId = room?._id || room?.id || room?.roomNumber;
+  const roomName = room?.roomName || room?.name || "Room";
+  const roomType = room?.roomType || room?.type || "Room";
   const roomImage = resolveRoomImage(room);
 
   const isInWishlist = useSelector((state) =>
     selectIsInWishlist(state, roomId),
   );
 
+  if (!room) return null;
+
   const handleAddToCart = (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      toast.info("Please sign in first to use cart.");
+      return;
+    }
     flyToCart(e.currentTarget, "navbar-cart-button");
     dispatch(
       addItem({
@@ -67,6 +71,10 @@ export default function RoomCard({ room, className }) {
 
   const handleToggleWishlist = (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      toast.info("Please sign in first to use wishlist.");
+      return;
+    }
     if (!isInWishlist) {
       flyToCart(e.currentTarget, "navbar-wishlist-button");
     }
