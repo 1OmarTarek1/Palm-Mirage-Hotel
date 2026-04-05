@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 
-const activeStatuses = ['pending', 'confirmed'];
+const activeStatuses = ['pending', 'awaiting_payment', 'confirmed'];
 
 const getErrorMessage = (err, fallbackMessage) =>
   err.response?.data?.details?.[0]?.message ||
@@ -45,6 +45,20 @@ export const cancelActivityBooking = createAsyncThunk(
   }
 );
 
+export const createActivityCheckoutSession = createAsyncThunk(
+  'activityBookings/createActivityCheckoutSession',
+  async ({ axiosPrivate, activityBookingId }, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosPrivate.post('/payment/create-activity-checkout-session', {
+        activityBookingId,
+      });
+      return data?.data;
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err, 'Failed to start payment'));
+    }
+  }
+);
+
 const activityBookingsSlice = createSlice({
   name: 'activityBookings',
   initialState: {
@@ -56,6 +70,7 @@ const activityBookingsSlice = createSlice({
     cancelling: false,
     cancelError: null,
     lastCreatedBooking: null,
+    checkoutLoading: false,
   },
   reducers: {
     clearCreateActivityBookingState(state) {
@@ -118,6 +133,15 @@ const activityBookingsSlice = createSlice({
       .addCase(cancelActivityBooking.rejected, (state, action) => {
         state.cancelling = false;
         state.cancelError = action.payload;
+      })
+      .addCase(createActivityCheckoutSession.pending, (state) => {
+        state.checkoutLoading = true;
+      })
+      .addCase(createActivityCheckoutSession.fulfilled, (state) => {
+        state.checkoutLoading = false;
+      })
+      .addCase(createActivityCheckoutSession.rejected, (state) => {
+        state.checkoutLoading = false;
       });
   },
 });
@@ -132,6 +156,7 @@ export const selectCreateActivityBookingError = (state) => state.activityBooking
 export const selectCancellingActivityBooking = (state) => state.activityBookings.cancelling;
 export const selectCancelActivityBookingError = (state) => state.activityBookings.cancelError;
 export const selectLastCreatedActivityBooking = (state) => state.activityBookings.lastCreatedBooking;
+export const selectActivityCheckoutLoading = (state) => state.activityBookings.checkoutLoading;
 export const selectActiveActivityBookings = createSelector(
   [selectActivityBookings],
   (bookings) => bookings.filter((booking) => activeStatuses.includes(booking.status))

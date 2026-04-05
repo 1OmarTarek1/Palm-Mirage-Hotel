@@ -5,48 +5,24 @@ import ActivityDetailOverview from "@/components/activities/ActivityDetailOvervi
 import ActivityHighlightsSection from "@/components/activities/ActivityHighlightsSection";
 import ActivitySessionsSection from "@/components/activities/ActivitySessionsSection";
 import { ActivityDetailPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
-import { fetchActivityById, fetchActivitySchedules } from "@/services/activityService";
+import {
+  useActivityDetailQuery,
+  useActivitySchedulesQuery,
+} from "@/hooks/useCatalogQueries";
 import { useParams } from "react-router-dom";
 
 export default function ActivityDetailPage() {
   const { id } = useParams();
   const bookingRef = useRef(null);
-  const [activity, setActivity] = useState(null);
-  const [schedules, setSchedules] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
 
+  const { data: activity, isLoading: activityLoading } = useActivityDetailQuery(id);
+  const { data: schedules = [], isLoading: schedulesLoading } = useActivitySchedulesQuery(id);
+
+  const isLoading = activityLoading || schedulesLoading;
+
   useEffect(() => {
-    let isMounted = true;
-
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const [activityData, schedulesData] = await Promise.all([
-          fetchActivityById(id),
-          fetchActivitySchedules(id),
-        ]);
-
-        if (!isMounted) return;
-        setActivity(activityData);
-        setSchedules(schedulesData);
-      } catch {
-        if (isMounted) {
-          setActivity(null);
-          setSchedules([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
+    setSelectedScheduleId("");
   }, [id]);
 
   const availableSchedules = useMemo(

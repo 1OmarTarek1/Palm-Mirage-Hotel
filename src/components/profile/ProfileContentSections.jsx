@@ -1,10 +1,10 @@
+import { useMemo } from "react";
 import {
   BadgeCheck,
   Heart,
   ShoppingBag,
   ShoppingCart,
   Ticket,
-  User,
   UtensilsCrossed,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -19,9 +19,11 @@ import {
   StatCard,
 } from "@/components/profile/ProfileSectionParts";
 import { formatCurrency, getWishlistRoomId } from "@/components/profile/profileUtils";
+import { useMenuFlat } from "@/components/restaurant/RestaurantCartChrome";
 import {
   ActivityBookingCard,
   CartCard,
+  RestaurantMenuCartLineCard,
   RoomBookingCard,
   TableBookingCard,
   WishlistCard,
@@ -29,7 +31,6 @@ import {
 
 export default function ProfileContentSections(props) {
   const {
-    accountDetails,
     stats,
     snapshotCards,
     wishlistItems,
@@ -38,6 +39,8 @@ export default function ProfileContentSections(props) {
     cartCount,
     cartTotal,
     cartRequiresAttention,
+    restaurantMenuTotalQty = 0,
+    restaurantMenuCart = {},
     roomBookings,
     roomBookingsLoading,
     roomBookingsError,
@@ -56,6 +59,30 @@ export default function ProfileContentSections(props) {
   } = props;
 
   const overviewCards = [...stats, ...snapshotCards];
+  const menuItems = useMenuFlat();
+
+  const restaurantCartLines = useMemo(() => {
+    return Object.entries(restaurantMenuCart || {})
+      .filter(([, q]) => typeof q === "number" && q > 0)
+      .map(([menuItemId, qty]) => {
+        const item = menuItems.find((m) => m.id === menuItemId);
+        return {
+          id: menuItemId,
+          qty,
+          name: item?.name ?? "Menu item",
+          price: item?.price ?? 0,
+          available: item?.available !== false,
+          image: item?.image || "",
+        };
+      });
+  }, [restaurantMenuCart, menuItems]);
+
+  const restaurantCartSubtotal = useMemo(
+    () => restaurantCartLines.reduce((sum, l) => sum + l.price * l.qty, 0),
+    [restaurantCartLines],
+  );
+
+  const cartSectionBothEmpty = cartItems.length === 0 && restaurantCartLines.length === 0;
 
   return (
     <div className="mt-8 space-y-6">
@@ -236,41 +263,130 @@ export default function ProfileContentSections(props) {
         <SectionHeader
           icon={ShoppingCart}
           title="Cart"
-          subtitle="Rooms waiting for checkout, each one shown as its own booking-ready card."
-          count={`${cartCount} item${cartCount === 1 ? "" : "s"}`}
-          actionLabel="Show More"
+          subtitle="Swipe through restaurant dishes and room stays separately—same data as the header cart (Restaurant / Rooms tabs)."
+          count={`${cartCount} room${cartCount === 1 ? "" : "s"}${
+            restaurantMenuTotalQty > 0
+              ? ` · ${restaurantMenuTotalQty} dish${restaurantMenuTotalQty === 1 ? "" : "es"}`
+              : ""
+          }`}
+          actionLabel="Open cart page"
           actionTo="/cart"
         />
-        {cartItems.length === 0 ? (
+        {cartSectionBothEmpty ? (
           <EmptyState
-            title="Your cart is empty"
-            description="Add rooms to your cart to keep booking details handy and proceed to checkout faster."
-            actionLabel="Start Booking"
+            title="Your carts are empty"
+            description="Add dishes from the restaurant or menu pages, and rooms from the rooms listing—everything syncs to the nav cart."
+            actionLabel="Browse rooms"
             actionTo="/rooms"
           />
         ) : (
-          <>
-            <SectionCarousel
-              items={cartItems}
-              getItemKey={(item, index) => item.id || `cart-${index}`}
-              renderItem={(item) => <CartCard item={item} />}
-            />
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                  Cart Total
-                </p>
-                <p className="mt-2 text-lg font-black text-foreground">
-                  {formatCurrency(cartTotal)}
-                </p>
+          <div className="space-y-10">
+            <div>
+              <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                    Restaurant cart
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {restaurantCartLines.length > 0
+                      ? `${restaurantCartLines.length} line${restaurantCartLines.length === 1 ? "" : "s"} · adjust qty from the header cart`
+                      : "No dishes saved yet."}
+                  </p>
+                </div>
+                {restaurantCartLines.length > 0 ? (
+                  <Button asChild variant="outline" size="sm" className="mt-2 w-fit shrink-0 rounded-full sm:mt-0">
+                    <Link to="/services/restaurant#table-booking">Complete booking</Link>
+                  </Button>
+                ) : null}
               </div>
-              <Button asChild variant="palmPrimary" size="sm" className="px-6">
-                <Link to={cartRequiresAttention ? "/cart" : "/cart/checkout"}>
-                  {cartRequiresAttention ? "Review Cart" : "Go To Checkout"}
-                </Link>
-              </Button>
+              {restaurantCartLines.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-border/60 bg-muted/10 px-5 py-10 text-center">
+                  <p className="text-sm font-medium text-foreground">No restaurant dishes in your cart</p>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                    Add items from the restaurant page or full menu, then finish date and time on the booking block.
+                  </p>
+                  <Button asChild variant="palmSecondary" size="sm" className="mt-5 rounded-full px-6">
+                    <Link to="/services/restaurant">Restaurant</Link>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <SectionCarousel
+                    items={restaurantCartLines}
+                    getItemKey={(line) => line.id}
+                    renderItem={(line) => <RestaurantMenuCartLineCard line={line} />}
+                  />
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                        Restaurant subtotal
+                      </p>
+                      <p className="mt-2 text-lg font-black text-foreground">
+                        {formatCurrency(restaurantCartSubtotal)}
+                      </p>
+                    </div>
+                    <Button asChild variant="palmPrimary" size="sm" className="px-6">
+                      <Link to="/services/restaurant#table-booking">Go to restaurant booking</Link>
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
-          </>
+
+            <div className="border-t border-border/40 pt-10">
+              <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Room cart</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {cartItems.length > 0
+                      ? `${cartCount} selection${cartCount === 1 ? "" : "s"} for checkout`
+                      : "No room stays in your cart."}
+                  </p>
+                </div>
+                {cartItems.length > 0 ? (
+                  <Button asChild variant="outline" size="sm" className="mt-2 w-fit shrink-0 rounded-full sm:mt-0">
+                    <Link to="/cart">Review on cart page</Link>
+                  </Button>
+                ) : null}
+              </div>
+              {cartItems.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-border/60 bg-muted/10 px-5 py-10 text-center">
+                  <p className="text-sm font-medium text-foreground">No rooms in your cart</p>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                    {restaurantCartLines.length > 0
+                      ? "You have restaurant items saved. Add a room whenever you are ready for a stay."
+                      : "Pick dates on a room and add it to your cart to see it here."}
+                  </p>
+                  <Button asChild variant="palmSecondary" size="sm" className="mt-5 rounded-full px-6">
+                    <Link to="/rooms">Browse rooms</Link>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <SectionCarousel
+                    items={cartItems}
+                    getItemKey={(item, index) => item.id || `cart-${index}`}
+                    renderItem={(item) => <CartCard item={item} />}
+                  />
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                        Room cart total
+                      </p>
+                      <p className="mt-2 text-lg font-black text-foreground">
+                        {formatCurrency(cartTotal)}
+                      </p>
+                    </div>
+                    <Button asChild variant="palmPrimary" size="sm" className="px-6">
+                      <Link to={cartRequiresAttention ? "/cart" : "/cart/checkout"}>
+                        {cartRequiresAttention ? "Review Cart" : "Go To Checkout"}
+                      </Link>
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         )}
       </SectionCard>
     </div>

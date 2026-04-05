@@ -1,17 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import {
-  Calendar,
-  Globe,
-  Mail,
-  Phone,
-  Shield,
-  ShoppingCart,
-  Ticket,
-  User,
-  UtensilsCrossed,
-} from "lucide-react";
+import { Calendar, ShoppingCart, Ticket, UtensilsCrossed } from "lucide-react";
 import { toast } from "react-toastify";
 
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
@@ -38,6 +28,8 @@ import {
   selectCartItems,
   selectCartRequiresAttention,
   selectCartTotal,
+  selectRestaurantMenuCart,
+  selectRestaurantMenuCartTotalQty,
 } from "@/store/slices/cartSlice";
 import {
   selectWishlistCount,
@@ -70,6 +62,8 @@ export default function Profile() {
   const cartCount = useSelector(selectCartCount);
   const cartTotal = useSelector(selectCartTotal);
   const cartRequiresAttention = useSelector(selectCartRequiresAttention);
+  const restaurantMenuTotalQty = useSelector(selectRestaurantMenuCartTotalQty);
+  const restaurantMenuCart = useSelector(selectRestaurantMenuCart);
   const roomBookings = useSelector(selectBookings);
   const roomBookingsLoading = useSelector(selectRoomBookingsLoading);
   const roomBookingsError = useSelector(selectRoomBookingsError);
@@ -111,37 +105,6 @@ export default function Profile() {
     };
   }, [axiosPrivate, dispatch, isAuthenticated]);
 
-  const memberSince = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : null;
-
-  const infoItems = [
-    { icon: Mail, label: "Email", value: user?.email },
-    { icon: Globe, label: "Country", value: user?.country !== "N/A" ? user?.country : null },
-    { icon: Phone, label: "Phone", value: user?.phoneNumber },
-    {
-      icon: User,
-      label: "Gender",
-      value: user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
-    },
-    {
-      icon: Calendar,
-      label: "Date of Birth",
-      value: user?.DOB ? new Date(user.DOB).toLocaleDateString() : null,
-    },
-    { icon: Calendar, label: "Member Since", value: memberSince },
-    {
-      icon: Shield,
-      label: "Role",
-      value: user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : null,
-    },
-  ];
-
-  const accountDetails = infoItems.filter((item) => Boolean(item.value));
   const activeRoomBookingsCount = useMemo(
     () => roomBookings.filter(isRoomBookingCancellable).length,
     [roomBookings],
@@ -159,6 +122,7 @@ export default function Profile() {
     wishlistCount,
     cartCount,
     cartRequiresAttention,
+    restaurantMenuTotalQty,
     activeRoomBookingsCount,
     activeActivityBookingsCount,
     activeTableBookingsCount,
@@ -171,7 +135,9 @@ export default function Profile() {
       value: formatCurrency(cartTotal),
       subtitle: cartRequiresAttention
         ? "Some cart items need review before checkout."
-        : "Your current ready-to-checkout total.",
+        : restaurantMenuTotalQty > 0
+          ? "Room total shown here; restaurant dishes live in the same cart (nav icon → Restaurant tab)."
+          : "Your current ready-to-checkout total.",
     },
     {
       icon: UtensilsCrossed,
@@ -217,7 +183,6 @@ export default function Profile() {
         onOpenEdit={() => setIsEditModalOpen(true)}
       />
       <ProfileContentSections
-        accountDetails={accountDetails}
         stats={stats}
         snapshotCards={snapshotCards}
         wishlistItems={wishlistItems}
@@ -226,6 +191,8 @@ export default function Profile() {
         cartCount={cartCount}
         cartTotal={cartTotal}
         cartRequiresAttention={cartRequiresAttention}
+        restaurantMenuTotalQty={restaurantMenuTotalQty}
+        restaurantMenuCart={restaurantMenuCart}
         roomBookings={roomBookings}
         roomBookingsLoading={roomBookingsLoading}
         roomBookingsError={roomBookingsError}

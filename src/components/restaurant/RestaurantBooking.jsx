@@ -1,38 +1,283 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useAuth from "@/hooks/useAuth";
+import { useRestaurantCart } from "@/context/RestaurantCartContext";
+import { useMenuGroupedQuery } from "@/hooks/useCatalogQueries";
 import {
+  createRestaurantCheckoutSession,
   createTableBooking,
   selectCreatingTableBooking,
+  selectRestaurantCheckoutLoading,
 } from "@/services/restaurantBookings/restaurantBookingsSlice";
+import { resetRestaurantMenuCart } from "@/store/slices/cartSlice";
+
+const BOOKING_MODES = [
+  { value: "table_only", label: "Table only (pay on arrival)" },
+  { value: "dine_in", label: "Dine in — food at your table" },
+  { value: "room_service", label: "Room service" },
+];
 
 export default function RestaurantBooking() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const axiosPrivate = useAxiosPrivate();
   const { isAuthenticated } = useAuth();
   const isCreating = useSelector(selectCreatingTableBooking);
+  const checkoutLoading = useSelector(selectRestaurantCheckoutLoading);
+  const { cart, resetCart: resetCartContext, bookingPrefill, clearBookingPrefill } =
+    useRestaurantCart();
 
-  // Form State
+  const [bookingMode, setBookingMode] = useState("table_only");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [guests, setGuests] = useState("2");
+  const [selectedTable, setSelectedTable] = useState("");
+  const [availableTables, setAvailableTables] = useState([]);
+  const [tablesLoading, setTablesLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [roomNumber, setRoomNumber] = useState("");
+  const [activeStay, setActiveStay] = useState(null);
+
+  const { data: menuGrouped } = useMenuGroupedQuery();
+  const menuItems = useMemo(() => {
+    const grouped = menuGrouped?.groupedItems ?? {};
+    const flat = [];
+    Object.values(grouped).forEach((arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach((it) => {
+        const id = it._id ?? it.id;
+        if (!id) return;
+        flat.push({
+          id: String(id),
+          name: it.name,
+          price: Number(it.price ?? 0),
+          available: it.available !== false,
+        });
+      });
+    });
+    return flat;
+  }, [menuGrouped]);
+
+  useEffect(() => {
+    if (!isAuthenticated || bookingMode !== "room_service") {
+      setActiveStay(null);
+      return;
+    }
+    let cancelled = false;
+    void axiosPrivate
+      .get("/reservations/active-stay")
+      .then((res) => {
+        if (!cancelled) {
+          setActiveStay(res?.data?.data?.stay ?? null);
+          const rn = res?.data?.data?.stay?.roomNumber;
+          if (rn != null) setRoomNumber(String(rn));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setActiveStay(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [axiosPrivate, bookingMode, isAuthenticated]);
+
+  useEffect(() => {
+    if (!bookingPrefill?.mode) return;
+    setBookingMode(bookingPrefill.mode);
+    clearBookingPrefill();
+  }, [bookingPrefill, clearBookingPrefill]);
+
+  useEffect(() => {
+    if (bookingMode === "table_only") {
+      setPaymentMethod("cash");
+    }
+  }, [bookingMode]);
+
+  useEffect(() => {
+    if (bookingMode === "room_service") {
+      setSelectedTable("");
+      setAvailableTables([]);
+    }
+  }, [bookingMode]);
+
+  useEffect(() => {
+    const needsTable = bookingMode === "table_only" || bookingMode === "dine_in";
+    if (!isAuthenticated || !needsTable) {
+      setAvailableTables([]);
+      return;
+    }
+    if (!date || !time) {
+      setAvailableTables([]);
+      return;
+    }
+    const g = Number(guests);
+    if (!Number.isInteger(g) || g < 1) {
+      setAvailableTables([]);
+      return;
+    }
+
+    let cancelled = false;
+    setTablesLoading(true);
+    void axiosPrivate
+      .get("/booking/available-tables", { params: { date, time, guests: g } })
+      .then((res) => {
+        if (!cancelled) {
+          setAvailableTables(Array.isArray(res?.data?.data?.tables) ? res.data.data.tables : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAvailableTables([]);
+          toast.error("Could not load available tables.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setTablesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [axiosPrivate, isAuthenticated, bookingMode, date, time, guests]);
+
+  useEffect(() => {
+    if (!selectedTable) return;
+    const n = Number(selectedTable);
+    const stillThere = availableTables.some((t) => Number(t.number) === n);
+    if (!stillThere) setSelectedTable("");
+  }, [availableTables, selectedTable]);
+
+  const paymentReturn = searchParams.get("payment");
+  const paymentSessionId = searchParams.get("session_id");
+
+  useEffect(() => {
+    const stripPaymentQuery = () => {
+      navigate(
+        { pathname: location.pathname, hash: location.hash || undefined },
+        { replace: true },
+      );
+    };
+
+    if (paymentReturn === "cancel") {
+      toast.info("Card checkout was cancelled.");
+      stripPaymentQuery();
+      return;
+    }
+
+    if (paymentReturn !== "success") return;
+
+    let cancelled = false;
+
+    const finalizeRestaurantStripeReturn = async () => {
+      const clearFoodCart = () => {
+        dispatch(resetRestaurantMenuCart());
+      };
+
+      if (!paymentSessionId) {
+        clearFoodCart();
+        toast.success("Payment received — restaurant booking confirmed.");
+        stripPaymentQuery();
+        return;
+      }
+
+      try {
+        const maxAttempts = 15;
+        for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+          if (cancelled) return;
+          const res = await axiosPrivate.get(`/payment/checkout-session/${paymentSessionId}`);
+          const status = res?.data?.data?.status;
+
+          if (status === "fulfilled") {
+            if (cancelled) return;
+            clearFoodCart();
+            toast.success("Payment received — restaurant booking confirmed.");
+            stripPaymentQuery();
+            return;
+          }
+
+          if (status === "failed" || status === "expired" || status === "cancelled") {
+            toast.error("Payment could not be confirmed. Contact support if you were charged.");
+            stripPaymentQuery();
+            return;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+
+        clearFoodCart();
+        toast.info("Payment is confirmed. Your order may take a moment to appear in your account.");
+        stripPaymentQuery();
+      } catch (err) {
+        console.error("Restaurant checkout finalization failed:", err);
+        toast.error("Could not verify payment. Your restaurant cart was left unchanged.");
+        stripPaymentQuery();
+      }
+    };
+
+    void finalizeRestaurantStripeReturn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    axiosPrivate,
+    dispatch,
+    location.hash,
+    location.pathname,
+    navigate,
+    paymentReturn,
+    paymentSessionId,
+  ]);
+
+  const cartLineItems = useMemo(() => {
+    return Object.entries(cart)
+      .filter(([, q]) => q > 0)
+      .map(([menuItemId, qty]) => ({ menuItemId, qty }));
+  }, [cart]);
+
+  const cartTotal = useMemo(() => {
+    return cartLineItems.reduce((sum, { menuItemId, qty }) => {
+      const item = menuItems.find((m) => m.id === menuItemId);
+      return sum + (item ? item.price * qty : 0);
+    }, 0);
+  }, [cartLineItems, menuItems]);
+
+  const cartDishCount = useMemo(
+    () => cartLineItems.reduce((sum, { qty }) => sum + qty, 0),
+    [cartLineItems],
+  );
 
   const resetForm = () => {
     setDate("");
     setTime("");
     setGuests("2");
+    setSelectedTable("");
+    setAvailableTables([]);
+    setPaymentMethod("cash");
+    setRoomNumber(activeStay?.roomNumber != null ? String(activeStay.roomNumber) : "");
+    resetCartContext();
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!isAuthenticated) {
-      toast.info("Please sign in first to reserve a table.");
+      toast.info("Please sign in first to reserve.");
       return;
     }
 
@@ -47,36 +292,95 @@ export default function RestaurantBooking() {
       return;
     }
 
+    if ((bookingMode === "dine_in" || bookingMode === "room_service") && cartLineItems.length === 0) {
+      toast.info("Add dishes from the header cart (Restaurant tab), then submit this form.");
+      return;
+    }
+
+    if (bookingMode === "room_service") {
+      if (!roomNumber.trim()) {
+        toast.info("Enter your room number.");
+        return;
+      }
+      if (!activeStay) {
+        toast.info("No active stay found — room service requires a current reservation.");
+        return;
+      }
+    }
+
+    if (bookingMode === "table_only" || bookingMode === "dine_in") {
+      if (tablesLoading) {
+        toast.info("Loading available tables…");
+        return;
+      }
+      const tableNum = Number(selectedTable);
+      if (!Number.isInteger(tableNum) || tableNum < 1) {
+        toast.info("Please choose a table.");
+        return;
+      }
+      if (availableTables.length === 0) {
+        toast.info("No tables available for this date, time, and party size — try another slot.");
+        return;
+      }
+      if (!availableTables.some((t) => Number(t.number) === tableNum)) {
+        toast.info("That table is no longer available — pick again from the list.");
+        return;
+      }
+    }
+
+    const payload = {
+      bookingMode,
+      date,
+      time,
+      guests: guestCount,
+      lineItems: cartLineItems,
+      paymentMethod: bookingMode === "table_only" ? "cash" : paymentMethod,
+    };
+
+    if (bookingMode === "room_service") {
+      payload.roomNumber = Number(roomNumber);
+    }
+
+    if (bookingMode === "table_only" || bookingMode === "dine_in") {
+      payload.number = Number(selectedTable);
+    }
+
     try {
       const response = await dispatch(
         createTableBooking({
           axiosPrivate,
-          payload: {
-            date,
-            time,
-            guests: guestCount,
-            // We let the backend auto-assign the table by not providing 'number'
-          },
+          payload,
         })
       ).unwrap();
 
-      resetForm();
-      
-      // If the backend adds to waitlist it returns a specific message, handle it nicely
-      if (response && response.message) {
-        toast.success(response.message);
-      } else {
-        toast.success("Table reserved successfully.");
+      const booking = response?.data?.booking ?? response?.booking;
+      const message = response?.message;
+
+      if (bookingMode !== "table_only" && paymentMethod === "stripe" && booking?._id) {
+        const checkout = await dispatch(
+          createRestaurantCheckoutSession({
+            axiosPrivate,
+            restaurantBookingId: booking._id,
+          })
+        ).unwrap();
+        if (checkout?.url) {
+          window.location.href = checkout.url;
+          return;
+        }
+        toast.error("Could not start card payment.");
+        return;
       }
-      
+
+      resetForm();
+      toast.success(message || "Request submitted successfully.");
     } catch (error) {
       toast.error(
-        typeof error === "string"
-          ? error
-          : error?.message || "Failed to reserve a table"
+        typeof error === "string" ? error : error?.message || "Failed to submit booking"
       );
     }
   };
+
+  const busy = isCreating || checkoutLoading;
 
   return (
     <section id="table-booking" className="scroll-mt-24 border-t border-border/30">
@@ -87,29 +391,38 @@ export default function RestaurantBooking() {
               Plan Your Visit
             </span>
             <h2 className="mb-6 text-3xl font-header font-bold leading-tight text-foreground sm:text-4xl">
-              Reserve a Table
+              Restaurant bookings
             </h2>
             <div className="space-y-5 text-sm leading-relaxed text-muted-foreground">
               <p>
-                Choose your preferred date, time, and party size. We'll find the perfect table for your dining experience or securely add you to our waitlist if we're fully booked.
+                For table-only and dine-in, pick an available table after you set date, time, and guests — only
+                free tables that fit your party are shown. Room service uses your stay&apos;s room. Add dishes
+                from the header cart (Restaurant tab) for dine-in or room service. Card checkout confirms
+                immediately; cash stays pending until the team approves or collects payment.
               </p>
               <p>
-                For large gatherings or private events, call our concierge at{" "}
-                <span className="font-bold text-secondary">+20 95 123 4567</span>.
-              </p>
-            </div>
-
-            <div className="mt-8 rounded-[2rem] border border-border/50 bg-card/60 p-6 backdrop-blur-sm">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Dining Experience
-              </p>
-              <p className="mt-5 text-sm leading-relaxed text-foreground">
-                Enjoy a carefully curated atmosphere. By providing your party size and desired time, we tailor the perfect arrangement prior to your arrival. Please make sure to arrive on time.
+                Questions? <span className="font-bold text-secondary">+20 95 123 4567</span>
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="w-full space-y-6 mt-4 lg:mt-0">
+            <div className="space-y-2">
+              <label className="block text-[12px] font-bold text-muted-foreground">Booking type*</label>
+              <Select value={bookingMode} onValueChange={setBookingMode}>
+                <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BOOKING_MODES.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="date" className="block text-[12px] font-bold text-muted-foreground">
@@ -160,20 +473,125 @@ export default function RestaurantBooking() {
               />
             </div>
 
+            {bookingMode === "table_only" || bookingMode === "dine_in" ? (
+              <div className="space-y-2">
+                <label className="block text-[12px] font-bold text-muted-foreground">Table*</label>
+                <p className="text-xs text-muted-foreground">
+                  Only tables free for your date, time, and party size are listed (capacity includes your
+                  guests).
+                </p>
+                {tablesLoading ? (
+                  <div className="flex h-12 items-center gap-2 rounded-xl border border-border/40 bg-muted/20 px-3 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                    Finding available tables…
+                  </div>
+                ) : !date || !time ? (
+                  <p className="rounded-xl border border-dashed border-border/50 bg-muted/10 px-3 py-3 text-sm text-muted-foreground">
+                    Select date and time first to see available tables.
+                  </p>
+                ) : availableTables.length === 0 ? (
+                  <p className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-3 text-sm text-amber-800 dark:text-amber-200/90">
+                    No tables available for this slot — try another time or fewer guests.
+                  </p>
+                ) : (
+                  <Select value={selectedTable} onValueChange={setSelectedTable}>
+                    <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm">
+                      <SelectValue placeholder="Choose a table" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTables.map((t) => (
+                        <SelectItem key={t.number} value={String(t.number)}>
+                          Table {t.number} · seats {t.chairs}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            ) : null}
+
+            {bookingMode === "room_service" ? (
+              <div className="space-y-2">
+                <label htmlFor="room" className="block text-[12px] font-bold text-muted-foreground">
+                  Room number*
+                </label>
+                <Input
+                  id="room"
+                  name="room"
+                  type="number"
+                  min="1"
+                  value={roomNumber}
+                  onChange={(event) => setRoomNumber(event.target.value)}
+                  required
+                  variant="palm"
+                />
+                {activeStay ? (
+                  <p className="text-xs text-muted-foreground">
+                    Active stay: room {activeStay.roomNumber} — number must match.
+                  </p>
+                ) : (
+                  <p className="text-xs text-amber-700">No active stay on file for your account.</p>
+                )}
+              </div>
+            ) : null}
+
+            {bookingMode !== "table_only" ? (
+              <>
+                <div className="space-y-2">
+                  <label className="block text-[12px] font-bold text-muted-foreground">Payment*</label>
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash — pending approval / on delivery</SelectItem>
+                      <SelectItem value="stripe">Card — pay now</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="rounded-2xl border border-border/50 bg-muted/15 p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    Your order (from cart)
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Food is added only from the site cart. Open the shopping icon in the header and use the{" "}
+                    <span className="font-semibold text-foreground">Restaurant</span> tab to choose dishes.
+                  </p>
+                  {menuItems.length === 0 ? (
+                    <p className="mt-3 text-sm text-muted-foreground">Loading prices for your cart…</p>
+                  ) : cartLineItems.length === 0 ? (
+                    <p className="mt-3 text-sm font-medium text-amber-800 dark:text-amber-200/90">
+                      No dishes in your restaurant cart yet.
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-sm text-foreground">
+                      <span className="font-semibold">{cartDishCount}</span>{" "}
+                      {cartDishCount === 1 ? "item" : "items"} in cart ·{" "}
+                      <span className="font-bold text-secondary tabular-nums">
+                        ${cartTotal.toFixed(2)}
+                      </span>{" "}
+                      estimated subtotal
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : null}
+
             <div className="flex justify-center sm:justify-start pt-4">
               <Button
                 variant="palmPrimary"
                 type="submit"
-                disabled={isCreating}
+                disabled={busy}
                 className="flex w-full sm:w-auto justify-center items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
               >
-                {isCreating ? (
+                {busy ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Reserving...
+                    Submitting…
                   </>
                 ) : (
-                  'Confirm Reservation'
+                  "Submit request"
                 )}
               </Button>
             </div>

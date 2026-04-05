@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { NavLink } from "react-router-dom";
+import { useMemo, useCallback, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowDownRight, Clock, Mail, MapPin, Phone, Sparkles, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RestaurantBooking from "@/components/restaurant/RestaurantBooking";
-import menuApi from "@/services/menuApi";
-import { MenuPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import RestaurantDishAddButton from "@/components/restaurant/RestaurantDishAddButton";
+import { RestaurantPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { useRestaurantMenuBundleQuery } from "@/hooks/useCatalogQueries";
 import { CarouselCard, SectionCarousel } from "@/components/profile/ProfileSectionParts";
 
 const SECTION_META = {
@@ -47,40 +48,16 @@ function smoothScrollToHash(hash, event) {
 }
 
 export default function Restaurant() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [groupedItems, setGroupedItems] = useState({});
-  const [pageImages, setPageImages] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const [menuRes, pageRes] = await Promise.all([
-          menuApi.getGroupedMenu(),
-          menuApi.getRestaurantPage(),
-        ]);
-        if (cancelled) return;
-        const menuPayload = menuRes?.data ?? {};
-        setCategories(menuPayload.categories || []);
-        setGroupedItems(menuPayload.categoryMenuItems || {});
-        setPageImages(pageRes?.data?.images ?? null);
-      } catch (err) {
-        if (!cancelled) {
-          console.error(err);
-          setError(err?.response?.data?.message || err.message || "Failed to load restaurant content.");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const location = useLocation();
+  const [menuQuery, pageQuery] = useRestaurantMenuBundleQuery();
+  const loading = menuQuery.isLoading || pageQuery.isLoading;
+  const error =
+    menuQuery.error || pageQuery.error
+      ? (menuQuery.error || pageQuery.error)?.message || "Failed to load restaurant content."
+      : null;
+  const categories = menuQuery.data?.categories ?? [];
+  const groupedItems = menuQuery.data?.groupedItems ?? {};
+  const pageImages = pageQuery.data ?? null;
 
   const onInPageNavClick = useCallback((e, hash) => {
     smoothScrollToHash(hash, e);
@@ -118,10 +95,22 @@ export default function Restaurant() {
   const detailBSrc = pageImages?.detailB;
   const diningSrc = pageImages?.dining;
 
+  useEffect(() => {
+    if (location.hash !== "#table-booking") return;
+    if (loading || error) return;
+    const reduceMotion =
+      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById("table-booking");
+      el?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    }, 200);
+    return () => window.clearTimeout(timer);
+  }, [location.hash, location.pathname, loading, error]);
+
   if (loading) {
     return (
-      <div className="text-foreground antialiased overflow-x-hidden px-4 py-10">
-        <MenuPageSkeleton />
+      <div className="text-foreground antialiased overflow-x-hidden">
+        <RestaurantPageSkeleton />
       </div>
     );
   }
@@ -138,7 +127,7 @@ export default function Restaurant() {
   }
 
   return (
-    <div className="text-foreground antialiased overflow-x-hidden">
+      <div className="text-foreground antialiased overflow-x-hidden">
       <header className="min-h-[100dvh] lg:min-h-0 lg:h-[min(100dvh,900px)] grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-4 lg:gap-6 mb-10">
         <div className="relative flex flex-col justify-between rounded-2xl border border-border/60 px-6 sm:px-10 lg:px-12 py-10 lg:py-12 shadow-sm order-2 lg:order-1">
           <div className="absolute inset-0 rounded-2xl opacity-[0.06] pointer-events-none" />
@@ -192,7 +181,7 @@ export default function Restaurant() {
       </header>
 
       <nav
-        className="restaurant-page-nav relative sticky top-0 z-50 overflow-hidden border-0 bg-transparent"
+        className="restaurant-page-nav relative sticky top-[5rem] z-40 overflow-hidden border-0 bg-transparent md:top-[5.5rem]"
         aria-label="Restaurant page sections"
       >
         <div
@@ -517,6 +506,9 @@ export default function Restaurant() {
                           <span className="absolute left-4 top-4 rounded-full bg-card/90 px-3 py-1 font-header text-sm font-bold tabular-nums text-primary shadow-sm backdrop-blur-sm">
                             {formatPrice(d.price)}
                           </span>
+                          <div className="absolute end-3 bottom-3 z-[1]">
+                            <RestaurantDishAddButton dish={d} size="md" />
+                          </div>
                         </div>
                         <div className="flex flex-1 flex-col p-5">
                           <h3 className="font-header text-lg font-bold leading-tight text-foreground">{d.name}</h3>
@@ -529,7 +521,7 @@ export default function Restaurant() {
                               onClick={(e) => onInPageNavClick(e, "#table-booking")}
                               className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary underline-offset-4 hover:underline"
                             >
-                              Add to evening
+                              Book a table
                             </a>
                           </div>
                         </div>
@@ -664,6 +656,6 @@ export default function Restaurant() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
         <RestaurantBooking />
       </div>
-    </div>
+      </div>
   );
 }

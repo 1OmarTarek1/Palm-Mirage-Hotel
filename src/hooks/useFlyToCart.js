@@ -5,7 +5,13 @@ import { addAnimation, removeAnimation } from '../store/slices/uiSlice';
 export function useFlyToCart() {
   const dispatch = useDispatch();
 
-  const flyToCart = useCallback((sourceElement, targetId = 'navbar-cart-button') => {
+  const flyToCart = useCallback((sourceElement, targetId = 'navbar-cart-button', options = {}) => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
     // 1. Get source position
     const sourceRect = sourceElement.getBoundingClientRect();
     
@@ -40,7 +46,13 @@ export function useFlyToCart() {
     // Actually, I'll generate the ID here for easier cleanup.
     
     const id = Date.now() + Math.random();
-    dispatch(addAnimation({ ...animationData, id }));
+    dispatch(
+      addAnimation({
+        ...animationData,
+        id,
+        imageUrl: typeof options.imageUrl === "string" && options.imageUrl ? options.imageUrl : null,
+      }),
+    );
 
     // 5. Remove after completion
     setTimeout(() => {

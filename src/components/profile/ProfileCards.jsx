@@ -1,8 +1,8 @@
 import { useDispatch } from "react-redux";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, Heart, ShoppingBag, ShoppingCart, Ticket, UtensilsCrossed } from "lucide-react";
-import { motion } from "framer-motion";
+import { Eye, Heart, ShoppingBag, ShoppingCart, Ticket, Trash2, UtensilsCrossed } from "lucide-react";
+import { motion as Motion } from "framer-motion";
 import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,10 @@ import {
 import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
 import { removeFromWishlist } from "@/store/slices/wishlistSlice";
-import { removeItem } from "@/store/slices/cartSlice";
+import { removeItem, setRestaurantMenuCartQty } from "@/store/slices/cartSlice";
+
+const RESTAURANT_CART_CARD_IMG_FALLBACK =
+  "https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop";
 
 export function WishlistCard({ room }) {
   const dispatch = useDispatch();
@@ -69,7 +72,7 @@ export function WishlistCard({ room }) {
               className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md transition active:scale-95 active:bg-black/40 hover:bg-black/35 hover:text-white"
               onClick={handleRemoveFromWishlist}
             >
-              <motion.span
+              <Motion.span
                 animate={
                   isRemoving
                     ? { scale: [1, 1.28, 0.88, 1], rotate: [0, -10, 8, 0] }
@@ -80,7 +83,7 @@ export function WishlistCard({ room }) {
                 className="flex items-center justify-center"
               >
                 <Heart size={16} className="fill-current" />
-              </motion.span>
+              </Motion.span>
             </Button>
             <Button
               asChild
@@ -150,7 +153,7 @@ export function CartCard({ item }) {
             onClick={handleRemoveFromCart}
             aria-label="Remove from cart"
           >
-            <motion.span
+            <Motion.span
               animate={
                 isRemoving
                   ? { scale: [1, 1.24, 0.9, 1], rotate: [0, -8, 6, 0] }
@@ -161,7 +164,7 @@ export function CartCard({ item }) {
               className="flex items-center justify-center"
             >
               <ShoppingCart size={16} />
-            </motion.span>
+            </Motion.span>
           </Button>
           <Button
             asChild
@@ -199,6 +202,87 @@ export function CartCard({ item }) {
             </Link>
           </Button>
         </div>
+      </div>
+    </CarouselCard>
+  );
+}
+
+/** One restaurant menu line for profile cart carousel (image, qty, remove). */
+export function RestaurantMenuCartLineCard({ line }) {
+  const dispatch = useDispatch();
+  const [isRemoving, setIsRemoving] = useState(false);
+  const lineTotal = formatCurrency(line.price * line.qty);
+  const eachLabel = formatCurrency(line.price);
+
+  const handleRemove = () => {
+    if (!line?.id || isRemoving) return;
+    setIsRemoving(true);
+    dispatch(setRestaurantMenuCartQty({ id: line.id, qty: 0 }));
+    toast.success("Removed from restaurant cart.");
+  };
+
+  return (
+    <CarouselCard className="overflow-hidden p-0">
+      <div className="relative aspect-[4/3] overflow-hidden border-b border-border/40 bg-muted/30">
+        <img
+          src={line.image || RESTAURANT_CART_CARD_IMG_FALLBACK}
+          alt=""
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = RESTAURANT_CART_CARD_IMG_FALLBACK;
+          }}
+        />
+        <span className="absolute left-4 top-4 z-20 rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
+          ×{line.qty}
+        </span>
+        {!line.available ? (
+          <span className="absolute bottom-4 left-4 z-20 rounded-full bg-amber-600/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+            Unavailable
+          </span>
+        ) : null}
+        <div className="absolute bottom-4 right-4 z-20 flex flex-row items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md transition active:scale-95 active:bg-black/40 hover:bg-black/35 hover:text-white"
+            onClick={handleRemove}
+            aria-label="Remove dish from cart"
+          >
+            <Motion.span
+              animate={
+                isRemoving
+                  ? { scale: [1, 1.24, 0.9, 1], rotate: [0, -8, 6, 0] }
+                  : { scale: 1, rotate: 0 }
+              }
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              onAnimationComplete={() => setIsRemoving(false)}
+              className="flex items-center justify-center"
+            >
+              <Trash2 size={16} />
+            </Motion.span>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white"
+          >
+            <Link to="/services/restaurant#table-booking" aria-label="Open restaurant booking">
+              <Eye size={16} />
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-lg font-bold leading-snug text-foreground">{line.name}</p>
+          <UtensilsCrossed className="mt-0.5 h-5 w-5 shrink-0 text-primary/60" strokeWidth={1.5} />
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {eachLabel} each · <span className="font-semibold text-foreground">{lineTotal}</span> line total
+        </p>
       </div>
     </CarouselCard>
   );

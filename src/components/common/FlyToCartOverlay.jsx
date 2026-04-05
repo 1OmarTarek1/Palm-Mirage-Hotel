@@ -12,26 +12,35 @@ const FlyToCartOverlay = () => {
         {animations.map((anim) => (
           <motion.div
             key={anim.id}
-            initial={{ 
-              x: anim.startX - 12, 
-              y: anim.startY - 12, 
-              scale: 0.2, 
-              opacity: 0 
+            initial={{
+              x: anim.startX - 16,
+              y: anim.startY - 16,
+              scale: 0.25,
+              opacity: 0,
             }}
             animate={{
-              x: anim.endX - 12,
-              y: anim.endY - 12,
-              scale: [0.2, 1.2, 0.4],
-              opacity: [0, 1, 1, 0.5],
+              x: anim.endX - 16,
+              y: anim.endY - 16,
+              scale: [0.25, 1.15, 0.45],
+              opacity: [0, 1, 1, 0.45],
             }}
             exit={{ opacity: 0, scale: 0 }}
             transition={{
               duration: 0.8,
               ease: [0.45, 0, 0.55, 1],
             }}
-            className="absolute top-0 left-0 w-6 h-6 bg-secondary rounded-full shadow-[0_0_15px_rgba(184,149,85,0.6)] border-2 border-white/30 flex items-center justify-center overflow-hidden"
+            className="absolute top-0 left-0 h-8 w-8 overflow-hidden rounded-full border-2 border-white/40 bg-secondary shadow-[0_0_18px_rgba(198,169,105,0.55)]"
           >
-            <div className="w-full h-full bg-white/20 animate-pulse rounded-full" />
+            {anim.imageUrl ? (
+              <img
+                src={anim.imageUrl}
+                alt=""
+                className="h-full w-full object-cover"
+                draggable={false}
+              />
+            ) : (
+              <div className="h-full w-full animate-pulse rounded-full bg-white/25" />
+            )}
           </motion.div>
         ))}
       </AnimatePresence>

@@ -1,4 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 
 export default function MenuReservationHero({ activeCategory, items }) {
@@ -53,13 +55,8 @@ export default function MenuReservationHero({ activeCategory, items }) {
                 or email us at{" "}
                 <span className="text-white font-medium">sailing@contact.com</span>.
               </p>
-              <Button
-                variant="palmWhiteSecondary"
-                className="text-sm"
-                size="lg"
-                onClick={() => document.getElementById('reservation-form').scrollIntoView({ behavior: 'smooth' })}
-              >
-                Book A Table
+              <Button asChild variant="palmWhiteSecondary" className="text-sm" size="lg">
+                <Link to="/services/restaurant#table-booking">Book A Table</Link>
               </Button>
             </div>
           </div>

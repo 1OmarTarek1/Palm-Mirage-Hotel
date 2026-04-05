@@ -18,8 +18,10 @@ import { fetchActivitySchedules } from "@/services/activityService";
 import {
   cancelActivityBooking,
   createActivityBooking,
+  createActivityCheckoutSession,
   fetchMyActivityBookings,
   selectActiveActivityBookings,
+  selectActivityCheckoutLoading,
   selectCancellingActivityBooking,
   selectCreatingActivityBooking,
 } from "@/services/activityBookings/activityBookingsSlice";
@@ -38,6 +40,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   const { isAuthenticated, user } = useAuth();
   const isCreating = useSelector(selectCreatingActivityBooking);
   const isCancelling = useSelector(selectCancellingActivityBooking);
+  const checkoutLoading = useSelector(selectActivityCheckoutLoading);
   const myActiveBookings = useSelector(selectActiveActivityBookings);
   const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState("");
@@ -45,10 +48,11 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   const [guests, setGuests] = useState("2");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [schedules, setSchedules] = useState([]);
   const sectionRef = useRef(null);
 
-  const isSubmitting = isCreating || isCancelling;
+  const isSubmitting = isCreating || isCancelling || checkoutLoading;
 
   useEffect(() => {
     let isMounted = true;
@@ -84,6 +88,19 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   }, [axiosPrivate, dispatch, isAuthenticated]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pay = params.get("payment");
+    if (pay === "success") {
+      toast.success("Payment successful — your activity booking is confirmed.");
+      void dispatch(fetchMyActivityBookings(axiosPrivate));
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (pay === "cancel") {
+      toast.info("Card payment was cancelled.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [axiosPrivate, dispatch]);
+
+  useEffect(() => {
     if (!initialActivityId) return;
     setSelectedActivity(initialActivityId);
   }, [initialActivityId]);
@@ -109,6 +126,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     [myActiveBookings, selectedSchedule]
   );
   const isPaidExistingBooking = existingBooking?.paymentStatus === "paid";
+  const isAwaitingPayment = existingBooking?.status === "awaiting_payment";
 
   useEffect(() => {
     if (!existingBooking && user?.phoneNumber && !phone) {
@@ -145,13 +163,14 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     setGuests("2");
     setPhone("");
     setNotes("");
+    setPaymentMethod("cash");
   };
 
   const handleBookingSubmit = async () => {
     const normalizedPhone = phone.trim();
     const normalizedNotes = notes.trim();
 
-    await dispatch(
+    const created = await dispatch(
       createActivityBooking({
         axiosPrivate,
         payload: {
@@ -159,24 +178,30 @@ const ActivityBooking = forwardRef(function ActivityBooking(
           guests: Number(guests),
           contactPhone: normalizedPhone,
           notes: normalizedNotes,
+          paymentMethod,
         },
       })
     ).unwrap();
 
-    setSchedules((current) =>
-      current.map((schedule) =>
-        schedule.id === selectedScheduleData.id
-          ? {
-              ...schedule,
-              availableSeats: Math.max(schedule.availableSeats - Number(guests), 0),
-              status:
-                schedule.availableSeats - Number(guests) <= 0 ? "full" : schedule.status,
-            }
-          : schedule
-      )
-    );
+    if (paymentMethod === "card") {
+      const checkout = await dispatch(
+        createActivityCheckoutSession({
+          axiosPrivate,
+          activityBookingId: created._id,
+        })
+      ).unwrap();
+
+      if (checkout?.url) {
+        window.location.href = checkout.url;
+        return;
+      }
+      toast.error("Could not start card payment. Try again or use pay on arrival.");
+      return;
+    }
+
+    void dispatch(fetchMyActivityBookings(axiosPrivate));
     resetForm();
-    toast.success("Activity booking created successfully.");
+    toast.success("Activity booking submitted — staff will confirm pay-on-arrival requests.");
   };
 
   const handleCancelBooking = async () => {
@@ -199,6 +224,25 @@ const ActivityBooking = forwardRef(function ActivityBooking(
       )
     );
     toast.success("Activity booking cancelled successfully.");
+  };
+
+  const handlePayExistingCard = async () => {
+    if (!existingBooking?._id) return;
+    try {
+      const checkout = await dispatch(
+        createActivityCheckoutSession({
+          axiosPrivate,
+          activityBookingId: existingBooking._id,
+        })
+      ).unwrap();
+      if (checkout?.url) {
+        window.location.href = checkout.url;
+      }
+    } catch (error) {
+      toast.error(
+        typeof error === "string" ? error : error?.message || "Could not start payment"
+      );
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -315,7 +359,9 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                       <p className="mt-2 text-sm leading-6 text-foreground">
                         {isPaidExistingBooking
                           ? `You already booked and paid for this session for ${existingBooking.guests} guest(s). It is view-only from your account.`
-                          : `You already booked this exact session for ${existingBooking.guests} guest(s). You can cancel it from here if your plans changed.`}
+                          : isAwaitingPayment
+                            ? `Complete card payment to confirm ${existingBooking.guests} guest(s), or cancel this request.`
+                            : `You already booked this exact session for ${existingBooking.guests} guest(s). You can cancel it from here if your plans changed.`}
                       </p>
                     </div>
                   ) : null}
@@ -409,6 +455,21 @@ const ActivityBooking = forwardRef(function ActivityBooking(
               </div>
             </div>
 
+            {!existingBooking ? (
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-[12px] font-bold text-muted-foreground">Payment*</label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm text-muted-foreground">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Pay on arrival (pending approval)</SelectItem>
+                    <SelectItem value="card">Card — confirm after payment</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
             <div className="space-y-2">
               <label htmlFor="notes" className="block text-[12px] font-bold text-muted-foreground">
                 Notes / Special Requests
@@ -424,26 +485,63 @@ const ActivityBooking = forwardRef(function ActivityBooking(
               />
             </div>
 
-            <div className="flex justify-center pt-4">
-              <Button
-                variant={existingBooking ? "palmSecondary" : "palmPrimary"}
-                type="submit"
-                disabled={isSubmitting || !selectedActivity || !selectedSchedule || isPaidExistingBooking}
-                className="flex items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {existingBooking ? 'Cancelling...' : 'Booking...'}
-                  </>
-                ) : isPaidExistingBooking ? (
-                  'Paid Booking'
-                ) : existingBooking ? (
-                  'Cancel Booking'
-                ) : (
-                  'Confirm Booking'
-                )}
-              </Button>
+            <div className="flex flex-col items-center gap-3 pt-4 sm:flex-row sm:justify-center">
+              {isAwaitingPayment ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="palmPrimary"
+                    disabled={checkoutLoading}
+                    onClick={() => void handlePayExistingCard()}
+                    className="flex items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
+                  >
+                    {checkoutLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Redirecting…
+                      </>
+                    ) : (
+                      "Pay with card"
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="palmSecondary"
+                    disabled={isCancelling}
+                    onClick={() => void handleCancelBooking().catch(() => null)}
+                    className="flex items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
+                  >
+                    {isCancelling ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cancelling…
+                      </>
+                    ) : (
+                      "Cancel request"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant={existingBooking ? "palmSecondary" : "palmPrimary"}
+                  type="submit"
+                  disabled={isSubmitting || !selectedActivity || !selectedSchedule || isPaidExistingBooking}
+                  className="flex items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {existingBooking ? "Cancelling..." : paymentMethod === "card" ? "Continue..." : "Booking..."}
+                    </>
+                  ) : isPaidExistingBooking ? (
+                    "Paid Booking"
+                  ) : existingBooking ? (
+                    "Cancel Booking"
+                  ) : (
+                    "Confirm Booking"
+                  )}
+                </Button>
+              )}
             </div>
           </form>
         </div>

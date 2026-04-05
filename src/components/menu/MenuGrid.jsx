@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 
+import RestaurantDishAddButton from "@/components/restaurant/RestaurantDishAddButton";
+
 
 const gridVariants = {
   hidden: {},
@@ -34,15 +36,15 @@ const headerVariants = {
 
 function MenuItem({ item }) {
   // Check if price is a valid number to format it correctly, otherwise use as string
-  const formattedPrice = typeof item.price === 'number' ? `$${item.price.toFixed(2)}` : item.price;
+  const formattedPrice = typeof item.price === "number" ? `$${item.price.toFixed(2)}` : item.price;
 
   return (
-    <div className="group mb-2 flex items-start gap-4 py-5 border-b border-border last:border-b-0 hover:bg-primary/10 transition-colors duration-200 rounded-xl px-3 -mx-3">
-      <div className="shrink-0 w-[68px] h-[68px] rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 bg-muted shadow-sm flex items-center justify-center">
+    <div className="group -mx-3 mb-2 flex items-start gap-4 rounded-xl border-b border-border px-3 py-5 transition-colors duration-200 last:border-b-0 hover:bg-primary/10">
+      <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted shadow-sm ring-2 ring-transparent transition-all duration-300 group-hover:ring-primary/30">
         <img
           src={item.image || item.img}
           alt={item.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
           onError={(e) => {
             e.target.src =
@@ -50,14 +52,13 @@ function MenuItem({ item }) {
           }}
         />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] font-semibold text-foreground leading-snug">
-            {item.name}
-          </h3>
-          <span className="text-[15px] font-bold text-primary shrink-0 tabular-nums">
-            {formattedPrice}
-          </span>
+          <h3 className="text-[15px] font-semibold leading-snug text-foreground">{item.name}</h3>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="text-[15px] font-bold tabular-nums text-primary">{formattedPrice}</span>
+            <RestaurantDishAddButton dish={item} size="sm" />
+          </div>
         </div>
         <div className="my-1 border-b border-dotted border-border" />
         <p className="text-[13px] text-muted-foreground leading-relaxed">

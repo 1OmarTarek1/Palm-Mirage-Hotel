@@ -6,6 +6,7 @@ import {
   formatBookingDate,
   isCartItemReady,
 } from "@/utils/roomBooking";
+import { sanitizeRestaurantMenuCart } from "@/utils/restaurantMenuCart";
 
 const resolveCartItemImage = (item) => {
   if (typeof item?.image === "string" && item.image) return item.image;
@@ -101,17 +102,70 @@ const cartSlice = createSlice({
   initialState: {
     items: [],
     isOpen: false,
+    /** "rooms" | "restaurant" — which pane is visible in the cart sidebar */
+    sidebarTab: "rooms",
+    /** Restaurant menu picks — persisted to user preferences like room cart */
+    restaurantMenuCart: {},
   },
   reducers: {
-    openCart: (state) => { state.isOpen = true; },
-    closeCart: (state) => { state.isOpen = false; },
-    toggleCart: (state) => { state.isOpen = !state.isOpen; },
+    openCart: (state, action) => {
+      state.isOpen = true;
+      if (action.payload?.tab === "rooms" || action.payload?.tab === "restaurant") {
+        state.sidebarTab = action.payload.tab;
+      }
+    },
+    closeCart: (state) => {
+      state.isOpen = false;
+    },
+    toggleCart: (state) => {
+      if (state.isOpen) {
+        state.isOpen = false;
+      } else {
+        state.isOpen = true;
+        state.sidebarTab = "rooms";
+      }
+    },
+    setCartSidebarTab: (state, action) => {
+      if (action.payload === "rooms" || action.payload === "restaurant") {
+        state.sidebarTab = action.payload;
+      }
+    },
     hydrateCart: (state, action) => {
       state.items = mergeCartItems(Array.isArray(action.payload) ? action.payload : []);
+    },
+    hydrateRestaurantMenuCart: (state, action) => {
+      state.restaurantMenuCart = sanitizeRestaurantMenuCart(action.payload);
+    },
+    addRestaurantMenuToCart: (state, action) => {
+      const id = String(action.payload?.itemId ?? "").trim();
+      if (!id) return;
+      const delta = typeof action.payload?.delta === "number" ? action.payload.delta : 1;
+      const prev = state.restaurantMenuCart[id] ?? 0;
+      const next = prev + delta;
+      if (next <= 0) {
+        delete state.restaurantMenuCart[id];
+      } else {
+        state.restaurantMenuCart[id] = Math.min(99, next);
+      }
+    },
+    setRestaurantMenuCartQty: (state, action) => {
+      const id = String(action.payload?.id ?? "").trim();
+      if (!id) return;
+      const qty = Math.floor(Number(action.payload?.qty));
+      if (!Number.isFinite(qty) || qty <= 0) {
+        delete state.restaurantMenuCart[id];
+      } else {
+        state.restaurantMenuCart[id] = Math.min(99, qty);
+      }
+    },
+    resetRestaurantMenuCart: (state) => {
+      state.restaurantMenuCart = {};
     },
     resetCartState: (state) => {
       state.items = [];
       state.isOpen = false;
+      state.sidebarTab = "rooms";
+      state.restaurantMenuCart = {};
     },
 
     addItem: (state, action) => {
@@ -186,7 +240,12 @@ export const {
   openCart,
   closeCart,
   toggleCart,
+  setCartSidebarTab,
   hydrateCart,
+  hydrateRestaurantMenuCart,
+  addRestaurantMenuToCart,
+  setRestaurantMenuCartQty,
+  resetRestaurantMenuCart,
   resetCartState,
   addItem,
   upsertRoomBooking,
@@ -199,6 +258,7 @@ export const {
 // Selectors
 export const selectCartItems = (state) => state.cart.items;
 export const selectCartIsOpen = (state) => state.cart.isOpen;
+export const selectCartSidebarTab = (state) => state.cart.sidebarTab;
 export const selectCartCount = (state) =>
   state.cart.items.length;
 export const selectCartTotal = (state) =>
@@ -207,5 +267,12 @@ export const selectCartItemById = (state, id) =>
   state.cart.items.find((item) => item.id === id) || null;
 export const selectCartRequiresAttention = (state) =>
   state.cart.items.some((item) => !isCartItemReady(item));
+
+export const selectRestaurantMenuCart = (state) => state.cart.restaurantMenuCart ?? {};
+
+export const selectRestaurantMenuCartTotalQty = (state) => {
+  const m = state.cart.restaurantMenuCart ?? {};
+  return Object.values(m).reduce((s, q) => s + (typeof q === "number" ? q : 0), 0);
+};
 
 export default cartSlice.reducer;

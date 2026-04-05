@@ -6,43 +6,14 @@ import ActivityBooking from "@/components/activities/ActivityBooking";
 import SharedPagination from "@/components/common/SharedPagination";
 import { ActivitiesPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 import { usePagination } from "@/hooks/usePagination";
-import { fetchActivities } from "@/services/activityService";
+import { useActivitiesListQuery } from "@/hooks/useCatalogQueries";
 
 const PAGE_SIZE = 6;
 
 export default function Activities() {
   const [activeCategory, setActiveCategory] = useState(null);
-  const [allActivities, setAllActivities] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const bookingRef = useRef(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadAllActivities = async () => {
-      try {
-        setIsLoading(true);
-        const apiActivities = await fetchActivities();
-        if (isMounted) {
-          setAllActivities(apiActivities);
-        }
-      } catch {
-        if (isMounted) {
-          setAllActivities([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadAllActivities();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { data: allActivities = [], isLoading } = useActivitiesListQuery();
 
   const filteredActivities = useMemo(
     () =>

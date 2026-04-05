@@ -129,10 +129,17 @@ export const buildProfileStats = ({
   wishlistCount,
   cartCount,
   cartRequiresAttention,
+  restaurantMenuTotalQty,
   activeRoomBookingsCount,
   activeActivityBookingsCount,
   activeTableBookingsCount,
-}) => [
+}) => {
+  const diningSaved =
+    typeof restaurantMenuTotalQty === "number" && restaurantMenuTotalQty > 0
+      ? ` ${restaurantMenuTotalQty} restaurant dish(es) are also saved in your cart — use the nav cart to switch to Restaurant.`
+      : "";
+
+  return [
   {
     icon: ShoppingBag,
     label: "Saved Rooms",
@@ -143,9 +150,7 @@ export const buildProfileStats = ({
     icon: ShoppingCart,
     label: "Cart Items",
     value: cartCount,
-    subtitle: cartRequiresAttention
-      ? "Some cart dates still need review."
-      : "Your ready-to-review room selections.",
+    subtitle: `${cartRequiresAttention ? "Some cart dates still need review." : "Your ready-to-review room selections."}${diningSaved}`,
   },
   {
     icon: Calendar,
@@ -160,6 +165,7 @@ export const buildProfileStats = ({
     subtitle: "Activities and dining plans linked to your account.",
   },
 ];
+};
 
 export const roomBookingMeta = (booking, formatBookingDateLabel) => [
   {

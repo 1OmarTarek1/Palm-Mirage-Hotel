@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
+import { toast } from "react-toastify";
 
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import axiosInstance from "@/services/axiosInstance";
@@ -10,17 +12,13 @@ const SOCKET_SERVER_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
 ).replace(/\/$/, "");
 
-const BOOKING_REALTIME_EVENTS = [
-  "user.booking.updated",
-  "payment.checkout.updated",
-];
-
 const isUnauthorizedSocketError = (error) =>
   /unauthorized/i.test(error?.message || "");
 
 export default function BookingRealtimeBridge() {
   const dispatch = useDispatch();
   const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
   const { isAuthenticated, isHydrating } = useSelector((state) => state.auth);
   const refreshTimeoutRef = useRef(null);
   const refreshingSocketAuthRef = useRef(false);
@@ -52,6 +50,26 @@ export default function BookingRealtimeBridge() {
       }, 250);
     };
 
+    const handlePaymentCheckoutUpdated = () => {
+      void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
+      queueSnapshotRefresh();
+    };
+
+    const handleBookingUpdated = (payload) => {
+      const title = payload?.title || "Booking update";
+      const message = payload?.message || "Your bookings were refreshed.";
+      const severity = payload?.severity || "info";
+      if (severity === "warning") {
+        toast.warning(message, { toastId: `booking:${payload?.bookingId}:${payload?.action}` });
+      } else if (severity === "success") {
+        toast.success(message, { toastId: `booking:${payload?.bookingId}:${payload?.action}` });
+      } else {
+        toast.info(`${title}: ${message}`, { toastId: `booking:${payload?.bookingId}:${payload?.action}` });
+      }
+      void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
+      queueSnapshotRefresh();
+    };
+
     const handleConnectError = async (error) => {
       if (
         !isMounted ||
@@ -77,18 +95,16 @@ export default function BookingRealtimeBridge() {
       }
     };
 
-    BOOKING_REALTIME_EVENTS.forEach((eventName) => {
-      socket.on(eventName, queueSnapshotRefresh);
-    });
+    socket.on("user.booking.updated", handleBookingUpdated);
+    socket.on("payment.checkout.updated", handlePaymentCheckoutUpdated);
 
     socket.on("connect_error", handleConnectError);
     socket.connect();
 
     return () => {
       isMounted = false;
-      BOOKING_REALTIME_EVENTS.forEach((eventName) => {
-        socket.off(eventName, queueSnapshotRefresh);
-      });
+      socket.off("user.booking.updated", handleBookingUpdated);
+      socket.off("payment.checkout.updated", handlePaymentCheckoutUpdated);
       socket.off("connect_error", handleConnectError);
       socket.disconnect();
 
@@ -97,7 +113,7 @@ export default function BookingRealtimeBridge() {
         refreshTimeoutRef.current = null;
       }
     };
-  }, [axiosPrivate, dispatch, isAuthenticated, isHydrating]);
+  }, [axiosPrivate, dispatch, isAuthenticated, isHydrating, queryClient]);
 
   return null;
 }

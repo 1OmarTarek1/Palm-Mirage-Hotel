@@ -5,6 +5,14 @@ import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 
 import FormInputField from "@/components/auth/FormInputField";
 import { contactSchema } from "@/features/contact/contactSchema";
+import { cn } from "@/lib/utils";
+
+/** Approx. east-bank Luxor (Corniche area) — fictional hotel pin for the map embed */
+const HOTEL_MAP_LAT = 25.6912;
+const HOTEL_MAP_LON = 32.6368;
+const MAP_ZOOM_PADDING = 0.018;
+const osmEmbedSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${HOTEL_MAP_LON - MAP_ZOOM_PADDING}%2C${HOTEL_MAP_LAT - MAP_ZOOM_PADDING}%2C${HOTEL_MAP_LON + MAP_ZOOM_PADDING}%2C${HOTEL_MAP_LAT + MAP_ZOOM_PADDING}&layer=mapnik&marker=${HOTEL_MAP_LAT}%2C${HOTEL_MAP_LON}`;
+const osmExternalHref = `https://www.openstreetmap.org/?mlat=${HOTEL_MAP_LAT}&mlon=${HOTEL_MAP_LON}#map=16/${HOTEL_MAP_LAT}/${HOTEL_MAP_LON}`;
 
 export default function Contact() {
   const {
@@ -37,18 +45,40 @@ export default function Contact() {
           </h1>
         </div> */}
 
-        {/* Map */}
-        <div className="relative w-screen left-1/2 -translate-x-1/2 h-screen overflow-hidden">
-          <div className="absolute inset-0 grayscale invert opacity-80 contrast-125">
+        {/* Map — Luxor (preview location for Palm Mirage) */}
+        <div className="relative w-screen left-1/2 -translate-x-1/2 min-h-[380px] h-[min(72vh,760px)] overflow-hidden rounded-none border-y border-border/60 bg-muted/30 dark:bg-muted/20">
+          <div
+            className={cn(
+              "absolute inset-0 min-h-[380px]",
+              /* OSM tiles are light-only; invert + hue-rotate gives a dark basemap in .dark */
+              "dark:[&_iframe]:[filter:invert(1)_hue-rotate(180deg)_brightness(0.78)_contrast(1.08)_saturate(0.72)]",
+            )}
+          >
             <iframe
-              src="https://www.google.com/maps/embed?pb=..."
+              title="Palm Mirage Hotel — Luxor map location"
+              src={osmEmbedSrc}
               width="100%"
               height="100%"
+              className="absolute inset-0 h-full w-full min-h-[380px]"
               style={{ border: 0 }}
-              allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
+            />
+          </div>
+          <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 sm:left-auto sm:right-4 sm:max-w-md">
+            <p className="pointer-events-auto rounded-xl border border-border/60 bg-background/90 px-3 py-2 text-left text-xs text-muted-foreground shadow-sm backdrop-blur-sm">
+              <span className="font-semibold text-foreground">Palm Mirage · Luxor</span>
+              <span className="mx-1.5 text-border">·</span>
+              Map preview (Corniche area).{" "}
+              <a
+                href={osmExternalHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline-offset-2 hover:underline"
+              >
+                Open in OpenStreetMap
+              </a>
+            </p>
           </div>
         </div>
 
@@ -82,8 +112,8 @@ export default function Contact() {
               <div className="space-y-3">
                 <h3 className="text-xl  font-header text-foreground">Location</h3>
                 <div className="text-muted-foreground space-y-1">
-                  <p>USA, New York – 1060</p>
-                  <p>Str. First Avenue 1</p>
+                  <p>Luxor, Luxor Governorate, Egypt</p>
+                  <p>Nile Corniche — East Bank (map preview)</p>
                 </div>
               </div>
 
@@ -134,7 +164,7 @@ export default function Contact() {
                 <FormInputField
                   id="email"
                   label="Email"
-                  laceholder="Enter your email"
+                  placeholder="Enter your email"
                   {...register("email")}
                   error={errors.email}
                   className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
@@ -148,7 +178,7 @@ export default function Contact() {
                 <FormInputField
                   id="subject"
                   label="Subject"
-                  laceholder="Enter your Subject"
+                  placeholder="Enter your Subject"
                   {...register("subject")}
                   error={errors.subject}
                   className={`w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${

@@ -1,13 +1,13 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 import SharedPagination from "@/components/common/SharedPagination";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/hooks/usePagination";
 import { useMatchMedia } from "@/hooks/useMatchMedia";
+import { useRoomsListQuery } from "@/hooks/useCatalogQueries";
 import RoomCard from "@/components/rooms/RoomCard";
 import RoomFilter from "@/components/rooms/RoomFilter";
 import BookingBar from "@/components/rooms/BookingBar";
@@ -15,12 +15,6 @@ import Sidebar from "@/components/common/Sidebar";
 import MobileDrawer from "@/components/common/MobileDrawer";
 import { RoomsPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 import { fetchRoomAvailability } from "@/services/roomsApi";
-import {
-  fetchAllRooms,
-  selectListError,
-  selectListLoading,
-  selectRooms,
-} from "../../services/rooms/roomsSlice";
 
 export default function Rooms() {
   const location = useLocation();
@@ -37,10 +31,13 @@ export default function Rooms() {
   });
   const [availabilityMap, setAvailabilityMap] = useState({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const dispatch = useDispatch();
-  const rooms = useSelector(selectRooms);
-  const isLoading = useSelector(selectListLoading);
-  const error = useSelector(selectListError);
+  const {
+    data: roomsPayload,
+    isLoading,
+    error: queryError,
+  } = useRoomsListQuery({ page: 1, limit: 20 });
+  const rooms = roomsPayload?.rooms ?? [];
+  const error = queryError ? queryError.message || "Failed to load rooms" : null;
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const selectedCheckIn = searchParams.get("checkIn") || "";
   const selectedCheckOut = searchParams.get("checkOut") || "";
@@ -114,10 +111,6 @@ export default function Rooms() {
     paginatedItems: paginatedRooms,
     resetPage,
   } = usePagination(filteredRooms, roomsPerPage);
-
-  useEffect(() => {
-    dispatch(fetchAllRooms());
-  }, [dispatch]);
 
   useEffect(() => {
     if (isLgUp) setIsFilterOpen(false);

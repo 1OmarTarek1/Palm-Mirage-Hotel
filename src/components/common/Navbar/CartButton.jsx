@@ -4,7 +4,12 @@ import { ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMatch } from "react-router-dom";
 import NavTooltip from "./NavTooltip";
-import { toggleCart, selectCartCount, selectCartIsOpen } from "@/store/slices/cartSlice";
+import {
+  toggleCart,
+  selectCartCount,
+  selectCartIsOpen,
+  selectRestaurantMenuCartTotalQty,
+} from "@/store/slices/cartSlice";
 
 function CartButton({ itemCount: propCount }) {
   const dispatch = useDispatch();
@@ -12,8 +17,10 @@ function CartButton({ itemCount: propCount }) {
   const reduxCount = useSelector(selectCartCount);
   const isOpen = useSelector(selectCartIsOpen);
   const isCartPage = useMatch("/cart");
+  const restaurantQty = useSelector(selectRestaurantMenuCartTotalQty);
 
-  const itemCount = isHydrating ? 0 : propCount !== undefined ? propCount : reduxCount;
+  const roomLineCount = isHydrating ? 0 : propCount !== undefined ? propCount : reduxCount;
+  const itemCount = roomLineCount + restaurantQty;
 
   return (
     <NavTooltip label="Cart">

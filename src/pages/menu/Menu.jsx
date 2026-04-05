@@ -1,43 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 // import MenuHeader from "../../components/menu/MenuHeader";
 import MenuTabs from "../../components/menu/MenuTabs";
 import MenuGrid from "../../components/menu/MenuGrid";
 import MenuReservationHero from "../../components/menu/MenuReservationHero";
-import menuApi from "../../services/menuApi";
 import { MenuPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { useMenuGroupedQuery } from "@/hooks/useCatalogQueries";
 
 export default function MenuPage() {
-  const [activeIndex, setActiveIndex] = useState(0); 
-  const [categories, setCategories] = useState([]);
-  const [groupedItems, setGroupedItems] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch the menu data grouped by category directly from your endpoint
-        const rawData = await menuApi.getGroupedMenu();
-        
-        const dataPayload = rawData?.data || {};
-        
-        // Ensure valid fallback arrays
-        setCategories(dataPayload.categories || []);
-        setGroupedItems(dataPayload.categoryMenuItems || {});
-
-      } catch (err) {
-        console.error("API error fetching grouped menu:", err);
-        setError(err?.response?.data?.message || err.message || "Failed to fetch menu items from server.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMenu();
-  }, []);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const { data, isLoading: loading, error: queryError } = useMenuGroupedQuery();
+  const categories = data?.categories ?? [];
+  const groupedItems = data?.groupedItems ?? {};
+  const error = queryError
+    ? queryError.message || "Failed to fetch menu items from server."
+    : null;
 
   // Determine current active category and its items
   const activeCategory = categories[activeIndex] || null;

@@ -4,6 +4,8 @@ import { createBrowserRouter } from "react-router-dom";
 import AuthLayout from "@/layouts//AuthLayout";
 import MainLayout from "@/layouts/MainLayout.jsx";
 import NotFound from "@/pages/NotFound/NotFound";
+import ProtectedRoute from "@/routes/ProtectedRoute";
+import { ContactPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 
 const About = lazy(() => import("@/pages/About/About"));
 const Blog = lazy(() => import("@/pages/Blog/Blog"));
@@ -36,8 +38,8 @@ const routeFallback = (
   </div>
 );
 
-const withSuspense = (LazyPage) => (
-  <Suspense fallback={routeFallback}>
+const withSuspense = (LazyPage, fallback = routeFallback) => (
+  <Suspense fallback={fallback}>
     {createElement(LazyPage)}
   </Suspense>
 );
@@ -61,12 +63,17 @@ export const routes = createBrowserRouter([
       { path: "services/activities", element: withSuspense(Activities) },
       { path: "services/activities/:id", element: withSuspense(ActivityDetailPage) },
       { path: "about", element: withSuspense(About) },
-      { path: "contact", element: withSuspense(Contact) },
-      { path: "cart", element: withSuspense(ShopCart) },
-      { path: "cart/checkout", element: withSuspense(Checkout) },
+      { path: "contact", element: withSuspense(Contact, <ContactPageSkeleton />) },
       { path: "profile", element: withSuspense(Profile) },
       { path: "settings", element: withSuspense(Settings) },
-      { path: "wishlist", element: withSuspense(Wishlist) },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: "cart", element: withSuspense(ShopCart) },
+          { path: "cart/checkout", element: withSuspense(Checkout) },
+          { path: "wishlist", element: withSuspense(Wishlist) },
+        ],
+      },
     ],
   },
 

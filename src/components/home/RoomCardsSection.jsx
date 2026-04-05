@@ -1,18 +1,12 @@
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import RoomCard from "@/components/rooms/RoomCard";
 import { HomeFeaturedRoomsSkeleton } from "@/components/common/loading/WebsiteSkeletons";
-import {
-  fetchAllRooms,
-  selectListError,
-  selectListLoading,
-  selectRooms,
-} from "@/services/rooms/roomsSlice";
+import { useRoomsListQuery } from "@/hooks/useCatalogQueries";
 
 function hashString(value) {
   let hash = 0;
@@ -36,10 +30,9 @@ function pickFeaturedRooms(rooms, seed, count = 4) {
 }
 
 export default function RoomCardsSection() {
-  const dispatch = useDispatch();
-  const rooms = useSelector(selectRooms);
-  const isLoading = useSelector(selectListLoading);
-  const error = useSelector(selectListError);
+  const { data: roomsPayload, isLoading, error: queryError } = useRoomsListQuery({ page: 1, limit: 20 });
+  const rooms = roomsPayload?.rooms ?? [];
+  const error = queryError ? queryError.message || "Failed to load rooms" : null;
   const [shuffleSeed] = useState(() => {
     if (typeof window !== "undefined" && window.crypto?.randomUUID) {
       return window.crypto.randomUUID();
@@ -64,12 +57,6 @@ export default function RoomCardsSection() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  useEffect(() => {
-    if (!rooms?.length) {
-      dispatch(fetchAllRooms({ page: 1, limit: 20 }));
-    }
-  }, [dispatch, rooms.length]);
 
   const featuredRooms = useMemo(
     () => pickFeaturedRooms(rooms, shuffleSeed, 4),

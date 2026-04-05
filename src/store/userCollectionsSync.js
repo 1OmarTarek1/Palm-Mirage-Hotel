@@ -2,12 +2,18 @@ import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
 
 import { fetchUserPreferences, updateUserPreferences } from "@/services/userPreferencesApi";
 import { logout, setCredentials } from "@/store/slices/authSlice";
+import { mergeRestaurantMenuCarts } from "@/utils/restaurantMenuCart";
 import {
   addItem,
+  addRestaurantMenuToCart,
   clearCart,
+  closeCart,
   hydrateCart,
+  hydrateRestaurantMenuCart,
   removeItem,
   resetCartState,
+  resetRestaurantMenuCart,
+  setRestaurantMenuCartQty,
   updateItemBookingDates,
   updateQuantity,
   upsertRoomBooking,
@@ -70,14 +76,27 @@ userCollectionsListenerMiddleware.startListening({
         preferences?.wishlistItems ?? [],
         state.wishlist?.items ?? [],
       );
+      const mergedRestaurantMenu = mergeRestaurantMenuCarts(
+        preferences?.restaurantCart ?? {},
+        state.cart?.restaurantMenuCart ?? {},
+      );
 
       listenerApi.dispatch(hydrateCart(mergedCartItems));
       listenerApi.dispatch(hydrateWishlist(mergedWishlistItems));
+      listenerApi.dispatch(hydrateRestaurantMenuCart(mergedRestaurantMenu));
 
-      if ((state.cart?.items?.length ?? 0) > 0 || (state.wishlist?.items?.length ?? 0) > 0) {
+      const hadLocalRestaurant =
+        Object.keys(state.cart?.restaurantMenuCart ?? {}).length > 0;
+
+      if (
+        (state.cart?.items?.length ?? 0) > 0 ||
+        (state.wishlist?.items?.length ?? 0) > 0 ||
+        hadLocalRestaurant
+      ) {
         await updateUserPreferences({
           cartItems: mergedCartItems,
           wishlistItems: mergedWishlistItems,
+          restaurantCart: mergedRestaurantMenu,
         });
       }
     } catch (error) {
@@ -92,6 +111,7 @@ userCollectionsListenerMiddleware.startListening({
     clearLegacyStorage();
     listenerApi.dispatch(resetCartState());
     listenerApi.dispatch(resetWishlistState());
+    listenerApi.dispatch(closeCart());
   },
 });
 
@@ -115,9 +135,30 @@ userCollectionsListenerMiddleware.startListening({
       clearLegacyStorage();
       await updateUserPreferences({
         cartItems: state.cart?.items ?? [],
+        restaurantCart: state.cart?.restaurantMenuCart ?? {},
       });
     } catch (error) {
       console.error("Failed to sync cart items to the database:", error);
+    }
+  },
+});
+
+userCollectionsListenerMiddleware.startListening({
+  matcher: isAnyOf(addRestaurantMenuToCart, setRestaurantMenuCartQty, resetRestaurantMenuCart),
+  effect: async (_, listenerApi) => {
+    const state = listenerApi.getState();
+
+    if (!state.auth?.isAuthenticated) {
+      return;
+    }
+
+    try {
+      clearLegacyStorage();
+      await updateUserPreferences({
+        restaurantCart: state.cart?.restaurantMenuCart ?? {},
+      });
+    } catch (error) {
+      console.error("Failed to sync restaurant menu cart to the database:", error);
     }
   },
 });

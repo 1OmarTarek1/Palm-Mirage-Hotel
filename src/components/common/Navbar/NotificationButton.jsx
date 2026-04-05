@@ -1,33 +1,44 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
-const MOCK_NOTIFICATIONS = [
-  { id: "1", title: "Booking confirmed", body: "Your deluxe room is reserved for Apr 12–15.", time: "2h ago" },
-  { id: "2", title: "Spa offer", body: "20% off treatments this weekend — limited slots.", time: "1d ago" },
-  { id: "3", title: "Checkout reminder", body: "Tomorrow is your last day — extend from your profile.", time: "2d ago" },
-];
+const NOTIFICATIONS_QUERY_KEY = ["notifications", "inbox"];
 
-const notificationCount = MOCK_NOTIFICATIONS.length;
+function applyReadPatchToInboxCache(old, id, updated) {
+  if (!old?.notifications || !updated?.id) return old;
+  const prev = old.notifications.find((n) => n.id === id);
+  const wasUnread = Boolean(prev && !prev.readAt);
+  return {
+    ...old,
+    notifications: old.notifications.map((n) => (n.id === id ? { ...n, ...updated } : n)),
+    unreadCount: wasUnread ? Math.max(0, (old.unreadCount ?? 0) - 1) : (old.unreadCount ?? 0),
+  };
+}
 
-function NotificationList() {
-  return (
-    <ul className="space-y-1 p-2 md:max-h-[min(60vh,18rem)] md:overflow-y-auto">
-      {MOCK_NOTIFICATIONS.map((n) => (
-        <li
-          key={n.id}
-          className="cursor-default rounded-xl px-3 py-2.5 transition-colors hover:bg-primary/10"
-        >
-          <p className="text-sm font-medium leading-snug text-foreground">{n.title}</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{n.body}</p>
-          <p className="mt-1 text-[10px] text-muted-foreground/80">{n.time}</p>
-        </li>
-      ))}
-    </ul>
-  );
+function markAllReadInInboxCache(old) {
+  if (!old?.notifications) return old;
+  const now = new Date().toISOString();
+  return {
+    ...old,
+    notifications: old.notifications.map((n) => (n.readAt ? n : { ...n, readAt: now })),
+    unreadCount: 0,
+  };
+}
+
+function formatRelativeTime(iso) {
+  const d = new Date(iso);
+  const diff = Date.now() - d.getTime();
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours}h ago`;
+  return d.toLocaleDateString();
 }
 
 function useIsMdUp() {
@@ -47,14 +58,29 @@ function useIsMdUp() {
 }
 
 export default function NotificationButton() {
+  const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
   const [panelOpen, setPanelOpen] = useState(false);
   const timeoutRef = useRef(null);
   const isMdUp = useIsMdUp();
 
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: NOTIFICATIONS_QUERY_KEY,
+    queryFn: async () => {
+      const res = await axiosPrivate.get("/notifications", { params: { limit: 30 } });
+      return res.data?.data ?? { notifications: [], unreadCount: 0 };
+    },
+    staleTime: 30_000,
+  });
+
+  const notifications = data?.notifications ?? [];
+  const notificationCount = data?.unreadCount ?? 0;
+
   const openPanel = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setPanelOpen(true);
-  }, []);
+    void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+  }, [queryClient]);
 
   const scheduleClose = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -71,10 +97,42 @@ export default function NotificationButton() {
   }, []);
 
   const togglePanel = useCallback(() => {
-    setPanelOpen((p) => !p);
-  }, []);
+    setPanelOpen((p) => {
+      const next = !p;
+      if (next) void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+      return next;
+    });
+  }, [queryClient]);
+
+  const markRead = useCallback(
+    async (id) => {
+      try {
+        const res = await axiosPrivate.patch(`/notifications/${id}/read`);
+        const updated = res.data?.data?.notification;
+        queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) =>
+          applyReadPatchToInboxCache(old, id, updated),
+        );
+        await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+      } catch (e) {
+        console.error("Failed to mark notification read:", e);
+      }
+    },
+    [axiosPrivate, queryClient],
+  );
+
+  const markAllRead = useCallback(async () => {
+    try {
+      await axiosPrivate.post("/notifications/read-all");
+      queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) => markAllReadInInboxCache(old));
+      await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+    } catch (e) {
+      console.error("Failed to mark all notifications read:", e);
+    }
+  }, [axiosPrivate, queryClient]);
 
   useBodyScrollLock(panelOpen && !isMdUp);
+
+  const listBusy = isLoading || isFetching;
 
   const mobilePanel =
     typeof document !== "undefined"
@@ -103,8 +161,16 @@ export default function NotificationButton() {
                 >
                   <div className="flex shrink-0 items-center justify-between border-b border-border/30 px-4 py-3">
                     <p className="text-base font-semibold text-foreground">Notifications</p>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Demo</span>
+                    <div className="flex items-center gap-2">
+                      {notificationCount > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => void markAllRead()}
+                          className="cursor-pointer text-xs font-medium text-primary hover:underline"
+                        >
+                          Mark all read
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         aria-label="Close notifications"
@@ -116,7 +182,11 @@ export default function NotificationButton() {
                     </div>
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]">
-                    <NotificationList />
+                    <NotificationListBody
+                      notifications={notifications}
+                      busy={listBusy}
+                      onMarkRead={markRead}
+                    />
                   </div>
                 </motion.div>
               </motion.div>
@@ -184,14 +254,73 @@ export default function NotificationButton() {
             >
               <div className="flex items-center justify-between border-b border-border/30 px-4 py-3">
                 <p className="text-sm font-semibold text-foreground">Notifications</p>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Demo</span>
+                {notificationCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => void markAllRead()}
+                    className="cursor-pointer text-[11px] font-medium text-primary hover:underline"
+                  >
+                    Mark all read
+                  </button>
+                ) : null}
               </div>
-              <NotificationList />
+              <div className="max-h-[min(60vh,18rem)] overflow-y-auto">
+                <NotificationListBody
+                  notifications={notifications}
+                  busy={listBusy}
+                  onMarkRead={markRead}
+                />
+              </div>
             </motion.div>
           ) : null}
         </AnimatePresence>
       </div>
       {mobilePanel}
     </>
+  );
+}
+
+function NotificationListBody({ notifications, busy, onMarkRead }) {
+  if (busy && notifications.length === 0) {
+    return <p className="p-4 text-center text-sm text-muted-foreground">Loading…</p>;
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <p className="p-4 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>
+    );
+  }
+
+  return (
+    <ul className="space-y-1 p-2 md:max-h-[min(60vh,18rem)] md:overflow-y-auto">
+      {notifications.map((n) => (
+        <li
+          key={n.id}
+          className={`rounded-xl px-3 py-2.5 transition-colors hover:bg-primary/10 ${
+            n.readAt ? "cursor-default" : "cursor-pointer"
+          }`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-snug text-foreground">{n.title}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{n.message}</p>
+              <p className="mt-1 text-[10px] text-muted-foreground/80">
+                {formatRelativeTime(n.createdAt)}
+                {n.readAt ? " · Read" : ""}
+              </p>
+            </div>
+            {!n.readAt ? (
+              <button
+                type="button"
+                onClick={() => void onMarkRead(n.id)}
+                className="shrink-0 cursor-pointer text-[10px] font-medium uppercase tracking-wide text-primary hover:underline"
+              >
+                Mark read
+              </button>
+            ) : null}
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }

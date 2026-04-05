@@ -32,6 +32,20 @@ export const createTableBooking = createAsyncThunk(
   }
 );
 
+export const createRestaurantCheckoutSession = createAsyncThunk(
+  'restaurantBookings/createRestaurantCheckoutSession',
+  async ({ axiosPrivate, restaurantBookingId }, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosPrivate.post('/payment/create-restaurant-checkout-session', {
+        restaurantBookingId,
+      });
+      return data?.data;
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err, 'Failed to start payment'));
+    }
+  }
+);
+
 export const fetchMyTableBookings = createAsyncThunk(
   'restaurantBookings/fetchMyTableBookings',
   async (axiosPrivate, { rejectWithValue }) => {
@@ -67,6 +81,7 @@ const restaurantBookingsSlice = createSlice({
     lastBooking: null,
     cancelling: false,
     cancelError: null,
+    checkoutLoading: false,
   },
 
   reducers: {
@@ -140,6 +155,15 @@ const restaurantBookingsSlice = createSlice({
       .addCase(cancelTableBooking.rejected, (state, action) => {
         state.cancelling = false;
         state.cancelError = action.payload;
+      })
+      .addCase(createRestaurantCheckoutSession.pending, (state) => {
+        state.checkoutLoading = true;
+      })
+      .addCase(createRestaurantCheckoutSession.fulfilled, (state) => {
+        state.checkoutLoading = false;
+      })
+      .addCase(createRestaurantCheckoutSession.rejected, (state) => {
+        state.checkoutLoading = false;
       });
   },
 });
@@ -155,5 +179,6 @@ export const selectTableBookingError = (state) => state.restaurantBookings.creat
 export const selectLastTableBooking = (state) => state.restaurantBookings.lastBooking;
 export const selectCancellingTableBooking = (state) => state.restaurantBookings.cancelling;
 export const selectCancelTableBookingError = (state) => state.restaurantBookings.cancelError;
+export const selectRestaurantCheckoutLoading = (state) => state.restaurantBookings.checkoutLoading;
 
 export default restaurantBookingsSlice.reducer;

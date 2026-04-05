@@ -7,7 +7,7 @@ import {
   fetchMyTableBookings,
 } from "@/services/restaurantBookings/restaurantBookingsSlice";
 import { fetchUserPreferences } from "@/services/userPreferencesApi";
-import { hydrateCart } from "@/store/slices/cartSlice";
+import { hydrateCart, hydrateRestaurantMenuCart } from "@/store/slices/cartSlice";
 import { logout, setCredentials } from "@/store/slices/authSlice";
 import { hydrateWishlist } from "@/store/slices/wishlistSlice";
 
@@ -69,6 +69,7 @@ export const applyUserSnapshot = ({ dispatch, user, entries = [] }) => {
     const preferences = preferencesEntry.result.value ?? {};
     dispatch(hydrateCart(preferences.cartItems ?? []));
     dispatch(hydrateWishlist(preferences.wishlistItems ?? []));
+    dispatch(hydrateRestaurantMenuCart(preferences.restaurantCart ?? {}));
   } else if (preferencesEntry?.result.status === "rejected") {
     console.error(
       "Failed to refresh user preferences during snapshot sync:",
