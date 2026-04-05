@@ -11,6 +11,7 @@ import menuReducer from "@/services/menu/menuSlice";
 import userReducer from "@/services/user/userSlice";
 import bookingReducer from "@/services/booking/bookingSlice";
 import restaurantBookingsReducer from "@/services/restaurantBookings/restaurantBookingsSlice";
+import { userCollectionsListenerMiddleware } from "./userCollectionsSync";
 
 export const store = configureStore({
   reducer: {
@@ -27,4 +28,6 @@ export const store = configureStore({
     booking: bookingReducer,
     restaurantBookings: restaurantBookingsReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(userCollectionsListenerMiddleware.middleware),
 });

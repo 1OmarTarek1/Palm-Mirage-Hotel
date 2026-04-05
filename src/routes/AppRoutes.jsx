@@ -1,94 +1,86 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { Suspense, createElement, lazy } from "react";
+import { createBrowserRouter } from "react-router-dom";
 
-import AuthLayout from '@/layouts//AuthLayout';
-import MainLayout from '@/layouts/MainLayout.jsx';
-import NotFound from '@/pages/NotFound/NotFound';
+import AuthLayout from "@/layouts//AuthLayout";
+import MainLayout from "@/layouts/MainLayout.jsx";
+import NotFound from "@/pages/NotFound/NotFound";
 
-// Public Pages
-import About from '@/pages/About/About';
-import Blog from '@/pages/Blog/Blog';
-import BlogDetails from '@/pages/Blog/BlogDetails';
-import Contact from '@/pages/Contact/Contact';
-import Home from '@/pages/Home/Home';
-import RoomDetails from '@/pages/Rooms/RoomDetails';
-import Rooms from '@/pages/Rooms/Rooms';
-// import Services from '@/pages/Services/Services';
-import Wellness from '@/pages/Services/Wellness';
-import Meetings from '@/pages/Services/Meetings';
-import Menu from '@/pages/menu/Menu';
-import Activities from '@/pages/Activities/Activities';
-import ActivityDetailPage from '@/pages/Activities/ActivityDetailPage';
-import ShopCart from '@/pages/shopcart/ShopCart';
-import Checkout from '@/pages/Checkout/Checkout';
-import Profile from '@/pages/Profile/Profile';
-import Settings from '@/pages/Settings/Settings';
-import Wishlist from '@/pages/Wishlist/Wishlist';
+const About = lazy(() => import("@/pages/About/About"));
+const Blog = lazy(() => import("@/pages/Blog/Blog"));
+const BlogDetails = lazy(() => import("@/pages/Blog/BlogDetails"));
+const Contact = lazy(() => import("@/pages/Contact/Contact"));
+const Home = lazy(() => import("@/pages/Home/Home"));
+const RoomDetails = lazy(() => import("@/pages/Rooms/RoomDetails"));
+const Rooms = lazy(() => import("@/pages/Rooms/Rooms"));
+const Wellness = lazy(() => import("@/pages/Services/Wellness"));
+const Meetings = lazy(() => import("@/pages/Services/Meetings"));
+const Menu = lazy(() => import("@/pages/menu/Menu"));
+const Activities = lazy(() => import("@/pages/Activities/Activities"));
+const ActivityDetailPage = lazy(() => import("@/pages/Activities/ActivityDetailPage"));
+const ShopCart = lazy(() => import("@/pages/shopcart/ShopCart"));
+const Checkout = lazy(() => import("@/pages/Checkout/Checkout"));
+const Profile = lazy(() => import("@/pages/Profile/Profile"));
+const Settings = lazy(() => import("@/pages/Settings/Settings"));
+const Wishlist = lazy(() => import("@/pages/Wishlist/Wishlist"));
+const ForgotPassword = lazy(() => import("@/pages/Auth/ForgotPassword"));
+const Login = lazy(() => import("@/pages/Auth/Login"));
+const Register = lazy(() => import("@/pages/Auth/Register"));
+const ResetPassword = lazy(() => import("@/pages/Auth/ResetPassword"));
+const ChangePassword = lazy(() => import("@/pages/Auth/ChangePassword"));
+const Restaurant = lazy(() => import("@/pages/Services/Restaurant.jsx"));
+const ConfirmEmail = lazy(() => import("@/pages/Auth/ConfirmEmail.jsx"));
 
-// Auth Pages
-import ForgotPassword from '@/pages/Auth/ForgotPassword';
-import Login from '@/pages/Auth/Login';
-import Register from '@/pages/Auth/Register';
-import ResetPassword from '@/pages/Auth/ResetPassword';
-import ChangePassword from '@/pages/Auth/ChangePassword';
-import Restaurant from '@/pages/Services/Restaurant.jsx';
-import ConfirmEmail from '@/pages/Auth/ConfirmEmail.jsx';
-// import ProtectedRoute from './ProtectedRoute'
+const routeFallback = (
+  <div className="flex min-h-[40vh] items-center justify-center px-4 py-12 text-sm text-muted-foreground">
+    Loading page...
+  </div>
+);
+
+const withSuspense = (LazyPage) => (
+  <Suspense fallback={routeFallback}>
+    {createElement(LazyPage)}
+  </Suspense>
+);
 
 export const routes = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     errorElement: <NotFound />,
     children: [
-      { index: true, element: <Home /> },
-      { path: 'rooms', element: <Rooms /> },
-      { path: 'rooms/:id', element: <RoomDetails /> },
-      { path: 'services', element: <Wellness /> },
-      { path: 'services/wellness', element: <Wellness /> },
-      { path: 'services/Meetings', element: <Meetings /> },
-      { path: 'services/menu', element: <Menu /> },
-      { path: 'services/restaurant', element: <Restaurant /> },
-      // { path: 'services/relax', element: <Relax /> },
-      { path: 'blog', element: <Blog /> },
-      { path: 'blog/:id', element: <BlogDetails /> },
-      { path: 'services/activities', element: <Activities /> },
-      { path: 'services/activities/:id', element: <ActivityDetailPage /> },
-      { path: 'about', element: <About /> },
-      { path: 'contact', element: <Contact /> },
-      { path: 'cart', element: <ShopCart /> },
-      { path: 'cart/checkout', element: <Checkout /> },
-      { path: 'profile', element: <Profile /> },
-      { path: 'settings', element: <Settings /> },
-      { path: 'wishlist', element: <Wishlist /> },
+      { index: true, element: withSuspense(Home) },
+      { path: "rooms", element: withSuspense(Rooms) },
+      { path: "rooms/:id", element: withSuspense(RoomDetails) },
+      { path: "services", element: withSuspense(Wellness) },
+      { path: "services/wellness", element: withSuspense(Wellness) },
+      { path: "services/Meetings", element: withSuspense(Meetings) },
+      { path: "services/menu", element: withSuspense(Menu) },
+      { path: "services/restaurant", element: withSuspense(Restaurant) },
+      { path: "blog", element: withSuspense(Blog) },
+      { path: "blog/:id", element: withSuspense(BlogDetails) },
+      { path: "services/activities", element: withSuspense(Activities) },
+      { path: "services/activities/:id", element: withSuspense(ActivityDetailPage) },
+      { path: "about", element: withSuspense(About) },
+      { path: "contact", element: withSuspense(Contact) },
+      { path: "cart", element: withSuspense(ShopCart) },
+      { path: "cart/checkout", element: withSuspense(Checkout) },
+      { path: "profile", element: withSuspense(Profile) },
+      { path: "settings", element: withSuspense(Settings) },
+      { path: "wishlist", element: withSuspense(Wishlist) },
     ],
   },
 
   {
-    path: '/auth',
+    path: "/auth",
     element: <AuthLayout />,
     errorElement: <NotFound />,
     children: [
-      { path: 'login', element: <Login /> },
-      { path: 'register', element: <Register /> },
-      { path: 'forgot-password', element: <ForgotPassword /> },
-      { path: 'reset-password', element: <ResetPassword /> },
-      { path: 'change-password', element: <ChangePassword /> },
-      { path: 'confirm-email', element: <ConfirmEmail /> },
+      { path: "login", element: withSuspense(Login) },
+      { path: "register", element: withSuspense(Register) },
+      { path: "forgot-password", element: withSuspense(ForgotPassword) },
+      { path: "reset-password", element: withSuspense(ResetPassword) },
+      { path: "change-password", element: withSuspense(ChangePassword) },
+      { path: "confirm-email", element: withSuspense(ConfirmEmail) },
     ],
   },
-
-  // ProtectedRoute for authenticated users (e.g., account management, bookings)
-  // {
-  //   path: "/account",
-  //   element: (
-  //     <ProtectedRoute>
-  //       <MainLayout />
-  //     </ProtectedRoute>
-  //   ),
-  //   errorElement: <NotFound />,
-  //   children: [
-  //     { path: "booking/:roomId", element: <Booking /> },
-  //     { path: "my-reservations", element: <MyReservations /> },
-  //   ],
-  // },
 ]);

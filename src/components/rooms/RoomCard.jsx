@@ -69,6 +69,7 @@ export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
   const { flyToCart } = useFlyToCart();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const isHydrating = useSelector((state) => state.auth.isHydrating);
   const roomId = room?._id || room?.id || room?.roomNumber;
   const roomName = room?.roomName || room?.name || "Room";
   const roomType = room?.roomType || room?.type || "Room";
@@ -88,6 +89,10 @@ export default function RoomCard({ room, className }) {
 
   const handleOpenBookingModal = (e) => {
     e.preventDefault();
+    if (isHydrating) {
+      toast.info("Loading your saved room selections...");
+      return;
+    }
     if (!isAuthenticated) {
       toast.info("Please sign in first to use cart.");
       return;
@@ -116,6 +121,10 @@ export default function RoomCard({ room, className }) {
 
   const handleToggleWishlist = (e) => {
     e.preventDefault();
+    if (isHydrating) {
+      toast.info("Loading your saved room selections...");
+      return;
+    }
     if (!isAuthenticated) {
       toast.info("Please sign in first to use wishlist.");
       return;

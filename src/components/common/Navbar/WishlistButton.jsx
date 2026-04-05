@@ -7,8 +7,9 @@ import NavTooltip from './NavTooltip';
 import { selectWishlistCount } from '@/store/slices/wishlistSlice';
 
 function WishlistButton({ itemCount: propCount }) {
+  const isHydrating = useSelector((state) => state.auth.isHydrating);
   const reduxCount = useSelector(selectWishlistCount);
-  const itemCount = propCount !== undefined ? propCount : reduxCount;
+  const itemCount = isHydrating ? 0 : propCount !== undefined ? propCount : reduxCount;
   const isWishlistPage = useMatch('/wishlist');
 
   return (

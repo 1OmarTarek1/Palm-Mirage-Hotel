@@ -14,6 +14,7 @@ import { useState } from "react";
 
 export default function ShopCart() {
   const dispatch = useDispatch();
+  const isHydrating = useSelector((state) => state.auth.isHydrating);
   const cartItems = useSelector(selectCartItems);
   const totalPrice = useSelector(selectCartTotal);
   const [editingItem, setEditingItem] = useState(null);
@@ -39,6 +40,8 @@ export default function ShopCart() {
     toast.success(`${editingItem.name} booking dates updated.`);
     setEditingItem(null);
   };
+
+  if (isHydrating) return null;
 
   return (
     <div className="min-h-screen transition-colors duration-300">

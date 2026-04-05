@@ -1,52 +1,109 @@
-import { useSelector } from "react-redux";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
-  User,
-  Mail,
-  Globe,
-  Phone,
   Calendar,
+  Globe,
+  Mail,
+  Phone,
   Shield,
-  BadgeCheck,
+  ShoppingCart,
+  Ticket,
+  User,
+  UtensilsCrossed,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, type: "spring", stiffness: 200, damping: 20 },
-  }),
-};
-
-function InfoCard({ icon: Icon, label, value, index }) {
-  if (!value) return null;
-  return (
-    <motion.div
-      custom={index}
-      variants={fadeUp}
-      initial="hidden"
-      animate="visible"
-      className="flex items-center gap-4 p-4 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/40 hover:border-primary/30 transition-colors"
-    >
-      <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
-        <Icon size={20} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-        <p className="text-sm font-medium text-foreground truncate">{value}</p>
-      </div>
-    </motion.div>
-  );
-}
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import {
+  cancelActivityBooking,
+  selectActivityBookings,
+  selectActivityBookingsError,
+  selectActivityBookingsLoading,
+} from "@/services/activityBookings/activityBookingsSlice";
+import {
+  cancelBooking,
+  selectBookings,
+  selectListError as selectRoomBookingsError,
+  selectListLoading as selectRoomBookingsLoading,
+} from "@/services/booking/bookingSlice";
+import {
+  cancelTableBooking,
+  selectTableBookings,
+  selectTableBookingsError,
+  selectTableBookingsLoading,
+} from "@/services/restaurantBookings/restaurantBookingsSlice";
+import {
+  selectCartCount,
+  selectCartItems,
+  selectCartRequiresAttention,
+  selectCartTotal,
+} from "@/store/slices/cartSlice";
+import {
+  selectWishlistCount,
+  selectWishlistItems,
+} from "@/store/slices/wishlistSlice";
+import { setCredentials } from "@/store/slices/authSlice";
+import { refreshUserSnapshot } from "@/services/userSnapshot";
+import {
+  buildProfileStats,
+  formatCurrency,
+  isActivityBookingCancellable,
+  isRoomBookingCancellable,
+  isTableBookingCancellable,
+} from "@/components/profile/profileUtils";
+import ProfileHero from "@/components/profile/ProfileHero";
+import ProfileContentSections from "@/components/profile/ProfileContentSections";
+import {
+  AccountDetailsModal,
+  EditProfileModal,
+} from "@/components/profile/ProfileAccountModals";
+import { ProfilePageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 
 export default function Profile() {
-  const { user, isAuthenticated, isHydrating } = useSelector((s) => s.auth);
-  if (isHydrating) return null;
-  // const { user, isAuthenticated } = useSelector((s) => s.auth);
+  const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
+  const { user, isAuthenticated, isHydrating } = useSelector((state) => state.auth);
+  const wishlistItems = useSelector(selectWishlistItems);
+  const wishlistCount = useSelector(selectWishlistCount);
+  const cartItems = useSelector(selectCartItems);
+  const cartCount = useSelector(selectCartCount);
+  const cartTotal = useSelector(selectCartTotal);
+  const cartRequiresAttention = useSelector(selectCartRequiresAttention);
+  const roomBookings = useSelector(selectBookings);
+  const roomBookingsLoading = useSelector(selectRoomBookingsLoading);
+  const roomBookingsError = useSelector(selectRoomBookingsError);
+  const activityBookings = useSelector(selectActivityBookings);
+  const activityBookingsLoading = useSelector(selectActivityBookingsLoading);
+  const activityBookingsError = useSelector(selectActivityBookingsError);
+  const tableBookings = useSelector(selectTableBookings);
+  const tableBookingsLoading = useSelector(selectTableBookingsLoading);
+  const tableBookingsError = useSelector(selectTableBookingsError);
+  const [pendingCancelKey, setPendingCancelKey] = useState("");
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let isMounted = true;
+
+    const refreshProfileSnapshot = async () => {
+      try {
+        await refreshUserSnapshot({ dispatch, axiosPrivate });
+      } catch (error) {
+        if (isMounted) {
+          console.error("Failed to refresh the user snapshot on profile open:", error);
+        }
+      }
+    };
+
+    void refreshProfileSnapshot();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [axiosPrivate, dispatch, isAuthenticated]);
 
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -60,53 +117,138 @@ export default function Profile() {
     { icon: Mail, label: "Email", value: user?.email },
     { icon: Globe, label: "Country", value: user?.country !== "N/A" ? user?.country : null },
     { icon: Phone, label: "Phone", value: user?.phoneNumber },
-    { icon: User, label: "Gender", value: user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null },
-    { icon: Calendar, label: "Date of Birth", value: user?.DOB ? new Date(user.DOB).toLocaleDateString() : null },
+    {
+      icon: User,
+      label: "Gender",
+      value: user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
+    },
+    {
+      icon: Calendar,
+      label: "Date of Birth",
+      value: user?.DOB ? new Date(user.DOB).toLocaleDateString() : null,
+    },
     { icon: Calendar, label: "Member Since", value: memberSince },
-    { icon: Shield, label: "Role", value: user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : null },
+    {
+      icon: Shield,
+      label: "Role",
+      value: user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : null,
+    },
   ];
 
+  const accountDetails = infoItems.filter((item) => Boolean(item.value));
+  const activeRoomBookingsCount = useMemo(
+    () => roomBookings.filter(isRoomBookingCancellable).length,
+    [roomBookings],
+  );
+  const activeActivityBookingsCount = useMemo(
+    () => activityBookings.filter(isActivityBookingCancellable).length,
+    [activityBookings],
+  );
+  const activeTableBookingsCount = useMemo(
+    () => tableBookings.filter(isTableBookingCancellable).length,
+    [tableBookings],
+  );
+
+  const stats = buildProfileStats({
+    wishlistCount,
+    cartCount,
+    cartRequiresAttention,
+    activeRoomBookingsCount,
+    activeActivityBookingsCount,
+    activeTableBookingsCount,
+  });
+
+  const snapshotCards = [
+    {
+      icon: ShoppingCart,
+      label: "Cart Value",
+      value: formatCurrency(cartTotal),
+      subtitle: cartRequiresAttention
+        ? "Some cart items need review before checkout."
+        : "Your current ready-to-checkout total.",
+    },
+    {
+      icon: UtensilsCrossed,
+      label: "Dining Plans",
+      value: tableBookings.length,
+      subtitle: "Restaurant reservations and waitlist requests.",
+    },
+    {
+      icon: Ticket,
+      label: "Activity Bookings",
+      value: activityBookings.length,
+      subtitle: "Experiences currently attached to your account.",
+    },
+    {
+      icon: Calendar,
+      label: "Total Room Bookings",
+      value: roomBookings.length,
+      subtitle: "Every stay on your account, including past and completed visits.",
+    },
+  ];
+
+  const runCancelAction = async ({ key, action, successMessage, fallbackMessage }) => {
+    setPendingCancelKey(key);
+    try {
+      await dispatch(action).unwrap();
+      toast.success(successMessage);
+    } catch (error) {
+      toast.error(typeof error === "string" ? error : error?.message || fallbackMessage);
+    } finally {
+      setPendingCancelKey("");
+    }
+  };
+
+  if (isHydrating) return <ProfilePageSkeleton />;
+  if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
+
   return (
-    <section className="max-w-3xl mx-auto py-16 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 150, damping: 20 }}
-        className="flex flex-col items-center gap-4 mb-12"
-      >
-        <div className="relative">
-          {user?.image ? (
-            <img
-              src={user.image}
-              alt={user.userName}
-              className="w-28 h-28 rounded-full object-cover border-4 border-primary/20 shadow-xl"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="w-28 h-28 rounded-full bg-primary/10 border-4 border-primary/20 flex items-center justify-center shadow-xl">
-              <User size={48} className="text-primary" />
-            </div>
-          )}
-          {user?.provider === "google" && (
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-card border-2 border-border flex items-center justify-center">
-              <BadgeCheck size={16} className="text-primary" />
-            </div>
-          )}
-        </div>
-
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">{user?.userName}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {user?.provider === "google" ? "Signed in with Google" : "Email & Password account"}
-          </p>
-        </div>
-      </motion.div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {infoItems.map((item, i) => (
-          <InfoCard key={item.label} {...item} index={i} />
-        ))}
-      </div>
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <ProfileHero
+        user={user}
+        onOpenDetails={() => setIsDetailsModalOpen(true)}
+        onOpenEdit={() => setIsEditModalOpen(true)}
+      />
+      <ProfileContentSections
+        accountDetails={accountDetails}
+        stats={stats}
+        snapshotCards={snapshotCards}
+        wishlistItems={wishlistItems}
+        wishlistCount={wishlistCount}
+        cartItems={cartItems}
+        cartCount={cartCount}
+        cartTotal={cartTotal}
+        cartRequiresAttention={cartRequiresAttention}
+        roomBookings={roomBookings}
+        roomBookingsLoading={roomBookingsLoading}
+        roomBookingsError={roomBookingsError}
+        activityBookings={activityBookings}
+        activityBookingsLoading={activityBookingsLoading}
+        activityBookingsError={activityBookingsError}
+        tableBookings={tableBookings}
+        tableBookingsLoading={tableBookingsLoading}
+        tableBookingsError={tableBookingsError}
+        pendingCancelKey={pendingCancelKey}
+        axiosPrivate={axiosPrivate}
+        cancelBooking={cancelBooking}
+        cancelActivityBooking={cancelActivityBooking}
+        cancelTableBooking={cancelTableBooking}
+        runCancelAction={runCancelAction}
+      />
+      <AccountDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        user={user}
+      />
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={user}
+        axiosPrivate={axiosPrivate}
+        onProfileUpdated={(updatedUser) =>
+          dispatch(setCredentials({ user: updatedUser, skipCollectionsSync: true }))
+        }
+      />
     </section>
   );
 }

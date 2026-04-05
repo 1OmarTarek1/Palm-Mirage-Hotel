@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { axiosPrivate } from '@/services/axiosInstance';
 
+const resolveHttpClient = (arg) => arg?.axiosPrivate ?? axiosPrivate;
+const resolvePayload = (arg) => arg?.payload ?? arg;
+const resolveBookingId = (arg) => (typeof arg === 'string' ? arg : arg?.id);
+
 // ============================================================
 //                     BOOKING THUNKS
 // ============================================================
@@ -11,9 +15,10 @@ import { axiosPrivate } from '@/services/axiosInstance';
  */
 export const fetchMyBookings = createAsyncThunk(
   'booking/fetchMyBookings',
-  async (_, { rejectWithValue }) => {
+  async (arg, { rejectWithValue }) => {
     try {
-      const { data } = await axiosPrivate.get('/reservations/my-bookings');
+      const client = resolveHttpClient(arg);
+      const { data } = await client.get('/reservations/my-bookings');
       // The backend returns successResponse { message: "...", data: [...] }
       return data.data; 
     } catch (err) {
@@ -30,9 +35,11 @@ export const fetchMyBookings = createAsyncThunk(
  */
 export const createBooking = createAsyncThunk(
   'booking/createBooking',
-  async (bookingData, { rejectWithValue }) => {
+  async (arg, { rejectWithValue }) => {
     try {
-      const { data } = await axiosPrivate.post('/reservations', bookingData);
+      const client = resolveHttpClient(arg);
+      const bookingData = resolvePayload(arg);
+      const { data } = await client.post('/reservations', bookingData);
       return data.data;
     } catch (err) {
       return rejectWithValue(
@@ -48,9 +55,11 @@ export const createBooking = createAsyncThunk(
  */
 export const cancelBooking = createAsyncThunk(
   'booking/cancelBooking',
-  async (id, { rejectWithValue }) => {
+  async (arg, { rejectWithValue }) => {
     try {
-      await axiosPrivate.delete(`/reservations/${id}`);
+      const client = resolveHttpClient(arg);
+      const id = resolveBookingId(arg);
+      await client.delete(`/reservations/${id}`);
       return id;
     } catch (err) {
       return rejectWithValue(

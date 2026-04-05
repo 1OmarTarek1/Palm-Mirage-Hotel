@@ -1,16 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 
-import axiosInstance from "@/services/axiosInstance";
-import { finishHydration, logout, setCredentials } from "@/store/slices/authSlice";
-
-const isAuthFailure = (error) => {
-  const status = error?.response?.status;
-  return status === 400 || status === 401 || status === 403;
-};
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import { refreshUserSnapshot } from "@/services/userSnapshot";
+import { finishHydration } from "@/store/slices/authSlice";
 
 export default function AuthBootstrap() {
   const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
   const hasBootstrapped = useRef(false);
 
   useEffect(() => {
@@ -21,32 +18,12 @@ export default function AuthBootstrap() {
 
     let isMounted = true;
 
-    const applyAccount = async () => {
-      const { data } = await axiosInstance.get("/auth/account");
-
-      const user = data?.data?.user ?? null;
-      if (isMounted) {
-        if (user) {
-          dispatch(setCredentials({ user }));
-        } else {
-          dispatch(logout());
-        }
-      }
-
-      return user;
-    };
-
     const bootstrapAuth = async () => {
       try {
-        await applyAccount();
-      } catch (accountError) {
-        try {
-          await axiosInstance.get("/auth/refresh-token");
-          await applyAccount();
-        } catch (refreshError) {
-          if (isMounted && isAuthFailure(accountError) && isAuthFailure(refreshError)) {
-            dispatch(logout());
-          }
+        await refreshUserSnapshot({ dispatch, axiosPrivate });
+      } catch (error) {
+        if (isMounted) {
+          console.error("Failed to bootstrap the authenticated user snapshot:", error);
         }
       } finally {
         if (isMounted) {
@@ -60,7 +37,7 @@ export default function AuthBootstrap() {
     return () => {
       isMounted = false;
     };
-  }, [dispatch]);
+  }, [axiosPrivate, dispatch]);
 
   return null;
 }

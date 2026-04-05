@@ -8,11 +8,12 @@ import { toggleCart, selectCartCount, selectCartIsOpen } from "@/store/slices/ca
 
 function CartButton({ itemCount: propCount }) {
   const dispatch = useDispatch();
+  const isHydrating = useSelector((state) => state.auth.isHydrating);
   const reduxCount = useSelector(selectCartCount);
   const isOpen = useSelector(selectCartIsOpen);
   const isCartPage = useMatch("/cart");
 
-  const itemCount = propCount !== undefined ? propCount : reduxCount;
+  const itemCount = isHydrating ? 0 : propCount !== undefined ? propCount : reduxCount;
 
   return (
     <NavTooltip label="Cart">

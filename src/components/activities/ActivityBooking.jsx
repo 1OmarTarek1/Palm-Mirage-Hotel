@@ -108,6 +108,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     () => myActiveBookings.find((booking) => booking.schedule?.id === selectedSchedule) ?? null,
     [myActiveBookings, selectedSchedule]
   );
+  const isPaidExistingBooking = existingBooking?.paymentStatus === "paid";
 
   useEffect(() => {
     if (!existingBooking && user?.phoneNumber && !phone) {
@@ -231,6 +232,11 @@ const ActivityBooking = forwardRef(function ActivityBooking(
 
     try {
       if (existingBooking) {
+        if (isPaidExistingBooking) {
+          toast.info("Paid bookings are view-only and cannot be cancelled from your account.");
+          return;
+        }
+
         await handleCancelBooking();
         return;
       }
@@ -307,8 +313,9 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                         Already Booked
                       </p>
                       <p className="mt-2 text-sm leading-6 text-foreground">
-                        You already booked this exact session for {existingBooking.guests} guest(s).
-                        You can cancel it from here if your plans changed.
+                        {isPaidExistingBooking
+                          ? `You already booked and paid for this session for ${existingBooking.guests} guest(s). It is view-only from your account.`
+                          : `You already booked this exact session for ${existingBooking.guests} guest(s). You can cancel it from here if your plans changed.`}
                       </p>
                     </div>
                   ) : null}
@@ -421,7 +428,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
               <Button
                 variant={existingBooking ? "palmSecondary" : "palmPrimary"}
                 type="submit"
-                disabled={isSubmitting || !selectedActivity || !selectedSchedule}
+                disabled={isSubmitting || !selectedActivity || !selectedSchedule || isPaidExistingBooking}
                 className="flex items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
               >
                 {isSubmitting ? (
@@ -429,6 +436,8 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                     <Loader2 className="h-4 w-4 animate-spin" />
                     {existingBooking ? 'Cancelling...' : 'Booking...'}
                   </>
+                ) : isPaidExistingBooking ? (
+                  'Paid Booking'
                 ) : existingBooking ? (
                   'Cancel Booking'
                 ) : (

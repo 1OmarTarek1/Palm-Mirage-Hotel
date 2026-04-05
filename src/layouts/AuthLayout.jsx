@@ -1,4 +1,5 @@
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import useScrollToTop from "@/hooks/useScrollToTop";
 
 import AuthImage from "../assets/auth/auth img.jpg";
@@ -25,6 +26,14 @@ export default function AuthLayout() {
 
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/5 " />
+
+          <Link
+            to="/"
+            className="absolute left-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition hover:bg-black/35"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back To Home</span>
+          </Link>
 
           {/* Text */}
           <div className="absolute bottom-0 left-0 right-0 p-8 md:p-10 text-white">

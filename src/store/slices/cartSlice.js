@@ -96,39 +96,23 @@ const mergeCartItems = (items) => {
   return mergedItems;
 };
 
-const loadCartFromStorage = () => {
-  try {
-    const serializedCart = localStorage.getItem("cartItems");
-    if (serializedCart === null) {
-      return [];
-    }
-    const parsedCart = JSON.parse(serializedCart);
-    return Array.isArray(parsedCart) ? mergeCartItems(parsedCart) : [];
-  } catch (err) {
-    console.error("Could not load cart from local storage", err);
-    return [];
-  }
-};
-
-const saveCartToStorage = (items) => {
-  try {
-    const serializedCart = JSON.stringify(items);
-    localStorage.setItem("cartItems", serializedCart);
-  } catch (err) {
-    console.error("Could not save cart to local storage", err);
-  }
-};
-
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
-    items: loadCartFromStorage(), // [{ id, name, image, price, quantity, nights }]
-    isOpen: false,   // sidebar open/closed
+    items: [],
+    isOpen: false,
   },
   reducers: {
     openCart: (state) => { state.isOpen = true; },
     closeCart: (state) => { state.isOpen = false; },
     toggleCart: (state) => { state.isOpen = !state.isOpen; },
+    hydrateCart: (state, action) => {
+      state.items = mergeCartItems(Array.isArray(action.payload) ? action.payload : []);
+    },
+    resetCartState: (state) => {
+      state.items = [];
+      state.isOpen = false;
+    },
 
     addItem: (state, action) => {
       const incomingItem = normalizeCartItem(action.payload);
@@ -142,7 +126,6 @@ const cartSlice = createSlice({
       } else {
         state.items.push(incomingItem);
       }
-      saveCartToStorage(state.items);
     },
 
     upsertRoomBooking: (state, action) => {
@@ -159,13 +142,10 @@ const cartSlice = createSlice({
       } else {
         state.items.push(incomingItem);
       }
-
-      saveCartToStorage(state.items);
     },
 
     removeItem: (state, action) => {
       state.items = state.items.filter((i) => i.id !== action.payload);
-      saveCartToStorage(state.items);
     },
 
     updateQuantity: (state, action) => {
@@ -177,7 +157,6 @@ const cartSlice = createSlice({
         } else {
           item.quantity = 1;
         }
-        saveCartToStorage(state.items);
       }
     },
 
@@ -195,13 +174,10 @@ const cartSlice = createSlice({
       item.nights = calculateNights(item.checkInDate, item.checkOutDate);
       item.availabilityStatus = bookingDraft?.availabilityStatus || item.availabilityStatus || "unknown";
       item.availabilityCheckedAt = bookingDraft?.availabilityCheckedAt || new Date().toISOString();
-
-      saveCartToStorage(state.items);
     },
 
     clearCart: (state) => {
       state.items = [];
-      saveCartToStorage(state.items);
     },
   },
 });
@@ -210,6 +186,8 @@ export const {
   openCart,
   closeCart,
   toggleCart,
+  hydrateCart,
+  resetCartState,
   addItem,
   upsertRoomBooking,
   removeItem,

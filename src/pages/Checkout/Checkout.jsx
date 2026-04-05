@@ -14,11 +14,13 @@ import OrderReceived from '@/components/Checkout/OrderReceived';
 import BillingDetails from '@/components/Checkout/BillingDetails';
 import { checkoutSchema } from './checkoutSchema';
 import axiosInstance from '@/services/axiosInstance';
+import { fetchRoomAvailability } from '@/services/roomsApi';
 import {
   selectCartItems,
   selectCartTotal,
   selectCartRequiresAttention,
   clearCart,
+  removeItem,
 } from '@/store/slices/cartSlice';
 import { 
   createBooking, 
@@ -33,6 +35,7 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const MotionDiv = motion.div;
+  const isHydrating = useSelector((state) => state.auth.isHydrating);
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
   const cartRequiresAttention = useSelector(selectCartRequiresAttention);
@@ -40,6 +43,42 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const isAvailabilityConflictError = (error) => {
+    const statusCode = error?.response?.status;
+    const message = error?.response?.data?.message || error?.message || '';
+    return statusCode === 409 || /no longer available|currently unavailable/i.test(message);
+  };
+
+  const removeUnavailableCartItems = async (items) => {
+    const availabilityResults = await Promise.allSettled(
+      items.map(async (item) => {
+        if (!item?.id || !item?.checkInDate || !item?.checkOutDate) {
+          return { item, isBookable: true };
+        }
+
+        const availability = await fetchRoomAvailability(item.id, {
+          checkInDate: item.checkInDate,
+          checkOutDate: item.checkOutDate,
+        });
+
+        return {
+          item,
+          isBookable: availability?.isBookable !== false,
+        };
+      }),
+    );
+
+    const unavailableItems = availabilityResults
+      .filter((result) => result.status === 'fulfilled' && result.value?.isBookable === false)
+      .map((result) => result.value.item);
+
+    unavailableItems.forEach((item) => {
+      dispatch(removeItem(item.id));
+    });
+
+    return unavailableItems;
+  };
 
   const handleCloseOrderModal = () => {
     setIsModalOpen(false);
@@ -112,9 +151,9 @@ const Checkout = () => {
       throw new Error('Some rooms are missing valid available dates.');
     }
 
-    const bookingPromises = items
-      .filter(item => item.checkInDate)
-      .map(item => {
+    const bookingItems = items.filter((item) => item.checkInDate);
+    const bookingResults = await Promise.allSettled(
+      bookingItems.map((item) => {
         const bookingData = {
           roomId: item.id,
           checkInDate: item.checkInDate,
@@ -124,11 +163,63 @@ const Checkout = () => {
           specialRequests: 'Booked from Website',
         };
         return dispatch(createBooking(bookingData)).unwrap();
-      });
+      }),
+    );
 
-    if (bookingPromises.length > 0) {
-      await Promise.all(bookingPromises);
+    const successfulItems = [];
+    const conflictedItems = [];
+    const failedResults = [];
+
+    bookingResults.forEach((result, index) => {
+      const item = bookingItems[index];
+
+      if (result.status === 'fulfilled') {
+        successfulItems.push(item);
+        return;
+      }
+
+      if (isAvailabilityConflictError(result.reason)) {
+        conflictedItems.push(item);
+        return;
+      }
+
+      failedResults.push(result.reason);
+    });
+
+    successfulItems.forEach((item) => {
+      dispatch(removeItem(item.id));
+    });
+
+    conflictedItems.forEach((item) => {
+      dispatch(removeItem(item.id));
+    });
+
+    if (failedResults.length > 0) {
+      throw failedResults[0];
     }
+
+    return {
+      successfulItems,
+      conflictedItems,
+    };
+  };
+
+  const handleCheckoutError = async (error) => {
+    if (!isAvailabilityConflictError(error)) return;
+
+    const unavailableItems = await removeUnavailableCartItems(cartItems);
+
+    if (unavailableItems.length === 1) {
+      toast.error(`${unavailableItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
+      return;
+    }
+
+    if (unavailableItems.length > 1) {
+      toast.error(`${unavailableItems.length} rooms were just booked by other guests and were removed from your cart.`);
+      return;
+    }
+
+    toast.error('One or more selected rooms are no longer available for these dates.');
   };
 
   const storePendingCheckout = (formData) => {
@@ -146,6 +237,10 @@ const Checkout = () => {
   };
 
   useEffect(() => {
+    if (isHydrating) {
+      return;
+    }
+
     if (isModalOpen || orderReceived) {
       return;
     }
@@ -160,9 +255,13 @@ const Checkout = () => {
       toast.info('Please review your cart dates before checkout.');
       navigate('/cart', { replace: true });
     }
-  }, [cartItems.length, cartRequiresAttention, isModalOpen, navigate, orderReceived]);
+  }, [cartItems.length, cartRequiresAttention, isHydrating, isModalOpen, navigate, orderReceived]);
 
   useEffect(() => {
+    if (isHydrating) {
+      return;
+    }
+
     const paymentState = searchParams.get('payment');
     const paymentMethodParam = searchParams.get('method');
     if (paymentState === 'cancel' && paymentMethodParam === 'card') {
@@ -222,7 +321,9 @@ const Checkout = () => {
 
     void finalizeStripeCheckout();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, navigate, searchParams, sessionId]);
+  }, [dispatch, isHydrating, navigate, searchParams, sessionId]);
+
+  if (isHydrating) return null;
 
   return (
     <div className="relative min-h-screen">
@@ -264,6 +365,7 @@ const Checkout = () => {
                   handleSubmitHook={handleSubmit}
                   getValues={getValues}
                   paymentMethod={paymentMethod}
+                  onError={handleCheckoutError}
                   checkoutItems={cartItems.map((item) => ({
                     roomId: item.id,
                     checkInDate: item.checkInDate,
@@ -273,16 +375,36 @@ const Checkout = () => {
                   onBeforeStripeRedirect={storePendingCheckout}
                   onSuccess={async (data) => {
                     try {
-                      await createReservations({
+                      const { successfulItems, conflictedItems } = await createReservations({
                         items: cartItems,
                         data,
                         method: 'cash',
                       });
 
-                      setOrderReceived(buildOrderReceived(data, cartItems, cartTotal, 'cash'));
+                      if (conflictedItems.length > 0) {
+                        if (conflictedItems.length === 1) {
+                          toast.warning(`${conflictedItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
+                        } else {
+                          toast.warning(`${conflictedItems.length} rooms were just booked by other guests and were removed from your cart.`);
+                        }
+                      }
+
+                      if (successfulItems.length === 0) {
+                        return;
+                      }
+
+                      const successfulTotal = successfulItems.reduce(
+                        (sum, item) => sum + (Number(item.price || 0) * Math.max(1, Number(item.nights || 1)) * Math.max(1, Number(item.roomsCount || 1))),
+                        0,
+                      );
+
+                      setOrderReceived(buildOrderReceived(data, successfulItems, successfulTotal, 'cash'));
                       setIsModalOpen(true);
-                      dispatch(clearCart());
-                      toast.success('Your room(s) have been reserved successfully.');
+                      toast.success(
+                        conflictedItems.length > 0
+                          ? 'Available room reservations were completed successfully.'
+                          : 'Your room(s) have been reserved successfully.',
+                      );
                     } catch (err) {
                       console.error('Booking failed:', err);
                       toast.error('Reservation failed. Please check your details and try again.');

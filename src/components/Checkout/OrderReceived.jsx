@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { pdf } from '@react-pdf/renderer';
-import InvoicePDF from './InvoicePDF';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 
 const OrderReceived = ({ orderReceived }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -10,17 +9,22 @@ const OrderReceived = ({ orderReceived }) => {
   const handleDownloadPDF = async () => {
     setIsGenerating(true);
     try {
+      const [{ pdf }, { default: InvoicePDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("./InvoicePDF"),
+      ]);
+
       const blob = await pdf(<InvoicePDF orderReceived={orderReceived} />).toBlob();
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `${orderReceived.filePrefix || 'Hotel-Invoice'}-${orderReceived.orderNumber}.pdf`;
+      link.download = `${orderReceived.filePrefix || "Hotel-Invoice"}-${orderReceived.orderNumber}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error("PDF generation error:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -78,7 +82,7 @@ const OrderReceived = ({ orderReceived }) => {
               <svg className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              <span>{orderReceived.downloadLabel || 'Download Invoice (PDF)'}</span>
+              <span>{orderReceived.downloadLabel || "Download Invoice (PDF)"}</span>
             </>
           )}
         </Button>

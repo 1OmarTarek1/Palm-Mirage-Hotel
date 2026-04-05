@@ -238,7 +238,7 @@ export function AvailabilitySection({
           </div>
           <div className="flex min-w-0 h-full flex-col rounded-[22px] border border-border bg-card p-4 shadow-sm sm:rounded-[26px]">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Booked periods</p>
-            <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto pr-1">
+            <div className="mt-4 flex max-h-[240px] flex-col gap-3 overflow-y-auto pr-1 sm:max-h-[280px]">
               {(availability?.bookedRanges || []).length > 0 ? availability.bookedRanges.map((range, index) => (
                 <div key={`${range.startDate || range.checkInDate || index}-${range.endDate || range.checkOutDate || index}`} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground">
                   {formatBookingDateLabel(range.startDate || range.checkInDate)} - {formatBookingDateLabel(range.endDate || range.checkOutDate)}

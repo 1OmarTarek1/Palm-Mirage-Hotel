@@ -7,6 +7,7 @@ const CheckoutForm = ({
   paymentMethod,
   resetForm,
   onSuccess,
+  onError,
   getValues,
   handleSubmitHook,
   checkoutItems,
@@ -59,6 +60,7 @@ const CheckoutForm = ({
       await onSuccess(data);
       resetForm();
     } catch (err) {
+      await onError?.(err);
       const statusCode = err?.response?.status;
       const apiMessage = err?.response?.data?.message;
       const fallbackMessage =

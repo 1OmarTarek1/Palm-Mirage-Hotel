@@ -11,6 +11,7 @@ import { Trash2, Heart } from 'lucide-react';
 
 export default function Wishlist() {
   const dispatch = useDispatch();
+  const isHydrating = useSelector((state) => state.auth.isHydrating);
   const wishlistItems = useSelector(selectWishlistItems);
 
   const handleClearAll = () => {
@@ -18,6 +19,8 @@ export default function Wishlist() {
     dispatch(clearWishlist());
     toast.error('Wishlist cleared');
   };
+
+  if (isHydrating) return null;
 
   return (
     <div className="min-h-screen py-3 px-4 sm:px-6 lg:px-8">
