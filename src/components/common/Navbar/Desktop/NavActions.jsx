@@ -6,6 +6,7 @@ import LanguageToggle from '../LanguageToggle';
 import LoginButton from '../LoginButton';
 import CartButton from '../CartButton';
 import WishlistButton from '../WishlistButton';
+import NotificationButton from '../NotificationButton';
 
 const MotionDiv = motion.div;
 
@@ -25,6 +26,11 @@ function NavActions({ activeMenu, onHover, onLeave }) {
     <div className="hidden md:flex items-center gap-2 lg:gap-3">
       {isAuthenticated && (
         <MotionDiv variants={actionVariants}>
+          <NotificationButton />
+        </MotionDiv>
+      )}
+      {isAuthenticated && (
+        <MotionDiv variants={actionVariants}>
           <WishlistButton />
         </MotionDiv>
       )}
@@ -33,16 +39,20 @@ function NavActions({ activeMenu, onHover, onLeave }) {
           <CartButton />
         </MotionDiv>
       )}
-      <MotionDiv variants={actionVariants}>
-        <LanguageToggle
-          activeMenu={activeMenu}
-          onHover={onHover}
-          onLeave={onLeave}
-        />
-      </MotionDiv>
-      <MotionDiv variants={actionVariants}>
-        <ThemeToggle />
-      </MotionDiv>
+      {!isAuthenticated && (
+        <MotionDiv variants={actionVariants}>
+          <LanguageToggle
+            activeMenu={activeMenu}
+            onHover={onHover}
+            onLeave={onLeave}
+          />
+        </MotionDiv>
+      )}
+      {!isAuthenticated && (
+        <MotionDiv variants={actionVariants}>
+          <ThemeToggle />
+        </MotionDiv>
+      )}
       <MotionDiv variants={actionVariants}>
         <LoginButton />
       </MotionDiv>

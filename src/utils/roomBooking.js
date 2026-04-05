@@ -83,6 +83,9 @@ export function normalizeRoomForBooking(room) {
   const roomId = room._id || room.id || room.room?._id || room.roomId || room.roomNumber;
   const roomName = room.roomName || room.name || room.room?.roomName || "Room";
   const roomType = room.roomType || room.type || room.room?.roomType || "Room";
+  const rawNo = room.roomNumber ?? room.room?.roomNumber;
+  const roomNumber =
+    rawNo !== undefined && rawNo !== null && String(rawNo).trim() !== "" ? String(rawNo).trim() : null;
   const capacity = Number(room.capacity || room.guests || room.room?.capacity || 1);
   const basePrice = Number(room.finalPrice || room.price || room.room?.price || 0);
 
@@ -104,6 +107,7 @@ export function normalizeRoomForBooking(room) {
     roomId,
     name: roomName,
     roomName,
+    roomNumber,
     category: roomType,
     roomType,
     price: basePrice,

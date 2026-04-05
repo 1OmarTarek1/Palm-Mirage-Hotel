@@ -1,6 +1,9 @@
 import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, Users, Home, UserPlus } from "lucide-react";
+
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useMatchMedia } from "@/hooks/useMatchMedia";
+import { Calendar, Users, Home, UserPlus, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,7 +35,10 @@ const createDefaultBookingState = (search) => {
   };
 };
 
-const BookingBar = forwardRef(function BookingBar({ className, variant = "overlay" }, ref) {
+const BookingBar = forwardRef(function BookingBar(
+  { className, variant = "overlay", animateEntrance = true, flat = false },
+  ref,
+) {
   const MotionDiv = motion.div;
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +47,8 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
 
   const barRef = useRef(null);
   const popoverRef = useRef(null);
+  const isMobileViewport = useMatchMedia("(max-width: 767px)");
+  useBodyScrollLock(Boolean(activePopover && isMobileViewport));
 
   // Close popover when clicking outside
   useEffect(() => {
@@ -77,6 +85,13 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
       ...prev,
       [field]: Math.max(field === 'adults' || field === 'rooms' ? 1 : 0, prev[field] + delta)
     }));
+  };
+
+  const popoverMobileTitles = {
+    dates: "Check-in & check-out",
+    adults: "Adults",
+    children: "Children",
+    rooms: "Rooms",
   };
 
   const segments = [
@@ -152,9 +167,9 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
 
   return (
     <MotionDiv
-      initial={{ y: 20, opacity: 0 }}
+      initial={animateEntrance ? { y: 20, opacity: 0 } : false}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.8, duration: 0.6 }}
+      transition={animateEntrance ? { delay: 0.8, duration: 0.6 } : { duration: 0.2 }}
       className={cn(
         "w-full mx-auto px-4 z-30",
         variant === "overlay" ? "max-w-sm md:max-w-md xl:max-w-7xl absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2" : "max-w-7xl relative py-4",
@@ -162,11 +177,20 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
       )}
       ref={barRef}
     >
-      <div className={cn(
-        "border border-border/50 rounded-[2.5rem] p-3 flex flex-col items-stretch gap-4 relative transition-all duration-300",
-        variant === "overlay" ? "xl:flex-row xl:items-center xl:gap-0" : "lg:flex-row lg:items-center lg:gap-0",
-        variant === "overlay" ? "dark:bg-background/50 bg-background/90 backdrop-blur-xl" : "bg-card"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col items-stretch gap-4 p-3 relative transition-all duration-300",
+          variant === "overlay" ? "xl:flex-row xl:items-center xl:gap-0" : "lg:flex-row lg:items-center lg:gap-0",
+          flat
+            ? "rounded-none border-0 bg-transparent p-0 shadow-none dark:bg-transparent"
+            : cn(
+                "border border-border/50 rounded-[2.5rem]",
+                variant === "overlay"
+                  ? "dark:bg-background/50 bg-background/90 backdrop-blur-xl"
+                  : "bg-card",
+              ),
+        )}
+      >
         <div className={cn(
           "flex-1 flex flex-col items-stretch",
           variant === "overlay" ? "xl:flex-row xl:items-center" : "md:flex-row md:items-center"
@@ -215,7 +239,7 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
             )}
             onClick={() => {
               if (!bookingState.checkIn || !bookingState.checkOut) {
-                toast.error("Please select both check-in and check-out dates.");
+                toast.info("Please select both check-in and check-out dates.");
                 return;
               }
 
@@ -244,7 +268,7 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.18 }}
-                  className="fixed inset-0 z-[70] flex items-center justify-center p-4 md:p-6 pointer-events-none"
+                  className="pointer-events-none fixed inset-0 z-[100] flex max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:flex-col max-sm:items-stretch max-sm:justify-start max-sm:overflow-hidden max-sm:p-0 max-sm:pt-[env(safe-area-inset-top,0px)] items-center justify-center p-4 md:p-6"
                 >
                   <motion.div
                     ref={popoverRef}
@@ -252,16 +276,37 @@ const BookingBar = forwardRef(function BookingBar({ className, variant = "overla
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96, y: 12 }}
                     transition={{ duration: 0.2 }}
-                    className="pointer-events-auto max-h-[calc(100vh-2rem)] overflow-auto rounded-3xl border border-border bg-card shadow-2xl"
-                    style={{
-                      width:
-                        activePopover === "dates"
-                          ? "min(380px, calc(100vw - 2rem))"
-                          : "min(280px, calc(100vw - 2rem))",
-                    }}
+                    className={cn(
+                      "pointer-events-auto flex min-h-0 flex-col overflow-hidden overscroll-contain rounded-3xl border border-border bg-card shadow-2xl",
+                      "max-sm:max-h-full max-sm:min-h-0 max-sm:w-full max-sm:flex-1 max-sm:max-w-none max-sm:rounded-none",
+                      "max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-2rem)]",
+                      activePopover === "dates"
+                        ? "w-full max-w-full sm:w-[min(380px,calc(100vw-2rem))]"
+                        : "w-full max-w-full sm:w-[min(280px,calc(100vw-2rem))]",
+                    )}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="p-2">{renderPopoverContent(activePopover)}</div>
+                    <div
+                      className={cn(
+                        "flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-3 py-3",
+                        "pt-[max(0.75rem,env(safe-area-inset-top))] md:hidden",
+                      )}
+                    >
+                      <span className="text-left text-sm font-semibold text-foreground">
+                        {popoverMobileTitles[activePopover] ?? "Booking"}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 rounded-full"
+                        onClick={() => setActivePopover(null)}
+                        aria-label="Close"
+                      >
+                        <X className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    <div className="min-h-0 flex-1 overflow-y-auto p-2">{renderPopoverContent(activePopover)}</div>
                   </motion.div>
                 </motion.div>
               ) : null}

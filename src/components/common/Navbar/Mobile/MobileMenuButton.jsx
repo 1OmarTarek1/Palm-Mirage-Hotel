@@ -4,11 +4,17 @@ export default function MobileMenuButton({ isOpen, onToggle }) {
   return (
     <motion.button
       onClick={onToggle}
-      className="md:hidden flex items-center justify-center w-8 h-8 md:w-10 md:h-10 text-white rounded-full bg-white/10 border border-white/10 relative"
+      className={`
+        md:hidden relative flex items-center justify-center w-9 h-9 rounded-full cursor-pointer
+        transition-all duration-300 border
+        ${isOpen
+          ? "text-primary bg-primary/20 shadow-inner border-primary/20"
+          : "text-white/60 bg-primary/5 border-white/10 hover:bg-primary/20 hover:border-primary/50"}
+      `}
       aria-label="Toggle menu"
     >
-      <div className="w-5 h-5 md:w-6 md:h-6 flex flex-col justify-center items-center">
-        <svg width="24" height="24" viewBox="0 0 24 24" className="text-white">
+      <div className="w-[22px] h-[22px] flex flex-col justify-center items-center">
+        <svg width="24" height="24" viewBox="0 0 24 24" className="text-current">
           <motion.path
             stroke="currentColor"
             strokeWidth="2"

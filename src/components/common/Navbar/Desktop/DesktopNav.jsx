@@ -50,7 +50,7 @@ function NavItem({ link, activeMenu, onHover, onLeave }) {
           to={link.href}
           end={!link.dropdown && !link.megaMenu} // exact only for leaf links
           className={() =>
-            `flex items-center justify-center w-10 h-10 rounded-full
+            `flex items-center justify-center w-11 h-11 rounded-full
              transition-all duration-300 hover:bg-primary/20
              ${isActive
                ? "text-primary bg-primary/20 shadow-inner border border-primary/20"

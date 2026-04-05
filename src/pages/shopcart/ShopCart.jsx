@@ -23,7 +23,7 @@ export default function ShopCart() {
     const item = cartItems.find((i) => i.id === id);
     if (item) {
       dispatch(removeItem(id));
-      toast.warning(`${item.name} removed from cart`);
+      toast.success(`${item.name} removed from cart`);
     }
   };
 

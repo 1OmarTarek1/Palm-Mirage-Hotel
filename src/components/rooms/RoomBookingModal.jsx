@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import { CalendarDays, X } from "lucide-react";
 import { toast } from "react-toastify";
 
+import AppModal from "@/components/common/AppModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/rooms/booking/DatePicker";
@@ -109,7 +109,7 @@ export default function RoomBookingModal({
     [draft.checkInDate, draft.checkOutDate]
   );
 
-  if (!isOpen || !room || typeof document === "undefined") return null;
+  if (!isOpen || !room) return null;
 
   const handleChange = (key, value) => {
     setDraft((current) => ({
@@ -134,12 +134,12 @@ export default function RoomBookingModal({
 
   const handleConfirm = () => {
     if (!draft.checkInDate || !draft.checkOutDate) {
-      toast.error("Select check-in and check-out dates first.");
+      toast.info("Select check-in and check-out dates first.");
       return;
     }
 
     if (nightCount <= 0) {
-      toast.error("Check-out must be after check-in.");
+      toast.info("Check-out must be after check-in.");
       return;
     }
 
@@ -149,12 +149,12 @@ export default function RoomBookingModal({
     }
 
     if (!effectiveAvailability || availabilityRangeKey !== selectedRangeKey) {
-      toast.error("Room availability has not been confirmed for these dates yet.");
+      toast.info("Room availability has not been confirmed for these dates yet.");
       return;
     }
 
     if (!effectiveAvailability?.isBookable) {
-      toast.error("This room is not available for the selected dates.");
+      toast.info("This room is not available for the selected dates.");
       return;
     }
 
@@ -167,10 +167,20 @@ export default function RoomBookingModal({
     });
   };
 
-  return createPortal((
-    <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-[620px] overflow-hidden rounded-[28px] border border-border bg-card shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border px-6 py-5">
+  return (
+    <AppModal
+      open={isOpen}
+      onClose={onClose}
+      layout="card"
+      zIndex={80}
+      closeOnBackdrop={false}
+      showTint
+      tintClassName="bg-black/55 px-4 py-6 backdrop-blur-sm max-sm:p-0"
+      maxWidthClassName="max-w-[620px] sm:max-w-[620px]"
+      maxHeightClassName="sm:max-h-[min(90dvh,90%)]"
+      panelClassName="rounded-none border border-border bg-card shadow-2xl max-sm:min-h-0 max-sm:flex-1 max-sm:max-h-full sm:rounded-[28px]"
+    >
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
               Select Stay Dates
@@ -187,7 +197,7 @@ export default function RoomBookingModal({
           </button>
         </div>
 
-        <div className="px-6 py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
           <div className="space-y-5">
             <div className="rounded-[24px] border border-border bg-muted/20 px-5 py-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -207,8 +217,8 @@ export default function RoomBookingModal({
                 setBookingState={handleDatePickerState}
                 setActivePopover={() => {}}
                 bookedRanges={effectiveAvailability?.bookedRanges || []}
-                onBlockedDateClick={() => toast.error("This date is already booked. Please choose another range.")}
-                onInvalidRangeSelection={() => toast.error("This stay overlaps booked dates or the next checkout day is unavailable. Please choose another range.")}
+                onBlockedDateClick={() => toast.info("This date is already booked. Please choose another range.")}
+                onInvalidRangeSelection={() => toast.info("This stay overlaps booked dates or the next checkout day is unavailable. Please choose another range.")}
               />
             </div>
 
@@ -272,15 +282,14 @@ export default function RoomBookingModal({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-border px-6 py-5 sm:flex-row sm:justify-end">
-          <Button type="button" variant="palmSecondary" className="h-11 px-6" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="button" variant="palmPrimary" className="h-11 px-6" onClick={handleConfirm}>
-            Save Stay Dates
-          </Button>
-        </div>
+      <div className="flex shrink-0 flex-col gap-3 border-t border-border bg-card px-6 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] sm:flex-row sm:justify-end sm:pb-5">
+        <Button type="button" variant="palmSecondary" className="h-11 px-6" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="button" variant="palmPrimary" className="h-11 px-6" onClick={handleConfirm}>
+          Save Stay Dates
+        </Button>
       </div>
-    </div>
-  ), document.body);
+    </AppModal>
+  );
 }

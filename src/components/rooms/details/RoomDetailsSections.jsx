@@ -43,6 +43,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RoomCard from "@/components/rooms/RoomCard";
+import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import DatePicker from "@/components/rooms/booking/DatePicker";
 import { BOOKING_POLICIES, ROOM_FAQS } from "@/utils/constants";
 import { formatBookingDateLabel } from "@/utils/roomBooking";
@@ -105,6 +106,10 @@ export function RoomHeroGallery({ room }) {
             <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] border border-border bg-card shadow-xl sm:aspect-[16/10] sm:rounded-[28px] lg:aspect-video">
               <img src={image} alt={`${room.name} image ${index + 1}`} className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent" />
+              <RoomNumberBadge
+                room={room}
+                className="right-14 top-4 z-10 sm:right-16 sm:top-5"
+              />
             </div>
           </CarouselItem>
         ))}
@@ -232,8 +237,8 @@ export function AvailabilitySection({
               setBookingState={handleDatePickerState}
               setActivePopover={() => {}}
               bookedRanges={availability?.bookedRanges || []}
-              onBlockedDateClick={() => toast.error("This date is already booked. Please choose another range.")}
-              onInvalidRangeSelection={() => toast.error("This stay overlaps booked dates or the next checkout day is unavailable. Please choose another range.")}
+              onBlockedDateClick={() => toast.info("This date is already booked. Please choose another range.")}
+              onInvalidRangeSelection={() => toast.info("This stay overlaps booked dates or the next checkout day is unavailable. Please choose another range.")}
             />
           </div>
           <div className="flex min-w-0 h-full flex-col rounded-[22px] border border-border bg-card p-4 shadow-sm sm:rounded-[26px]">

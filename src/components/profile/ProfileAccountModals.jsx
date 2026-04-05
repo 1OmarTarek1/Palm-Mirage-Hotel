@@ -1,51 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Globe, Mail, Phone, Shield, User, VenusAndMars, X } from "lucide-react";
+import { Calendar, Globe, Mail, Phone, Shield, User, VenusAndMars } from "lucide-react";
 
 import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
-import { Button } from "@/components/ui/button";
+import AppModal from "@/components/common/AppModal";
 import ProfileEditForm from "@/components/profile/ProfileEditForm";
-
-const MotionDiv = motion.div;
-
-function ModalShell({ isOpen, title, subtitle, onClose, children }) {
-  return (
-    <AnimatePresence>
-      {isOpen ? (
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[120] flex flex-col bg-black/45 p-0 backdrop-blur-sm sm:items-center sm:justify-center sm:p-4"
-          onClick={onClose}
-        >
-          <MotionDiv
-            initial={{ opacity: 0, y: 22, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 18, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 220, damping: 24 }}
-            className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-none border border-border/60 bg-background/95 shadow-2xl sm:h-auto sm:max-h-[min(90dvh,56rem)] sm:max-w-2xl sm:flex-none sm:rounded-[2rem]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex shrink-0 items-start justify-between gap-4 border-border/40 px-6 pt-6 pb-4 sm:border-0 sm:pb-0">
-              <div className="min-w-0 pr-2">
-                <h3 className="text-2xl font-bold text-foreground">{title}</h3>
-                {subtitle ? (
-                  <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
-                ) : null}
-              </div>
-              <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={onClose}>
-                <X size={18} />
-              </Button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
-              {children}
-            </div>
-          </MotionDiv>
-        </MotionDiv>
-      ) : null}
-    </AnimatePresence>
-  );
-}
 
 function DetailRow({ icon, label, value }) {
   const Icon = icon;
@@ -98,9 +55,10 @@ export function AccountDetailsModal({ isOpen, onClose, user }) {
   ];
 
   return (
-    <ModalShell
-      isOpen={isOpen}
+    <AppModal
+      open={isOpen}
       onClose={onClose}
+      layout="account"
       title="Account Details"
       subtitle="A quick view of the current information stored on your account."
     >
@@ -109,7 +67,7 @@ export function AccountDetailsModal({ isOpen, onClose, user }) {
           <DetailRow key={item.label} {...item} />
         ))}
       </div>
-    </ModalShell>
+    </AppModal>
   );
 }
 
@@ -122,9 +80,10 @@ export function EditProfileModal({
   submitLabel = "Save Changes",
 }) {
   return (
-    <ModalShell
-      isOpen={isOpen}
+    <AppModal
+      open={isOpen}
       onClose={onClose}
+      layout="account"
       title="Edit Profile"
       subtitle="Update the information you want reflected across your account."
     >
@@ -137,15 +96,16 @@ export function EditProfileModal({
         submitLabel={submitLabel}
         className="space-y-5"
       />
-    </ModalShell>
+    </AppModal>
   );
 }
 
 export function ChangePasswordModal({ isOpen, onClose, submitLabel = "Update" }) {
   return (
-    <ModalShell
-      isOpen={isOpen}
+    <AppModal
+      open={isOpen}
       onClose={onClose}
+      layout="account"
       title="Change Password"
       subtitle="Update your account password from here without leaving the settings page."
     >
@@ -156,8 +116,7 @@ export function ChangePasswordModal({ isOpen, onClose, submitLabel = "Update" })
         successTitle="Password changed"
         successMessage="Everything looks good. We are signing you out so you can log in again safely."
         toastMessage="Password changed successfully. Your new password is ready to use."
-        className="space-y-5"
       />
-    </ModalShell>
+    </AppModal>
   );
 }

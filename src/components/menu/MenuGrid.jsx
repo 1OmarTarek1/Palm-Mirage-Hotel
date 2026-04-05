@@ -45,7 +45,8 @@ function MenuItem({ item }) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
           onError={(e) => {
-            e.target.src = "https://placehold.co/160x160/f3f4f6/9ca3af?text=🍽";
+            e.target.src =
+              "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=320&h=320&q=80";
           }}
         />
       </div>

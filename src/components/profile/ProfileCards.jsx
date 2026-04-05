@@ -26,6 +26,7 @@ import {
   roomBookingMeta,
   tableBookingMeta,
 } from "@/components/profile/profileUtils";
+import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
 import { removeFromWishlist } from "@/store/slices/wishlistSlice";
 import { removeItem } from "@/store/slices/cartSlice";
@@ -52,42 +53,50 @@ export function WishlistCard({ room }) {
             <Heart size={24} />
           </div>
         )}
-        <span className="absolute left-4 top-4 rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
+        <span className="absolute left-4 top-4 z-20 rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
           {getWishlistRoomType(room)}
         </span>
+        <div className="absolute right-4 top-4 z-20">
+          <RoomNumberBadge room={room} floating={false} />
+        </div>
         {roomId ? (
-          <Button asChild variant="ghost" size="icon" className="absolute right-4 top-4 h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white">
-            <Link to={`/rooms/${roomId}`} aria-label="View Room">
-              <Eye size={16} />
-            </Link>
-          </Button>
-        ) : null}
-        {roomId ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Remove from wishlist"
-            className="absolute bottom-4 right-4 h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md transition active:scale-95 active:bg-black/40 hover:bg-black/35 hover:text-white"
-            onClick={handleRemoveFromWishlist}
-          >
-            <motion.span
-              animate={
-                isRemoving
-                  ? { scale: [1, 1.28, 0.88, 1], rotate: [0, -10, 8, 0] }
-                  : { scale: 1, rotate: 0 }
-              }
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              onAnimationComplete={() => setIsRemoving(false)}
-              className="flex items-center justify-center"
+          <div className="absolute bottom-4 right-4 z-20 flex flex-row items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Remove from wishlist"
+              className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md transition active:scale-95 active:bg-black/40 hover:bg-black/35 hover:text-white"
+              onClick={handleRemoveFromWishlist}
             >
-              <Heart size={16} className="fill-current" />
-            </motion.span>
-          </Button>
+              <motion.span
+                animate={
+                  isRemoving
+                    ? { scale: [1, 1.28, 0.88, 1], rotate: [0, -10, 8, 0] }
+                    : { scale: 1, rotate: 0 }
+                }
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                onAnimationComplete={() => setIsRemoving(false)}
+                className="flex items-center justify-center"
+              >
+                <Heart size={16} className="fill-current" />
+              </motion.span>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white"
+            >
+              <Link to={`/rooms/${roomId}`} aria-label="View Room">
+                <Eye size={16} />
+              </Link>
+            </Button>
+          </div>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-col p-5">
         <p className="text-lg font-bold text-foreground">{getWishlistRoomName(room)}</p>
         <p className="mt-2 text-sm text-muted-foreground">
           From {formatCurrency(room?.price || 0)} per night
@@ -125,39 +134,49 @@ export function CartCard({ item }) {
             <ShoppingCart size={24} />
           </div>
         )}
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
+        <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-5.5rem)] flex-wrap gap-2">
           <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
             {itemTotal}
           </span>
-          <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white">
+        </div>
+        <div className="absolute right-4 top-4 z-20">
+          <RoomNumberBadge room={item} floating={false} />
+        </div>
+        <div className="absolute bottom-4 right-4 z-20 flex flex-row items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md transition active:scale-95 active:bg-black/40 hover:bg-black/35 hover:text-white"
+            onClick={handleRemoveFromCart}
+            aria-label="Remove from cart"
+          >
+            <motion.span
+              animate={
+                isRemoving
+                  ? { scale: [1, 1.24, 0.9, 1], rotate: [0, -8, 6, 0] }
+                  : { scale: 1, rotate: 0 }
+              }
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              onAnimationComplete={() => setIsRemoving(false)}
+              className="flex items-center justify-center"
+            >
+              <ShoppingCart size={16} />
+            </motion.span>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white"
+          >
             <Link to={roomLink} aria-label="View Room">
               <Eye size={16} />
             </Link>
           </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute bottom-4 right-4 h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md transition active:scale-95 active:bg-black/40 hover:bg-black/35 hover:text-white"
-          onClick={handleRemoveFromCart}
-          aria-label="Remove from cart"
-        >
-          <motion.span
-            animate={
-              isRemoving
-                ? { scale: [1, 1.24, 0.9, 1], rotate: [0, -8, 6, 0] }
-                : { scale: 1, rotate: 0 }
-            }
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            onAnimationComplete={() => setIsRemoving(false)}
-            className="flex items-center justify-center"
-          >
-            <ShoppingCart size={16} />
-          </motion.span>
-        </Button>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-col p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-lg font-bold text-foreground">{item.name || "Room"}</p>
@@ -173,7 +192,7 @@ export function CartCard({ item }) {
           <p>{Math.max(1, Number(item.nights || 1))} night(s)</p>
         </div>
 
-        <div className="mt-auto pt-5">
+        <div className="mt-5">
           <Button asChild variant={requiresReview ? "palmSecondary" : "palmPrimary"} size="sm" className="px-5">
             <Link to={cartLink}>
               {requiresReview ? "Review Cart" : "Go To Checkout"}
@@ -200,7 +219,7 @@ export function RoomBookingCard({
   const canCancel = isRoomBookingCancellable(booking);
 
   return (
-    <CarouselCard className="overflow-hidden p-0">
+    <CarouselCard className="relative overflow-hidden p-0">
       <div className="relative aspect-[4/3] overflow-hidden border-b border-border/40 bg-muted/30">
         {image ? (
           <img src={image} alt={roomName} className="h-full w-full object-cover" />
@@ -209,40 +228,48 @@ export function RoomBookingCard({
             <ShoppingBag size={24} />
           </div>
         )}
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-          <div className="flex flex-wrap gap-2">
+        <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-5.5rem)] flex-wrap gap-2">
+          <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
+            {booking?.paymentStatus === "paid"
+              ? "Paid Booking"
+              : `Reserved ${formatDateOnly(booking?.createdAt || booking?.bookedAt)}`}
+          </span>
+          {booking?.room?.roomType ? (
             <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
-              {booking?.paymentStatus === "paid"
-                ? "Paid Booking"
-                : `Reserved ${formatDateOnly(booking?.createdAt || booking?.bookedAt)}`}
+              {booking.room.roomType}
             </span>
-            {booking?.room?.roomType ? (
-              <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
-                {booking.room.roomType}
-              </span>
-            ) : null}
+          ) : null}
+        </div>
+        <div className="absolute right-4 top-4 z-20">
+          <RoomNumberBadge room={booking?.room} floating={false} />
+        </div>
+        <div className="pointer-events-none absolute bottom-4 left-4 right-4 z-10 flex flex-wrap items-end justify-between gap-2">
+          <div className="flex max-w-[min(100%,calc(100%-3.5rem))] flex-wrap gap-2">
+            <StatusBadge
+              status={booking?.status}
+              className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
+            />
+            <StatusBadge
+              status={booking?.paymentStatus}
+              className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
+            />
           </div>
           {roomId ? (
-            <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="pointer-events-auto h-8 w-8 shrink-0 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white"
+            >
               <Link to={`/rooms/${roomId}`} aria-label="View Room">
                 <Eye size={16} />
               </Link>
             </Button>
           ) : null}
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-4">
-          <StatusBadge
-            status={booking?.status}
-            className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
-          />
-          <StatusBadge
-            status={booking?.paymentStatus}
-            className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
-          />
-        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-col p-5">
         <div>
           <p className="text-lg font-bold text-foreground">{roomName}</p>
         </div>
@@ -252,31 +279,28 @@ export function RoomBookingCard({
             <BookingMeta key={`${bookingId}-${item.label}`} {...item} />
           ))}
         </div>
-
-        <BookingActionBar>
-          <div className="flex flex-wrap gap-3">
-            {canCancel ? (
-              <Button
-                type="button"
-                variant="palmPrimary"
-                size="sm"
-                className="px-5"
-                disabled={Boolean(pendingCancelKey)}
-                onClick={() =>
-                  runCancelAction({
-                    key: `room-${bookingId}`,
-                    action: cancelBooking({ id: bookingId, axiosPrivate }),
-                    successMessage: "Room booking cancelled successfully.",
-                    fallbackMessage: "Failed to cancel room booking.",
-                  })
-                }
-              >
-                {pendingCancelKey === `room-${bookingId}` ? "Cancelling..." : "Cancel Booking"}
-              </Button>
-            ) : null}
-          </div>
-        </BookingActionBar>
       </div>
+
+      {canCancel ? (
+        <Button
+          type="button"
+          variant="palmPrimary"
+          size="sm"
+          className="absolute bottom-3 right-3 z-20 px-4 shadow-md"
+          disabled={Boolean(pendingCancelKey)}
+          aria-label="Cancel room booking"
+          onClick={() =>
+            runCancelAction({
+              key: `room-${bookingId}`,
+              action: cancelBooking({ id: bookingId, axiosPrivate }),
+              successMessage: "Room booking cancelled successfully.",
+              fallbackMessage: "Failed to cancel room booking.",
+            })
+          }
+        >
+          {pendingCancelKey === `room-${bookingId}` ? "..." : "Cancel"}
+        </Button>
+      ) : null}
     </CarouselCard>
   );
 }
@@ -295,7 +319,7 @@ export function ActivityBookingCard({
   const canCancel = isActivityBookingCancellable(booking);
 
   return (
-    <CarouselCard className="overflow-hidden p-0">
+    <CarouselCard className="relative overflow-hidden p-0">
       <div className="relative aspect-[4/3] overflow-hidden border-b border-border/40 bg-muted/30">
         {image ? (
           <img src={image} alt={activityName} className="h-full w-full object-cover" />
@@ -304,38 +328,45 @@ export function ActivityBookingCard({
             <Ticket size={24} />
           </div>
         )}
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-          <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
+        <div className="absolute left-4 top-4 z-20 max-w-[calc(100%-5.5rem)]">
+          <span className="inline-flex rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-sm">
             {booking?.paymentStatus === "paid"
               ? `Paid in full - Total ${formatCurrency(booking?.totalPrice || 0)}`
               : `Booked ${formatDateOnly(booking?.createdAt)}`}
           </span>
+        </div>
+        <div className="pointer-events-none absolute bottom-4 left-4 right-4 z-10 flex flex-wrap items-end justify-between gap-2">
+          <div className="flex max-w-[min(100%,calc(100%-3.5rem))] flex-wrap gap-2">
+            {booking?.activity?.category ? (
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/12 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-md">
+                {booking.activity.category}
+              </span>
+            ) : null}
+            <StatusBadge
+              status={booking?.status}
+              className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
+            />
+            <StatusBadge
+              status={booking?.paymentStatus}
+              className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
+            />
+          </div>
           {activityId ? (
-            <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="pointer-events-auto h-8 w-8 shrink-0 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-md hover:bg-black/35 hover:text-white"
+            >
               <Link to={`/services/activities/${activityId}`} aria-label="View Activity">
                 <Eye size={16} />
               </Link>
             </Button>
           ) : null}
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-4">
-          {booking?.activity?.category ? (
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/12 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-md">
-              {booking.activity.category}
-            </span>
-          ) : null}
-          <StatusBadge
-            status={booking?.status}
-            className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
-          />
-          <StatusBadge
-            status={booking?.paymentStatus}
-            className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
-          />
-        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-col p-5">
         <div>
           <p className="text-lg font-bold text-foreground">{activityName}</p>
         </div>
@@ -345,31 +376,28 @@ export function ActivityBookingCard({
             <BookingMeta key={`${bookingId}-${item.label}`} {...item} />
           ))}
         </div>
-
-        {canCancel ? (
-          <BookingActionBar>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                type="button"
-                variant="palmSecondary"
-                size="sm"
-                className="px-5"
-                disabled={Boolean(pendingCancelKey)}
-                onClick={() =>
-                  runCancelAction({
-                    key: `activity-${bookingId}`,
-                    action: cancelActivityBooking({ axiosPrivate, bookingId }),
-                    successMessage: "Activity booking cancelled successfully.",
-                    fallbackMessage: "Failed to cancel activity booking.",
-                  })
-                }
-              >
-                {pendingCancelKey === `activity-${bookingId}` ? "Cancelling..." : "Cancel Booking"}
-              </Button>
-            </div>
-          </BookingActionBar>
-        ) : null}
       </div>
+
+      {canCancel ? (
+        <Button
+          type="button"
+          variant="palmSecondary"
+          size="sm"
+          className="absolute bottom-3 right-3 z-20 px-4 shadow-md"
+          disabled={Boolean(pendingCancelKey)}
+          aria-label="Cancel activity booking"
+          onClick={() =>
+            runCancelAction({
+              key: `activity-${bookingId}`,
+              action: cancelActivityBooking({ axiosPrivate, bookingId }),
+              successMessage: "Activity booking cancelled successfully.",
+              fallbackMessage: "Failed to cancel activity booking.",
+            })
+          }
+        >
+          {pendingCancelKey === `activity-${bookingId}` ? "..." : "Cancel"}
+        </Button>
+      ) : null}
     </CarouselCard>
   );
 }
@@ -385,19 +413,23 @@ export function TableBookingCard({
   const canCancel = isTableBookingCancellable(booking);
   const tableLabel =
     booking?.tableNumber === null ? "Waitlist request" : `Table ${booking.tableNumber}`;
+  const paymentBadgeStatus = booking?.paymentStatus === "paid" ? "paid" : booking?.paymentStatus === "refunded" ? "refunded" : "unpaid";
 
   return (
-    <CarouselCard>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-lg font-bold text-foreground">{tableLabel}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {booking?.tableNumber === null
-              ? "We'll upgrade this waitlist request when a matching table becomes available."
-              : "Your dining reservation at Palm Mirage Restaurant."}
-          </p>
+    <CarouselCard className="relative">
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <p className="min-w-0 flex-1 text-lg font-bold text-foreground leading-snug">{tableLabel}</p>
+          <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-start">
+            <StatusBadge status={paymentBadgeStatus} />
+            <StatusBadge status={booking?.status} />
+          </div>
         </div>
-        <StatusBadge status={booking?.status} />
+        <p className="w-full text-sm leading-relaxed text-muted-foreground">
+          {booking?.tableNumber === null
+            ? "We'll upgrade this waitlist request when a matching table becomes available."
+            : "Your dining reservation at Palm Mirage Restaurant."}
+        </p>
       </div>
 
       <div className="mt-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -416,31 +448,28 @@ export function TableBookingCard({
             ? "Paid bookings are view-only from your account."
             : `Created on ${formatDateOnly(booking?.createdAt)}`}
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild variant="ghost" size="sm" className="px-5">
-            <Link to="/services/restaurant">Restaurant Page</Link>
-          </Button>
-          {canCancel ? (
-            <Button
-              type="button"
-              variant="palmSecondary"
-              size="sm"
-              className="px-5"
-              disabled={Boolean(pendingCancelKey)}
-              onClick={() =>
-                runCancelAction({
-                  key: `table-${bookingId}`,
-                  action: cancelTableBooking({ axiosPrivate, bookingId }),
-                  successMessage: "Table booking cancelled successfully.",
-                  fallbackMessage: "Failed to cancel table booking.",
-                })
-              }
-            >
-              {pendingCancelKey === `table-${bookingId}` ? "Cancelling..." : "Cancel Booking"}
-            </Button>
-          ) : null}
-        </div>
       </BookingActionBar>
+
+      {canCancel ? (
+        <Button
+          type="button"
+          variant="palmSecondary"
+          size="sm"
+          className="absolute bottom-5 right-5 z-20 px-4 shadow-md"
+          disabled={Boolean(pendingCancelKey)}
+          aria-label="Cancel restaurant booking"
+          onClick={() =>
+            runCancelAction({
+              key: `table-${bookingId}`,
+              action: cancelTableBooking({ axiosPrivate, bookingId }),
+              successMessage: "Restaurant booking cancelled successfully.",
+              fallbackMessage: "Failed to cancel restaurant booking.",
+            })
+          }
+        >
+          {pendingCancelKey === `table-${bookingId}` ? "..." : "Cancel"}
+        </Button>
+      ) : null}
     </CarouselCard>
   );
 }

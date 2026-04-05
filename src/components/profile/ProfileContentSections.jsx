@@ -66,12 +66,13 @@ export default function ProfileContentSections(props) {
           subtitle="Your key numbers and account highlights are grouped into one swipeable overview."
         />
         <SectionCarousel
+          stretchItems
           items={overviewCards}
           getItemKey={(item, index) =>
             item?.id ?? item?.key ?? `${item?.label ?? "overview"}-${index}`
           }
           itemClassName="md:basis-1/2 xl:basis-1/4"
-          renderItem={(item, index) => <StatCard {...item} index={index} className="h-full" />}
+          renderItem={(item, index) => <StatCard {...item} index={index} className="h-full w-full min-h-0" />}
         />
       </SectionCard>
       <SectionDivider />
@@ -165,8 +166,8 @@ export default function ProfileContentSections(props) {
       <SectionCard index={3}>
         <SectionHeader
           icon={UtensilsCrossed}
-          title="Restaurant Table Bookings"
-          subtitle="Dining reservations and waitlist requests grouped into restaurant booking cards."
+          title="Restaurant Bookings"
+          subtitle="Table reservations, in-room dining, and in-table service—tracked here as booking cards."
           count={`${tableBookings.length} booking${tableBookings.length === 1 ? "" : "s"}`}
           actionLabel="Restaurant Page"
           actionTo="/services/restaurant"
@@ -183,8 +184,8 @@ export default function ProfileContentSections(props) {
         ) : tableBookings.length === 0 ? (
           <EmptyState
             title="No restaurant bookings yet"
-            description="Reserve a table from the restaurant page and you'll be able to track it here as a booking card."
-            actionLabel="Reserve A Table"
+            description="Book a table, order to your room, or arrange in-table dining from the restaurant page—your bookings will show up here."
+            actionLabel="Restaurant"
             actionTo="/services/restaurant"
           />
         ) : (

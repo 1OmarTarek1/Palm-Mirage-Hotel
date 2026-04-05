@@ -140,22 +140,27 @@ function RoomFilterSkeleton() {
 
 function ProfileHeroSkeleton() {
   return (
-    <div className="relative overflow-hidden rounded-[2.25rem] border border-border/50 bg-[radial-gradient(circle_at_top_left,rgba(199,161,92,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.82),rgba(255,255,255,0.58))] p-8 shadow-sm backdrop-blur-xl dark:bg-[radial-gradient(circle_at_top_left,rgba(199,161,92,0.2),transparent_34%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(24,24,27,0.76))]">
-      <div className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
-      <div className="absolute right-5 top-5 z-10 flex items-center gap-2">
+    <div className="space-y-3">
+      <div className="flex items-center justify-end gap-2 px-1 sm:px-0">
         {Array.from({ length: 3 }).map((_, index) => (
           <Skeleton key={`profile-hero-action-${index}`} className="h-10 w-10 rounded-full" />
         ))}
       </div>
 
-      <div className="relative flex items-start gap-5">
-        <Skeleton className="h-28 w-28 shrink-0 rounded-full border-4 border-primary/10" />
+      <div className="relative overflow-hidden rounded-[2.25rem] border border-border/50 bg-[radial-gradient(circle_at_top_left,rgba(199,161,92,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.82),rgba(255,255,255,0.58))] p-8 shadow-sm backdrop-blur-xl dark:bg-[radial-gradient(circle_at_top_left,rgba(199,161,92,0.2),transparent_34%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(24,24,27,0.76))]">
+        <div className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
 
-        <div className="flex-1 space-y-3 pt-2">
-          <Skeleton className="h-3 w-24 rounded-full" />
-          <Skeleton className="h-10 w-60 rounded-xl" />
-          <Skeleton className="h-4 w-full max-w-2xl rounded-full" />
-          <Skeleton className="h-4 w-5/6 max-w-xl rounded-full" />
+        <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex w-full flex-col items-center gap-6 lg:flex-row lg:items-start lg:gap-5">
+            <Skeleton className="h-28 w-28 shrink-0 rounded-full border-4 border-primary/10 sm:h-32 sm:w-32" />
+
+            <div className="flex w-full max-w-2xl flex-1 flex-col items-center space-y-3 lg:items-start lg:pt-2">
+              <Skeleton className="h-3 w-28 rounded-full" />
+              <Skeleton className="h-10 w-52 rounded-xl sm:h-12 sm:w-64" />
+              <Skeleton className="h-4 w-full max-w-2xl rounded-full" />
+              <Skeleton className="h-4 w-5/6 max-w-xl rounded-full" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -185,15 +190,19 @@ function ProfileSectionHeaderSkeleton({ withAction = true }) {
 
 function ProfileOverviewCardSkeleton() {
   return (
-    <div className="rounded-[1.75rem] border border-border/50 bg-card/70 p-5 shadow-sm backdrop-blur-sm">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0 flex-1 space-y-3">
-          <Skeleton className="h-3 w-24 rounded-full" />
-          <Skeleton className="h-10 w-24 rounded-xl" />
-          <Skeleton className="h-4 w-full rounded-full" />
-          <Skeleton className="h-4 w-4/5 rounded-full" />
+    <div className="flex h-full min-h-[9.5rem] flex-col rounded-[1.75rem] border border-border/50 bg-card/70 p-5 shadow-sm backdrop-blur-sm">
+      <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+          <div>
+            <Skeleton className="h-3 w-24 rounded-full" />
+            <Skeleton className="mt-3 h-9 w-28 rounded-xl" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full max-w-[14rem] rounded-full" />
+            <Skeleton className="h-4 w-4/5 max-w-[12rem] rounded-full" />
+          </div>
         </div>
-        <Skeleton className="h-12 w-12 shrink-0 rounded-2xl" />
+        <Skeleton className="h-12 w-12 shrink-0 self-start rounded-2xl" />
       </div>
     </div>
   );
@@ -409,18 +418,17 @@ export function ActivityDetailPageSkeleton() {
 export function RoomsPageSkeleton({ count = 8 }) {
   return (
     <section className="text-center">
-      <div className="mb-10">
+      <div className="mb-10 hidden lg:block">
         <div className="mt-12">
           <BookingBarSkeleton />
         </div>
       </div>
 
-      <div className="mb-6 flex justify-end px-4 lg:hidden">
-        <Skeleton className="h-10 w-36 rounded-xl" />
-      </div>
-
       <div className="grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-9">
+          <div className="mb-5 flex justify-center px-4 lg:hidden">
+            <Skeleton className="h-12 w-full max-w-sm rounded-full" />
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Array.from({ length: count }).map((_, index) => (
               <RoomCardSkeleton key={`rooms-page-card-${index}`} />
@@ -641,13 +649,17 @@ export function HomeFeaturedRoomsSkeleton() {
 
 export function ProfilePageSkeleton() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <section
+      className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
+      aria-busy="true"
+      aria-label="Loading profile"
+    >
       <ProfileHeroSkeleton />
 
       <div className="mt-8 space-y-6">
         <section>
           <ProfileSectionHeaderSkeleton withAction={false} />
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <ProfileOverviewCardSkeleton key={`profile-overview-card-${index}`} />
             ))}
@@ -687,6 +699,8 @@ export function ProfilePageSkeleton() {
         </div>
 
         <ProfileSectionSkeleton />
+
+        <Skeleton className="mt-2 h-[4.75rem] w-full rounded-[1.5rem] border border-primary/15 bg-primary/5" />
       </div>
     </section>
   );

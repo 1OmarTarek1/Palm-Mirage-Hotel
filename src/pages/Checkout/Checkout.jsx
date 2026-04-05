@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch, useSelector } from 'react-redux';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import AppModal from '@/components/common/AppModal';
 import { Button } from '@/components/ui/button';
 import OrderSummary from '@/components/Checkout/OrderSummary';
 import CheckoutForm from '@/components/Checkout/CheckoutForm';
@@ -210,16 +211,16 @@ const Checkout = () => {
     const unavailableItems = await removeUnavailableCartItems(cartItems);
 
     if (unavailableItems.length === 1) {
-      toast.error(`${unavailableItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
+      toast.info(`${unavailableItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
       return;
     }
 
     if (unavailableItems.length > 1) {
-      toast.error(`${unavailableItems.length} rooms were just booked by other guests and were removed from your cart.`);
+      toast.info(`${unavailableItems.length} rooms were just booked by other guests and were removed from your cart.`);
       return;
     }
 
-    toast.error('One or more selected rooms are no longer available for these dates.');
+    toast.info('One or more selected rooms are no longer available for these dates.');
   };
 
   const storePendingCheckout = (formData) => {
@@ -383,9 +384,9 @@ const Checkout = () => {
 
                       if (conflictedItems.length > 0) {
                         if (conflictedItems.length === 1) {
-                          toast.warning(`${conflictedItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
+                          toast.info(`${conflictedItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
                         } else {
-                          toast.warning(`${conflictedItems.length} rooms were just booked by other guests and were removed from your cart.`);
+                          toast.info(`${conflictedItems.length} rooms were just booked by other guests and were removed from your cart.`);
                         }
                       }
 
@@ -418,41 +419,46 @@ const Checkout = () => {
         </div>
       </div>
 
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-            <MotionDiv 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            />
-            
-            <MotionDiv 
-              initial={{ opacity: 0, scale: 0.9, y: 40 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-background w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative z-10 custom-scrollbar"
-            >
-              <div className="sticky top-0 right-0 z-20 flex justify-end p-6 bg-linear-to-b from-background via-background/80 to-transparent pointer-events-none">
-                <Button 
-                  onClick={handleCloseOrderModal}
-                  variant="ghost"
-                  size="icon"
-                  className="bg-muted/50 hover:bg-muted border border-border pointer-events-auto shadow-sm"
-                >
-                  <X className="w-5 h-5 text-muted-foreground" />
-                </Button>
-              </div>
+      <AppModal
+        open={isModalOpen}
+        onClose={handleCloseOrderModal}
+        layout="plain"
+        zIndex={100}
+        closeOnBackdrop={false}
+        showTint={false}
+        outerClassName="items-center justify-center p-4 sm:pt-0 max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:overflow-hidden max-sm:p-0 max-sm:pt-[env(safe-area-inset-top,0px)]"
+      >
+        <MotionDiv
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+        />
 
-              <div className="px-8 pb-12 md:px-16 md:pb-20 -mt-12">
-                <OrderReceived orderReceived={orderReceived} />
-              </div>
-            </MotionDiv>
+        <MotionDiv
+          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 40 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="relative z-10 w-full max-w-5xl overflow-y-auto rounded-3xl bg-background shadow-2xl custom-scrollbar max-sm:min-h-0 max-sm:max-h-full max-sm:flex-1 max-sm:rounded-none max-sm:shadow-none sm:max-h-[90vh] sm:flex-none"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="sticky top-0 right-0 z-20 flex justify-end p-6 bg-linear-to-b from-background via-background/80 to-transparent pointer-events-none">
+            <Button
+              onClick={handleCloseOrderModal}
+              variant="ghost"
+              size="icon"
+              className="bg-muted/50 hover:bg-muted border border-border pointer-events-auto shadow-sm"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </Button>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="-mt-12 px-8 pb-[max(3rem,env(safe-area-inset-bottom,0px))] md:px-16 md:pb-20">
+            <OrderReceived orderReceived={orderReceived} />
+          </div>
+        </MotionDiv>
+      </AppModal>
     </div>
   );
 };

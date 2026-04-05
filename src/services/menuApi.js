@@ -42,7 +42,13 @@ const menuApi = {
   getGroupedMenu: async () => {
     const response = await axiosInstance.get('/menu/menu-grouped');
     return response.data;
-  }
+  },
+
+  /** Hero + story + in-room dining images for the restaurant landing page */
+  getRestaurantPage: async () => {
+    const response = await axiosInstance.get('/menu/restaurant-page');
+    return response.data;
+  },
 };
 
 export default menuApi;

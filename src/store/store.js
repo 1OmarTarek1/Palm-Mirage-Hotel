@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import themeReducer from "./slices/themeSlice";
+import localeReducer from "./slices/localeSlice";
 import authReducer from "./slices/authSlice";
 import cartReducer from "./slices/cartSlice";
 import uiReducer from "./slices/uiSlice";
@@ -16,6 +17,7 @@ import { userCollectionsListenerMiddleware } from "./userCollectionsSync";
 export const store = configureStore({
   reducer: {
     theme: themeReducer,
+    locale: localeReducer,
     auth: authReducer,
     cart: cartReducer,
     ui: uiReducer,

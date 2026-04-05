@@ -1,16 +1,24 @@
-import { Trash2, BedDouble, Edit3 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Trash2, BedDouble, Edit3, Eye } from "lucide-react";
+import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
+import { resolveCartRoomDetailId } from "@/utils/resolveCartRoomDetailId";
 import { Button } from "@/components/ui/button";
 
 export default function CartItem({ item, onEditDates, onRemove }) {
   const isAvailable = item.availabilityStatus === "available";
+  const roomDetailId = resolveCartRoomDetailId(item);
 
   return (
     <div className="group overflow-hidden rounded-[30px] border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
       <div className="flex flex-col lg:flex-row">
         <div className="relative h-56 w-full shrink-0 overflow-hidden lg:h-auto lg:w-[250px]">
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
-          <div className="absolute left-4 top-4 z-20 flex flex-wrap gap-1.5">
+          <RoomNumberBadge
+            room={item}
+            className="bottom-4 left-4 right-auto top-auto z-30"
+          />
+        <div className="absolute left-4 top-4 z-20 flex flex-wrap gap-1.5">
             <span className="rounded-full bg-primary px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white shadow-lg">
               {item.category}
             </span>
@@ -24,6 +32,18 @@ export default function CartItem({ item, onEditDates, onRemove }) {
               {isAvailable ? "Available" : "Needs check"}
             </span>
           </div>
+          {roomDetailId ? (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="absolute bottom-4 right-4 z-30 h-9 w-9 rounded-full border border-white/25 bg-black/35 text-white shadow-md backdrop-blur-sm hover:bg-black/50 hover:text-white"
+            >
+              <Link to={`/rooms/${roomDetailId}`} aria-label="View room details" title="View room details">
+                <Eye className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : null}
         {item.image ? (
           <img
             src={item.image}

@@ -16,6 +16,7 @@ const normalizeRestaurantBooking = (booking) => {
         ? null
         : Number(booking.tableNumber),
     guests: Number(booking.guests ?? 0),
+    paymentStatus: booking.paymentStatus ?? 'unpaid',
   };
 };
 

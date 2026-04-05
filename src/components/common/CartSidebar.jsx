@@ -1,6 +1,7 @@
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingCart, Trash2, ArrowRight, CalendarDays } from "lucide-react";
+import { X, ShoppingCart, Trash2, ArrowRight, CalendarDays, Eye, Edit3 } from "lucide-react";
 import {
   closeCart,
   removeItem,
@@ -13,7 +14,9 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
+import { resolveCartRoomDetailId } from "@/utils/resolveCartRoomDetailId";
 
 export default function CartSidebar() {
   const dispatch = useDispatch();
@@ -23,6 +26,20 @@ export default function CartSidebar() {
   const MotionDiv = motion.div;
   const MotionAside = motion.aside;
   const MotionButton = motion.button;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -91,7 +108,9 @@ export default function CartSidebar() {
                     </Link>
                   </MotionDiv>
                 ) : (
-                  items.map((item) => (
+                  items.map((item) => {
+                    const roomDetailId = resolveCartRoomDetailId(item);
+                    return (
                     <MotionDiv
                       key={item.id}
                       layout
@@ -99,16 +118,23 @@ export default function CartSidebar() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 30, height: 0, marginBottom: 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 28 }}
-                      className="flex gap-4 p-3 rounded-2xl bg-muted/40 border border-border/30"
+                      className="flex gap-3 p-3 rounded-2xl bg-muted/40 border border-border/30"
                     >
-                      {/* Image */}
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-20 h-20 rounded-xl object-cover shrink-0"
-                        />
-                      )}
+                      {/* Thumbnail */}
+                      {item.image ? (
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                          />
+                          <RoomNumberBadge
+                            room={item}
+                            showPrefix={false}
+                            className="left-0.5 top-0.5 right-auto z-10 px-1.5 py-px text-[8px] tracking-[0.1em]"
+                          />
+                        </div>
+                      ) : null}
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
@@ -116,15 +142,42 @@ export default function CartSidebar() {
                           <p className="text-sm font-semibold text-foreground truncate">
                             {item.name}
                           </p>
-                          <MotionButton
-                            onClick={() => {
-                              dispatch(removeItem(item.id));
-                              toast.warning(`${item.name} removed from cart`);
-                            }}
-                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </MotionButton>
+                          <div className="flex shrink-0 items-center gap-0.5">
+                            {roomDetailId ? (
+                              <>
+                                <Link
+                                  to={`/rooms/${roomDetailId}`}
+                                  onClick={() => dispatch(closeCart())}
+                                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/70 hover:text-primary"
+                                  aria-label="View room details"
+                                  title="View room"
+                                >
+                                  <Eye size={14} strokeWidth={2} />
+                                </Link>
+                                <Link
+                                  to={`/rooms/${roomDetailId}`}
+                                  onClick={() => dispatch(closeCart())}
+                                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/70 hover:text-primary"
+                                  aria-label="Open room page"
+                                  title="Room page"
+                                >
+                                  <Edit3 size={14} strokeWidth={2} />
+                                </Link>
+                              </>
+                            ) : null}
+                            <MotionButton
+                              type="button"
+                              onClick={() => {
+                                dispatch(removeItem(item.id));
+                                toast.success(`${item.name} removed from cart`);
+                              }}
+                              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/70 hover:text-destructive"
+                              aria-label="Remove from cart"
+                              title="Remove from cart"
+                            >
+                              <Trash2 size={14} strokeWidth={2} />
+                            </MotionButton>
+                          </div>
                         </div>
 
                         {item.checkInDate && item.checkOutDate ? (
@@ -148,7 +201,8 @@ export default function CartSidebar() {
                         </div>
                       </div>
                     </MotionDiv>
-                  ))
+                    );
+                  })
                 )}
               </AnimatePresence>
             </div>
@@ -169,7 +223,7 @@ export default function CartSidebar() {
                   <MotionButton
                     onClick={() => {
                       dispatch(clearCart());
-                      toast.error("Cart cleared");
+                      toast.success("Cart cleared");
                     }}
                     className={cn(
                       buttonVariants({ variant: "palmSecondary" }),

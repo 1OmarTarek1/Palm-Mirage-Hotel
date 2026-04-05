@@ -16,6 +16,7 @@ import {
   selectIsInWishlist,
 } from "@/store/slices/wishlistSlice";
 import RoomBookingModal from "@/components/rooms/RoomBookingModal";
+import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import { normalizeRoomForBooking } from "@/utils/roomBooking";
 
 const normalizeRoomAmenities = (room) => {
@@ -163,12 +164,13 @@ export default function RoomCard({ room, className }) {
           />
         </Link>
         {/* Type badge */}
-        <span className="absolute top-0 left-0 bg-primary backdrop-blur-sm text-white text-[10px] font-bold tracking-widest uppercase px-6 py-2.5 rounded-br-2xl">
+        <span className="absolute top-0 left-0 z-10 bg-primary backdrop-blur-sm text-white text-[10px] font-bold tracking-widest uppercase px-6 py-2.5 rounded-br-2xl">
           {roomType}
         </span>
+        <RoomNumberBadge room={room} />
 
         {/* Price Tag Overlay */}
-        <div className="absolute bottom-0 left-0 bg-card px-5 py-3 rounded-tr-3xl transition-colors duration-300">
+        <div className="absolute bottom-0 left-0 z-10 bg-card px-5 py-3 rounded-tr-3xl transition-colors duration-300">
           <p className="text-foreground font-semibold text-base leading-none">
             <span className="text-xl font-bold">${Number(room.price || 0).toFixed(2)}</span>
             <span className="text-sm font-normal text-muted-foreground">

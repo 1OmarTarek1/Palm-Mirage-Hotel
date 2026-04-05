@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
 import ThemeToggle from "../ThemeToggle";
 import LanguageToggle from "../LanguageToggle";
 import MobileAccordion from "./MobileAccordion";
 
 export default function MobileNav({ navLinks, isOpen, onClose }) {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [expandedLink, setExpandedLink] = useState(null);
 
   const toggleExpand = (label) => {
@@ -20,10 +22,10 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
           animate={{ height: "auto", opacity: 1, y: 0 }}
           exit={{ height: 0, opacity: 0, y: -20 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="md:hidden absolute left-5 right-5 mt-4 overflow-hidden z-40"
+          className="md:hidden absolute left-2 right-2 sm:left-3 sm:right-3 mt-2 overflow-hidden z-40"
         >
-          <div className="p-6 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-3xl shadow-2xl max-h-[70vh] overflow-y-auto no-scrollbar">
-            <ul className="grid grid-cols-1 gap-3">
+          <div className="p-4 sm:p-5 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-2xl shadow-2xl max-h-[70vh] overflow-y-auto no-scrollbar">
+            <ul className="grid grid-cols-1 gap-2.5">
               {navLinks.map((link, idx) => {
                 const hasSubLinks = link.dropdown || link.megaMenu;
                 const subLinks = link.dropdown || (link.megaMenu && link.megaMenu.links) || [];
@@ -50,7 +52,7 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
                           to={subLink.href}
                           onClick={onClose}
                           className={({ isActive }) => `
-                            block p-3 rounded-xl text-sm transition-all
+                            block py-2.5 px-3 rounded-lg text-xs transition-all
                             ${isActive ? "text-primary font-bold bg-primary/20" : "text-white/60 hover:text-white hover:bg-white/5"}
                           `}
                         >
@@ -64,21 +66,23 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
 
             </ul>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-6 pt-6 border-t border-white/10 space-y-1"
-            >
-              <LanguageToggle 
-                mobile 
-                isExpanded={expandedLink === "language"}
-                onToggle={() => toggleExpand("language")}
-                onClose={onClose}
-              />
-              
-              <ThemeToggle mobile />
-            </motion.div>
+            {!isAuthenticated && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-4 pt-4 border-t border-white/10 space-y-1"
+              >
+                <LanguageToggle 
+                  mobile 
+                  isExpanded={expandedLink === "language"}
+                  onToggle={() => toggleExpand("language")}
+                  onClose={onClose}
+                />
+                
+                <ThemeToggle mobile />
+              </motion.div>
+            )}
           </div>
         </motion.div>
       )}

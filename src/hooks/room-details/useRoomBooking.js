@@ -81,11 +81,11 @@ export function useRoomBooking(room, availabilityRef) {
       return;
     }
     if (!effectiveAvailability || availabilityRangeKey !== currentSelectedRangeKey) {
-      toast.error("Room availability has not been confirmed for these dates yet.");
+      toast.info("Room availability has not been confirmed for these dates yet.");
       return;
     }
     if (!effectiveAvailability?.isBookable) {
-      toast.error("This room is not available for the selected dates.");
+      toast.info("This room is not available for the selected dates.");
       return;
     }
 

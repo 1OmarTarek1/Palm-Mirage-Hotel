@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import PasswordField from "@/components/auth/PasswordField";
 import { Button } from "@/components/ui/button";
 import { changePasswordSchema } from "@/features/auth/authSchema";
+import { cn } from "@/lib/utils";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import axiosInstance from "@/services/axiosInstance";
 import { logout } from "@/store/slices/authSlice";
@@ -24,7 +25,7 @@ export default function ChangePasswordForm({
   onSuccess,
   onCancel,
   submitLabel = "Update Password",
-  className = "space-y-6",
+  className,
   successDelayMs = 1800,
   successTitle = "Password changed successfully",
   successMessage = "Signing you out now so you can log in securely with your new password.",
@@ -87,12 +88,15 @@ export default function ChangePasswordForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={className}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={cn("flex min-h-0 w-full flex-1 flex-col", className)}
+    >
       {showSuccessNotice ? (
         <MotionDiv
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="flex min-h-[320px] flex-col items-center justify-center rounded-[1.75rem] border border-emerald-500/20 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_55%),linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.04))] px-6 py-10 text-center"
+          className="flex flex-1 flex-col items-center justify-center rounded-[1.75rem] border border-emerald-500/20 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_55%),linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.04))] px-6 py-10 text-center"
         >
           <MotionDiv
             initial={{ scale: 0.92, opacity: 0 }}
@@ -146,7 +150,7 @@ export default function ChangePasswordForm({
         </MotionDiv>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="min-h-0 flex-1 space-y-4">
             <PasswordField
               id="old-password"
               label="Old Password"
@@ -175,7 +179,12 @@ export default function ChangePasswordForm({
             />
           </div>
 
-          <div className={`flex ${onCancel ? "justify-end gap-3 pt-2" : "flex-col pt-2"}`}>
+          <div
+            className={cn(
+              "mt-auto flex shrink-0 flex-wrap gap-3 border-t border-border/30 bg-background/95 pt-4 pb-0",
+              onCancel ? "justify-end" : "flex-col",
+            )}
+          >
             {onCancel ? (
               <Button type="button" variant="palmSecondary" onClick={onCancel} disabled={isSubmitting}>
                 Cancel

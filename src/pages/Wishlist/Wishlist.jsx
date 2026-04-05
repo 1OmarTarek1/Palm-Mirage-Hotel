@@ -17,7 +17,7 @@ export default function Wishlist() {
   const handleClearAll = () => {
     if (wishlistItems.length === 0) return;
     dispatch(clearWishlist());
-    toast.error('Wishlist cleared');
+    toast.success('Wishlist cleared');
   };
 
   if (isHydrating) return null;

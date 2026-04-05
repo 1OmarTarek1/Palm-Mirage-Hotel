@@ -82,11 +82,13 @@ export default function Profile() {
   const [pendingCancelKey, setPendingCancelKey] = useState("");
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isProfileSnapshotLoading, setIsProfileSnapshotLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
     let isMounted = true;
+    setIsProfileSnapshotLoading(true);
 
     const refreshProfileSnapshot = async () => {
       try {
@@ -94,6 +96,10 @@ export default function Profile() {
       } catch (error) {
         if (isMounted) {
           console.error("Failed to refresh the user snapshot on profile open:", error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsProfileSnapshotLoading(false);
         }
       }
     };
@@ -201,6 +207,7 @@ export default function Profile() {
 
   if (isHydrating) return <ProfilePageSkeleton />;
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
+  if (isProfileSnapshotLoading) return <ProfilePageSkeleton />;
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

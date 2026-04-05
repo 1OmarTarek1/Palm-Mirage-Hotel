@@ -110,19 +110,21 @@ export function StatCard({ icon: Icon, label, value, subtitle, index, className 
       initial="hidden"
       animate="visible"
       className={cn(
-        "rounded-[1.75rem] border border-border/50 bg-card/70 p-5 shadow-sm backdrop-blur-sm",
+        "flex h-full min-h-0 flex-col rounded-[1.75rem] border border-border/50 bg-card/70 p-5 shadow-sm backdrop-blur-sm",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            {label}
-          </p>
-          <p className="mt-3 text-3xl font-black text-foreground">{value}</p>
-          <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+      <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              {label}
+            </p>
+            <p className="mt-3 text-3xl font-black text-foreground">{value}</p>
+          </div>
+          <p className="text-sm leading-snug text-muted-foreground">{subtitle}</p>
         </div>
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center self-start rounded-2xl bg-primary/10 text-primary">
           <Icon size={22} />
         </div>
       </div>
@@ -220,9 +222,9 @@ export function BookingMeta({ icon: Icon, label }) {
   );
 }
 
-export function BookingActionBar({ children }) {
+export function BookingActionBar({ children, className }) {
   return (
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 pt-4">
+    <div className={cn("mt-5 flex flex-wrap items-center justify-between gap-3 pt-4", className)}>
       {children}
     </div>
   );
@@ -232,7 +234,7 @@ export function CarouselCard({ children, className }) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col rounded-[1.75rem] border border-border/40 bg-background/45 p-5 shadow-sm backdrop-blur-sm",
+        "flex w-full flex-col self-start rounded-[1.75rem] border border-border/40 bg-background/45 p-5 shadow-sm backdrop-blur-sm",
         className,
       )}
     >
@@ -248,16 +250,27 @@ export function SectionCarousel({
   itemClassName,
   contentClassName,
   className,
+  stretchItems = false,
 }) {
   if (!items.length) return null;
 
   return (
     <Carousel className={cn("w-full", className)}>
-      <CarouselContent className={cn("-ml-4 sm:-ml-6", contentClassName)}>
+      <CarouselContent
+        className={cn(
+          "-ml-4 sm:-ml-6",
+          stretchItems ? "items-stretch" : "items-start",
+          contentClassName,
+        )}
+      >
         {items.map((item, index) => (
           <CarouselItem
             key={getItemKey ? getItemKey(item, index) : index}
-            className={cn("pl-4 sm:pl-6 md:basis-1/2 xl:basis-1/3", itemClassName)}
+            className={cn(
+              "pl-4 sm:pl-6 md:basis-1/2 xl:basis-1/3",
+              stretchItems && "flex h-auto min-h-0 self-stretch",
+              itemClassName,
+            )}
           >
             {renderItem(item, index)}
           </CarouselItem>

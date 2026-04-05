@@ -205,7 +205,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     event.preventDefault();
     if (!selectedScheduleData) return;
     if (!isAuthenticated) {
-      toast.error("Please sign in first to manage activity bookings.");
+      toast.info("Please sign in first to manage activity bookings.");
       return;
     }
 
@@ -215,17 +215,17 @@ const ActivityBooking = forwardRef(function ActivityBooking(
       const guestCount = Number(guests);
 
       if (!Number.isInteger(guestCount) || guestCount < 1) {
-        toast.error("Please enter a valid number of guests.");
+        toast.info("Please enter a valid number of guests.");
         return;
       }
 
       if (guestCount > Number(selectedScheduleData.availableSeats || 0)) {
-        toast.error("Selected guests exceed the available seats for this session.");
+        toast.info("Selected guests exceed the available seats for this session.");
         return;
       }
 
       if (!phonePattern.test(normalizedPhone) || compactPhone.replace(/\D/g, "").length < 7) {
-        toast.error("Use a valid phone number.");
+        toast.info("Use a valid phone number.");
         return;
       }
     }

@@ -12,11 +12,12 @@ import MegaMenu from "./Desktop/MegaMenu";
 import CartButton from "./CartButton";
 import LoginButton from "./LoginButton";
 import WishlistButton from "./WishlistButton";
+import NotificationButton from "./NotificationButton";
 
 const MotionNav = motion.nav;
 const MotionDiv = motion.div;
 
-const CIRCLE_RADIUS = 28;
+const CIRCLE_RADIUS = 32;
 
 const introVariants = {
   initial: {
@@ -160,40 +161,53 @@ export default function Navbar() {
               : undefined
           }
           style={{ willChange: "transform" }}
-          className="relative flex items-center justify-between w-full px-2 h-12 md:h-14 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20"
+          className="relative flex items-center justify-between w-full px-2.5 md:px-3 h-14 md:h-16 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-full shadow-2xl z-20"
         >
           <MotionDiv
-            className="flex items-center justify-between w-full h-full"
+            className="flex items-center justify-between w-full h-full relative"
             initial="hidden"
             animate={introDone ? "visible" : "hidden"}
             variants={contentVariants}
             style={{ pointerEvents: introDone ? "auto" : "none" }}
           >
-            <MotionDiv variants={slideInLeft}>
+            <MotionDiv
+              variants={slideInLeft}
+              className="md:hidden flex items-center gap-1 shrink-0 z-10"
+            >
+              <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />
+              {isAuthenticated && <WishlistButton />}
+            </MotionDiv>
+
+            <MotionDiv variants={slideInLeft} className="hidden md:block">
               <Logo />
             </MotionDiv>
-            
+
             <DesktopNav
               navLinks={navLinks}
               activeMenu={activeMenu}
               onHover={handleMouseEnter}
               onLeave={handleMouseLeave}
             />
-            
+
             <NavActions
               activeMenu={activeMenu}
               onHover={handleMouseEnter}
               onLeave={handleMouseLeave}
             />
-            
+
+            <div className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-auto">
+              <MotionDiv variants={slideInUp}>
+                <Logo mobileIconOnly />
+              </MotionDiv>
+            </div>
+
             <MotionDiv
               variants={slideInUp}
-              className="flex items-center md:hidden gap-1 md:gap-2"
+              className="flex items-center md:hidden gap-1 shrink-0 z-10"
             >
-              {isAuthenticated && <WishlistButton />}
+              {isAuthenticated && <NotificationButton />}
               {isAuthenticated && <CartButton />}
               <LoginButton />
-              <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />
             </MotionDiv>
           </MotionDiv>
         </MotionNav>

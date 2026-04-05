@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import SharedPagination from "@/components/common/SharedPagination";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/hooks/usePagination";
+import { useMatchMedia } from "@/hooks/useMatchMedia";
 import RoomCard from "@/components/rooms/RoomCard";
 import RoomFilter from "@/components/rooms/RoomFilter";
 import BookingBar from "@/components/rooms/BookingBar";
@@ -26,6 +27,8 @@ export default function Rooms() {
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const bookingBarRef = useRef(null);
+  const isLgUp = useMatchMedia("(min-width: 1024px)");
+  const prevSearchRef = useRef(location.search);
   const [filter, setFilter] = useState({
     price: [0, Number.MAX_SAFE_INTEGER],
     roomTypes: [],
@@ -117,6 +120,16 @@ export default function Rooms() {
   }, [dispatch]);
 
   useEffect(() => {
+    if (isLgUp) setIsFilterOpen(false);
+  }, [isLgUp]);
+
+  useEffect(() => {
+    if (prevSearchRef.current === location.search) return;
+    prevSearchRef.current = location.search;
+    if (!isLgUp) setIsFilterOpen(false);
+  }, [location.search, isLgUp]);
+
+  useEffect(() => {
     if (!hasAvailabilitySearch || !rooms.length) {
       setAvailabilityMap({});
       return;
@@ -170,31 +183,32 @@ export default function Rooms() {
 
   return (
     <section className="text-center">
-      {/* Header */}
-      <div className="mb-10">
-        <div className="mt-12">
-          <BookingBar
-            ref={bookingBarRef}
-            variant="default"
-            className="max-w-full! px-0!"
-          />
+      {isLgUp ? (
+        <div className="mb-10">
+          <div className="mt-12">
+            <BookingBar
+              ref={bookingBarRef}
+              variant="default"
+              className="max-w-full! px-0!"
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Mobile Filter Toggle */}
-      <div className="lg:hidden flex justify-end mb-6 px-4">
-        <Button
-          variant="palmPrimary"
-          onClick={() => setIsFilterOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <SlidersHorizontal size={18} />
-          Filter Rooms
-        </Button>
-      </div>
+      ) : null}
 
       <div className="grid grid-cols-12 items-start gap-8">
         <div className="col-span-12 lg:col-span-9">
+          {/* Mobile: centered entry above room cards */}
+          <div className="mb-5 flex w-full justify-center px-4 lg:hidden">
+            <Button
+              variant="palmPrimary"
+              onClick={() => setIsFilterOpen(true)}
+              className="h-12 w-full max-w-sm gap-2 rounded-full px-6 text-xs font-bold uppercase tracking-widest shadow-md"
+            >
+              <SlidersHorizontal size={18} className="shrink-0" />
+              Search & filters
+            </Button>
+          </div>
+
           {hasAvailabilitySearch ? (
             <div className="mb-5 rounded-2xl border border-border bg-muted/20 px-4 py-3 text-left text-sm text-muted-foreground">
               {availabilityLoading
@@ -241,20 +255,41 @@ export default function Rooms() {
         </div>
       </div>
 
-      {/* Mobile Filter Drawer */}
       <MobileDrawer
-        isOpen={isFilterOpen}
+        isOpen={isFilterOpen && !isLgUp}
         onClose={() => setIsFilterOpen(false)}
-        title="Filter Rooms"
+        fullScreen
+        title="Search & filter"
+        subtitle="Set your stay, then narrow results by price, type, and rating."
       >
-        <RoomFilter
-          rooms={rooms}
-          onReset={handleResetAll}
-          onFilter={(criteria) => {
-            applyFilter(criteria);
-            setIsFilterOpen(false);
-          }}
-        />
+        <div className="space-y-9">
+          <section className="text-left">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Check availability
+            </p>
+            <BookingBar
+              ref={bookingBarRef}
+              variant="default"
+              flat
+              animateEntrance={false}
+              className="max-w-full! px-0!"
+            />
+          </section>
+
+          <section className="text-left">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Refine results
+            </p>
+            <RoomFilter
+              rooms={rooms}
+              onReset={handleResetAll}
+              onFilter={(criteria) => {
+                applyFilter(criteria);
+                setIsFilterOpen(false);
+              }}
+            />
+          </section>
+        </div>
       </MobileDrawer>
     </section>
   );

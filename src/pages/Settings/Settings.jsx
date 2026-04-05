@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Sun, Moon, Lock, Trash2, TriangleAlert, User as UserIcon, X } from "lucide-react";
 import { toggleTheme, selectIsDark } from "@/store/slices/themeSlice";
 import { logout, setCredentials } from "@/store/slices/authSlice";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import axiosInstance from "@/services/axiosInstance";
 import { Button } from "@/components/ui/button";
+import AppModal from "@/components/common/AppModal";
 import { ChangePasswordModal, EditProfileModal } from "@/components/profile/ProfileAccountModals";
+import LanguageToggle from "@/components/common/Navbar/LanguageToggle";
 import { toast } from "react-toastify";
 
 const MotionDiv = motion.div;
@@ -92,9 +94,20 @@ export default function Settings() {
           </button>
         </MotionDiv>
 
-        {/* Theme Toggle */}
+        {/* Language */}
         <MotionDiv
           custom={1}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          className="p-5 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/40"
+        >
+          <LanguageToggle settingsCard />
+        </MotionDiv>
+
+        {/* Theme Toggle */}
+        <MotionDiv
+          custom={2}
           variants={fadeUp}
           initial="hidden"
           animate="visible"
@@ -128,7 +141,7 @@ export default function Settings() {
         {/* Change Password - only for system users */}
         {user?.provider === "system" && (
           <MotionDiv
-            custom={2}
+            custom={3}
             variants={fadeUp}
             initial="hidden"
             animate="visible"
@@ -155,7 +168,7 @@ export default function Settings() {
 
         {/* Danger Zone */}
         <MotionDiv
-          custom={3}
+          custom={4}
           variants={fadeUp}
           initial="hidden"
           animate="visible"
@@ -180,75 +193,66 @@ export default function Settings() {
         </MotionDiv>
       </div>
 
-      <AnimatePresence>
-        {isDeleteModalOpen ? (
-          <MotionDiv
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] flex flex-col bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:justify-center sm:p-4"
-            onClick={() => setIsDeleteModalOpen(false)}
-          >
-            <MotionDiv
-              initial={{ opacity: 0, y: 18, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 220, damping: 24 }}
-              className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-none border border-red-500/20 bg-background/95 shadow-2xl sm:max-h-[min(90dvh,40rem)] sm:max-w-md sm:flex-none sm:rounded-[2rem]"
-              onClick={(event) => event.stopPropagation()}
+      <AppModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        layout="account"
+        tone="danger"
+        zIndex={120}
+        tintClassName="bg-black/50 p-0 backdrop-blur-sm"
+        maxWidthClassName="sm:max-w-md"
+        maxHeightClassName="sm:max-h-[min(90dvh,40rem)]"
+        hideCloseButton
+        header={
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-red-500/15 bg-gradient-to-br from-red-500/12 to-red-500/4 text-red-500 shadow-sm">
+                <TriangleAlert size={18} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-bold text-foreground">Delete Account</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  This action will remove access to your account and sign you out immediately. You won't be able to use the same session again.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => setIsDeleteModalOpen(false)}
             >
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-red-500/15 bg-gradient-to-br from-red-500/12 to-red-500/4 text-red-500 shadow-sm">
-                      <TriangleAlert size={18} />
-                    </div>
-                    <div className="min-w-0">
-                      <h2 className="text-xl font-bold text-foreground">Delete Account</h2>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        This action will remove access to your account and sign you out immediately. You won't be able to use the same session again.
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0"
-                    onClick={() => setIsDeleteModalOpen(false)}
-                  >
-                    <X size={18} />
-                  </Button>
-                </div>
-
-                <div className="mt-5 rounded-2xl border border-red-500/15 bg-red-500/5 px-4 py-3 text-sm text-muted-foreground">
-                  Saved rooms, cart items, and access to future bookings from this account will no longer be available from your profile.
-                </div>
-              </div>
-
-              <div className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-border/30 bg-background/95 px-6 py-4 sm:border-0 sm:bg-transparent sm:px-6 sm:pb-6 sm:pt-0">
-                <Button
-                  type="button"
-                  variant="palmSecondary"
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  disabled={isDeletingAccount}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  variant="palmPrimary"
-                  className="bg-red-600 text-white hover:bg-red-700"
-                  onClick={handleDeleteAccount}
-                  disabled={isDeletingAccount}
-                >
-                  {isDeletingAccount ? "Deleting..." : "Delete Account"}
-                </Button>
-              </div>
-            </MotionDiv>
-          </MotionDiv>
-        ) : null}
-      </AnimatePresence>
+              <X size={18} />
+            </Button>
+          </div>
+        }
+        footer={
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button
+              type="button"
+              variant="palmSecondary"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isDeletingAccount}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="palmPrimary"
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? "Deleting..." : "Delete Account"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="mt-2 rounded-2xl border border-red-500/15 bg-red-500/5 px-4 py-3 text-sm text-muted-foreground">
+          Saved rooms, cart items, and access to future bookings from this account will no longer be available from your profile.
+        </div>
+      </AppModal>
 
       <EditProfileModal
         isOpen={isEditProfileModalOpen}

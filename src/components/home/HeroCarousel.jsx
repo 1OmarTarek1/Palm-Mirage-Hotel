@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence, useSpring } from "framer-motion";
 import BookingBar from "@/components/rooms/BookingBar";
 import { Button } from "@/components/ui/button";
 
@@ -30,7 +31,6 @@ const slides = [
 
 export default function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showMobileBooking, setShowMobileBooking] = useState(false);
 
   const containerRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -149,26 +149,21 @@ export default function HeroCarousel() {
               >
                 {slides[currentIndex].subtitle}
               </motion.p>
-
-              {/* Mobile Booking Trigger Button (Smaller & Integrated) */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.8, duration: 0.8 }}
-                className="xl:hidden mt-6 flex justify-center"
-              >
-                <Button 
-                  variant="palmSecondary"
-                  onClick={() => setShowMobileBooking(true)}
-                  className="px-8 h-12 rounded-full text-[11px] font-bold tracking-widest uppercase"
-                >
-                  Check Availability
-                </Button>
-              </motion.div>
             </div>
           </div>
         </motion.div>
       </AnimatePresence>
+
+      {/* Mobile / tablet CTA: anchored under centered hero copy (svh scales with viewport) */}
+      <div className="pointer-events-none absolute inset-x-0 z-40 flex justify-center px-4 xl:hidden bottom-[max(10.5rem,34svh,calc(env(safe-area-inset-bottom,0px)+7.25rem))] sm:bottom-[max(11.75rem,31svh,calc(env(safe-area-inset-bottom,0px)+8rem))] md:bottom-[max(12.75rem,29svh,calc(env(safe-area-inset-bottom,0px)+8.5rem))]">
+        <Button
+          asChild
+          variant="palmSecondary"
+          className="pointer-events-auto px-8 h-12 rounded-full text-[11px] font-bold tracking-widest uppercase shadow-lg"
+        >
+          <Link to="/rooms">Check Availability</Link>
+        </Button>
+      </div>
 
       {/* Slide Indicators - Architectural Style (Vertical stack, safe positioning) */}
       <div className="absolute bottom-12 right-6 md:bottom-16 md:right-12 lg:right-12 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2 flex flex-col gap-4 z-30">
@@ -211,33 +206,6 @@ export default function HeroCarousel() {
           <BookingBar />
         </div>
       </div>
-
-      {/* Mobile Booking Modal */}
-      <AnimatePresence>
-        {showMobileBooking && (
-            <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-100 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 xl:hidden"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full relative"
-            >
-              <button 
-                onClick={() => setShowMobileBooking(false)}
-                className="absolute -top-16 right-0 text-white/60 hover:text-white flex items-center gap-2 text-xs uppercase tracking-widest font-bold px-4 py-2"
-              >
-                Close ✕
-              </button>
-              <BookingBar className="relative bottom-0! left-0! translate-x-0! px-0!" variant="overlay" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
     </div>
   );

@@ -118,7 +118,7 @@ export const isActivityBookingCancellable = (booking) => {
 };
 
 export const isTableBookingCancellable = (booking) => {
-  if (booking?.paymentStatus === "paid") return false;
+  if (booking?.paymentStatus === "paid" || booking?.paymentStatus === "refunded") return false;
   if (["cancelled", "completed"].includes(booking?.status)) return false;
 
   const endTime = new Date(booking?.endTime);

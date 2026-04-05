@@ -4,6 +4,8 @@ import { NavLink, useNavigate, useMatch } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import NavTooltip from "./NavTooltip";
+import LanguageToggle from "./LanguageToggle";
+import ThemeToggle from "./ThemeToggle";
 import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
 import axiosInstance from "@/services/axiosInstance";
@@ -48,13 +50,13 @@ export default function LoginButton() {
           to="/auth/login"
           aria-label="Login"
           className={({ isActive }) => `
-            flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/10
+            flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full border border-white/10
             transition-all duration-300 hover:bg-primary/20
             ${isActive ? "text-primary bg-primary/20 shadow-inner border border-primary/20" : "text-white/60 bg-primary/5"}
           `}
         >
           <MotionDiv>
-            <LogIn className="w-4 h-4 md:w-4.5 md:h-4.5" />
+            <LogIn className="w-[18px] h-[18px] md:w-5 md:h-5" />
           </MotionDiv>
         </NavLink>
       </NavTooltip>
@@ -73,7 +75,7 @@ export default function LoginButton() {
       onMouseLeave={handleLeave}
     >
       <button
-        className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border transition-all duration-300 hover:bg-primary/20 overflow-hidden bg-primary/5 cursor-pointer
+        className={`flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full border transition-all duration-300 hover:bg-primary/20 overflow-hidden bg-primary/5 cursor-pointer
           ${(isProfilePage || isSettingsPage)
             ? "text-primary bg-primary/20 shadow-inner border-primary/20"
             : "border-white/10"
@@ -89,7 +91,7 @@ export default function LoginButton() {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <User className="w-4 h-4 md:w-4.5 md:h-4.5 text-white/60" />
+          <User className="w-[18px] h-[18px] md:w-5 md:h-5 text-white/60" />
         )}
       </button>
 
@@ -128,6 +130,8 @@ export default function LoginButton() {
                   {item.label}
                 </NavLink>
               ))}
+              <LanguageToggle embedded />
+              <ThemeToggle mobile menuCard />
             </div>
 
             <div className="p-2 border-t border-border/30">

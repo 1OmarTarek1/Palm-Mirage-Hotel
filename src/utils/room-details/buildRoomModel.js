@@ -26,8 +26,15 @@ export function buildRoomModel(apiRoom, fallbackId) {
         .filter(Boolean)
     : [];
 
+  const rawRoomNumber = get("roomNumber", null);
+  const roomNumber =
+    rawRoomNumber !== undefined && rawRoomNumber !== null && String(rawRoomNumber).trim() !== ""
+      ? String(rawRoomNumber).trim()
+      : null;
+
   return {
     id: get("_id", get("id", fallbackId)),
+    roomNumber,
     name: get("roomName", get("name", "Luxury Room")),
     type: get("roomType", get("type", "room")),
     price: Number(get("finalPrice", get("price", 0))),

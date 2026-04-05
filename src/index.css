@@ -123,11 +123,20 @@ html {
   --sidebar-ring: #374151;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   font-family: var(--font-main);
   background-color: var(--background);
   color: var(--foreground);
-  scroll-behavior: smooth;
   overflow-x: hidden !important;
   position: relative;
 }
@@ -203,4 +212,18 @@ body {
 .Toastify__close-button > svg { @apply 
   w-4!
   h-4!;
+}
+
+/* Toast type accents — success/info should not read as “error” */
+.Toastify__toast--success {
+  border-left: 4px solid var(--primary) !important;
+}
+.Toastify__toast--info {
+  border-left: 4px solid #3b82f6 !important;
+}
+.Toastify__toast--warning {
+  border-left: 4px solid #ca8a04 !important;
+}
+.Toastify__toast--error {
+  border-left: 4px solid var(--destructive) !important;
 }

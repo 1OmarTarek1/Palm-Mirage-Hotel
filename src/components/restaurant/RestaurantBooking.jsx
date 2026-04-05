@@ -32,18 +32,18 @@ export default function RestaurantBooking() {
     event.preventDefault();
 
     if (!isAuthenticated) {
-      toast.error("Please sign in first to reserve a table.");
+      toast.info("Please sign in first to reserve a table.");
       return;
     }
 
     if (!date || !time) {
-      toast.error("Please select both date and time.");
+      toast.info("Please select both date and time.");
       return;
     }
 
     const guestCount = Number(guests);
     if (!Number.isInteger(guestCount) || guestCount < 1) {
-      toast.error("Please enter a valid number of guests.");
+      toast.info("Please enter a valid number of guests.");
       return;
     }
 
@@ -79,7 +79,7 @@ export default function RestaurantBooking() {
   };
 
   return (
-    <section id="table-booking" className="border-t border-border/30 bg-background/50">
+    <section id="table-booking" className="scroll-mt-24 border-t border-border/30">
       <div className="container mx-auto max-w-6xl px-4 py-16 sm:py-24">
         <div className="grid grid-cols-1 items-start gap-16 lg:grid-cols-2 lg:gap-24">
           <div className="max-w-md">

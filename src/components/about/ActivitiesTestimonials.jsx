@@ -63,10 +63,19 @@ export default function ActivitiesTestimonials() {
   });
 
   return (
-    <div id="testimonials" className="relative bg-card w-screen left-1/2 -translate-x-1/2  py-24 overflow-hidden transition-colors duration-300 my-20">
+    <div id="testimonials" className="relative w-screen left-1/2 -translate-x-1/2  py-24 overflow-hidden transition-colors duration-300 my-20">
       <style dangerouslySetInnerHTML={{ __html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Edge fade via CSS mask only — no overlay; background stays visible */
+        .activities-testimonials-marquee-mask {
+          -webkit-mask-image: linear-gradient(to right, transparent 0%, black 44%, black 56%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, black 44%, black 56%, transparent 100%);
+          -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+          -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+        }
       `}} />
       <div className="w-full relative z-10 text-center">
         <motion.div
@@ -104,16 +113,12 @@ export default function ActivitiesTestimonials() {
         </motion.div>
 
         {/* Infinite Scroll Image Marquee */}
-        <div 
-          className="relative w-full overflow-hidden mt-12 py-10"
+        <div
+          className="activities-testimonials-marquee-mask relative w-full overflow-hidden mt-12 py-10"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          {/* Edge gradients for smooth fade in/out - increased width */}
-          <div className="absolute left-0 top-0 bottom-0 w-20 md:w-64 bg-linear-to-r from-card to-transparent z-20 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 md:w-64 bg-linear-to-l from-card to-transparent z-20 pointer-events-none" />
-
-          <motion.div 
+          <motion.div
             ref={containerRef}
             style={{ x }}
             className="flex flex-row items-center gap-4 md:gap-7 w-max px-4"

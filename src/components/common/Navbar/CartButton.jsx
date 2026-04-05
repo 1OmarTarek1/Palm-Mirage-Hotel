@@ -22,14 +22,14 @@ function CartButton({ itemCount: propCount }) {
         onClick={() => dispatch(toggleCart())}
         aria-label="Shopping Cart"
         className={`
-          relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full
+          relative flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full
           transition-all duration-300 hover:bg-primary/20 cursor-pointer
           ${(isOpen || isCartPage)
             ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
             : "text-white/60 bg-primary/5 border border-white/10"}
         `}
       >
-        <ShoppingCart className="w-4 h-4 md:w-[18px] md:h-[18px]" />
+        <ShoppingCart className="w-[18px] h-[18px] md:w-5 md:h-5" />
 
         {/* Badge */}
         <AnimatePresence>

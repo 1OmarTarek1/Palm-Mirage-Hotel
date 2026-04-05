@@ -99,10 +99,10 @@ export default function RoomFilter({ rooms = [], onFilter, onReset }) {
   };
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-7 font-main text-foreground">
       {/* Price Range */}
       <div className="space-y-2">
-        <h4 className="text-xl text-left font-header font-bold text-accent-foreground">
+        <h4 className="text-left font-header text-xl font-bold text-foreground">
           Price
         </h4>
         <Slider
@@ -113,115 +113,109 @@ export default function RoomFilter({ rooms = [], onFilter, onReset }) {
           onValueChange={setPrice}
           className="w-full"
         />
-        <div className="flex gap-2 text-accent-foreground font-bold">
+        <div className="flex gap-2 font-semibold text-foreground">
           <span>${activePrice[0]} - </span>
           <span>${activePrice[1].toLocaleString()}</span>
         </div>
       </div>
 
-      <hr className="border-stone-100" />
+      <hr className="border-0 border-t border-border/25" />
 
       {/* Room Types */}
       <div className="space-y-2">
-        <h4 className="text-xl text-left font-header font-bold text-accent-foreground">
+        <h4 className="text-left font-header text-xl font-bold text-foreground">
           Room Types
         </h4>
         <ul className="space-y-2.5">
           {roomTypeCounts.map((type) => (
-            <li key={type.value} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <li key={type.value} className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 cursor-pointer items-center gap-2.5">
                 <Checkbox
-                  className="border rounded-xs"
                   id={`type-${type.value}`}
                   checked={selectedTypes.includes(type.value)}
                   onCheckedChange={() => toggleItem(setSelectedTypes, type.value)}
                 />
                 <Label
                   htmlFor={`type-${type.value}`}
-                  className="text-sm text-stone-600 cursor-pointer"
+                  className="cursor-pointer text-sm font-normal text-foreground"
                 >
                   {type.label}
                 </Label>
               </div>
-              <span className="text-xs text-stone-400">{type.count}</span>
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{type.count}</span>
             </li>
           ))}
         </ul>
       </div>
 
-      <hr className="border-stone-100" />
+      <hr className="border-0 border-t border-border/25" />
 
       {/* Rating */}
       <div className="space-y-2">
-        <h4 className="text-xl text-left font-header font-bold text-accent-foreground">
+        <h4 className="text-left font-header text-xl font-bold text-foreground">
           Rating
         </h4>
         <ul className="space-y-2.5">
           {ratingCounts.map(({ value, count }) => (
-            <li key={value} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <li key={value} className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 cursor-pointer items-center gap-2.5">
                 <Checkbox
-                  className="border rounded-xs"
                   id={`rating-${value}`}
                   checked={selectedRatings.includes(value)}
                   onCheckedChange={() => toggleItem(setSelectedRatings, value)}
                 />
                 <Label
                   htmlFor={`rating-${value}`}
-                  className="flex items-center gap-1 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-0.5"
                 >
                   {Array.from({ length: value }).map((_, i) => (
-                    <Star
-                      key={`filled-${value}-${i}`}
-                      size={13}
-                      className="fill-amber-400 text-amber-400"
-                    />
+                    <Star key={`filled-${value}-${i}`} size={13} className="fill-primary text-primary" />
                   ))}
                   {Array.from({ length: 5 - value }).map((_, i) => (
                     <Star
                       key={`empty-${value}-${i}`}
                       size={13}
-                      className="text-stone-200 fill-stone-200"
+                      className="fill-transparent text-muted-foreground/40"
+                      strokeWidth={1.35}
                     />
                   ))}
                 </Label>
               </div>
-              <span className="text-xs text-stone-400">{count}</span>
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{count}</span>
             </li>
           ))}
 
           {/* Unrated */}
-          <li className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                className="border rounded-xs"
-                id="rating-unrated"
-                checked={unrated}
-                onCheckedChange={setUnrated}
-              />
+          <li className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 cursor-pointer items-center gap-2.5">
+              <Checkbox id="rating-unrated" checked={unrated} onCheckedChange={setUnrated} />
               <Label
                 htmlFor="rating-unrated"
-                className="text-sm text-stone-600 cursor-pointer"
+                className="cursor-pointer text-sm font-normal text-foreground"
               >
                 Unrated
               </Label>
             </div>
-            <span className="text-xs text-stone-400">{unratedCount}</span>
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{unratedCount}</span>
           </li>
         </ul>
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-row gap-2">
         <Button
           variant="palmPrimary"
+          size="sm"
           onClick={handleFilter}
+          className="min-w-0 flex-[1.7] px-4"
         >
           Filter
         </Button>
         <Button
           variant="palmSecondary"
+          size="sm"
           onClick={handleReset}
+          className="min-w-0 flex-1 px-3"
         >
           Reset
         </Button>

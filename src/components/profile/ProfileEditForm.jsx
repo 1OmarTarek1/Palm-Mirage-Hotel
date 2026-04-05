@@ -84,7 +84,7 @@ export default function ProfileEditForm({
     }
 
     if (!ACCEPTED_IMAGE_TYPES.includes(nextFile.type)) {
-      toast.error("Please choose a JPG, PNG, or GIF image.");
+      toast.info("Please choose a JPG, PNG, or GIF image.");
       event.target.value = "";
       return;
     }
