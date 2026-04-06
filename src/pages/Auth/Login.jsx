@@ -29,12 +29,16 @@ export default function Login() {
 
   const onSubmit = async (formData) => {
     try {
-      await axiosInstance.post("/auth/login", formData);
-      const profileResponse = await axiosInstance.get("/auth/account");
+      const loginResponse = await axiosInstance.post("/auth/login", formData);
+      const token = loginResponse?.data?.data?.accessToken;
+      const profileResponse = await axiosInstance.get("/auth/account", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
       dispatch(
         setCredentials({
           user: profileResponse?.data?.data?.user ?? null,
+          token: token,
         }),
       );
 

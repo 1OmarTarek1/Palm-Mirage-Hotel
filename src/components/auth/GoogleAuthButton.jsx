@@ -26,14 +26,18 @@ export default function GoogleAuthButton() {
     setError("");
 
     try {
-      await axiosInstance.post("/auth/login-google", {
+      const loginResponse = await axiosInstance.post("/auth/login-google", {
         idToken: credentialResponse.credential,
       });
-      const profileResponse = await axiosInstance.get("/auth/account");
+      const token = loginResponse?.data?.data?.accessToken;
+      const profileResponse = await axiosInstance.get("/auth/account", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
       dispatch(
         setCredentials({
           user: profileResponse?.data?.data?.user ?? null,
+          token: token,
         }),
       );
 

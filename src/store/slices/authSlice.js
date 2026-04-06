@@ -4,13 +4,13 @@ const AUTH_STORAGE_KEY = 'authState';
 
 const loadPersistedAuth = () => {
   if (typeof window === 'undefined') {
-    return { user: null, isAuthenticated: false };
+    return { user: null, token: null, isAuthenticated: false };
   }
 
   try {
     const rawAuthState = window.localStorage.getItem(AUTH_STORAGE_KEY);
     if (!rawAuthState) {
-      return { user: null, isAuthenticated: false };
+      return { user: null, token: null, isAuthenticated: false };
     }
 
     const parsedAuthState = JSON.parse(rawAuthState);
@@ -18,28 +18,30 @@ const loadPersistedAuth = () => {
       parsedAuthState?.user && typeof parsedAuthState.user === 'object'
         ? parsedAuthState.user
         : null;
+    const token = parsedAuthState?.token || null;
 
     return {
       user,
-      isAuthenticated: Boolean(user),
+      token,
+      isAuthenticated: Boolean(user && token),
     };
   } catch (error) {
     console.error('Failed to load auth state from localStorage:', error);
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
-    return { user: null, isAuthenticated: false };
+    return { user: null, token: null, isAuthenticated: false };
   }
 };
 
-const persistAuth = (user) => {
+const persistAuth = (user, token) => {
   if (typeof window === 'undefined') {
     return;
   }
 
   try {
-    if (user) {
+    if (user && token) {
       window.localStorage.setItem(
         AUTH_STORAGE_KEY,
-        JSON.stringify({ user }),
+        JSON.stringify({ user, token }),
       );
       return;
     }
@@ -54,6 +56,7 @@ const persistedAuth = loadPersistedAuth();
 
 const initialState = {
   user: persistedAuth.user,
+  token: persistedAuth.token,
   isAuthenticated: persistedAuth.isAuthenticated,
   isHydrating: true,
 };
@@ -63,11 +66,12 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user } = action.payload;
+      const { user, token } = action.payload;
       state.user = user;
-      state.isAuthenticated = Boolean(user);
+      state.token = token;
+      state.isAuthenticated = Boolean(user && token);
       state.isHydrating = false;
-      persistAuth(user);
+      persistAuth(user, token);
     },
     finishHydration: (state) => {
       state.isHydrating = false;
@@ -76,7 +80,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       state.isHydrating = false;
-      persistAuth(null);
+      persistAuth(null, null);
     },
   },
 });
