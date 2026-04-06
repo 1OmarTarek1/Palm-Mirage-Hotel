@@ -13,8 +13,14 @@ const useAxiosPrivate = () => {
         const prevRequest = error?.config;
         if (error?.response?.status === 401 && !prevRequest?.sent) {
           prevRequest.sent = true;
-          await refresh();
-          return axiosPrivate(prevRequest);
+          try {
+            await refresh();
+            return axiosPrivate(prevRequest);
+          } catch (refreshError) {
+            // If refresh fails, clear token and let the app handle logout
+            sessionStorage.removeItem('accessToken');
+            return Promise.reject(error);
+          }
         }
         return Promise.reject(error);
       },

@@ -95,11 +95,18 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
 
   if (hasAuthFailure(entries)) {
     try {
-      await axiosInstance.get("/auth/refresh-token");
-      entries = await runSnapshotRequests({ dispatch, axiosPrivate });
+      const refreshResponse = await axiosPrivate.get("/auth/refresh-token");
+      const newAccessToken = refreshResponse?.data?.data?.token?.accessToken;
+      
+      if (newAccessToken) {
+        sessionStorage.setItem('accessToken', newAccessToken);
+        // Retry the snapshot requests with new token
+        entries = await runSnapshotRequests({ dispatch, axiosPrivate });
+      }
     } catch (error) {
       if (isAuthFailure(error)) {
         dispatch(logout());
+        sessionStorage.removeItem('accessToken');
         return { status: "unauthenticated", entries };
       }
 
@@ -112,6 +119,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
   if (accountEntry?.result.status === "rejected") {
     if (isAuthFailure(accountEntry.result.reason)) {
       dispatch(logout());
+      sessionStorage.removeItem('accessToken');
       return { status: "unauthenticated", entries };
     }
 
@@ -122,6 +130,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
 
   if (!user) {
     dispatch(logout());
+    sessionStorage.removeItem('accessToken');
     return { status: "unauthenticated", entries };
   }
 

@@ -29,12 +29,12 @@ export default function Login() {
 
   const onSubmit = async (formData) => {
     try {
-      await axiosInstance.post("/auth/login", formData);
-      const profileResponse = await axiosInstance.get("/auth/account");
-
+      const response = await axiosInstance.post("/auth/login", formData);
+      
       dispatch(
         setCredentials({
-          user: profileResponse?.data?.data?.user ?? null,
+          user: response?.data?.data?.user ?? null,
+          token: response?.data?.data?.accessToken ?? null,
         }),
       );
 

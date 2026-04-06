@@ -17,13 +17,28 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
-export default axios.create({
+// Add Authorization header interceptor for requests
+const addAuthHeader = (config) => {
+  const token = sessionStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+};
+
+const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  withCredentials: false, // Disable cookies for Website
 });
 
 export const axiosPrivate = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
-  withCredentials: true,
+  withCredentials: false, // Disable cookies for Website
 });
+
+// Add request interceptor to include Authorization header
+axiosPrivate.interceptors.request.use(addAuthHeader);
+axiosInstance.interceptors.request.use(addAuthHeader);
+
+export default axiosInstance;

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const AUTH_STORAGE_KEY = 'authState';
+const AUTH_STORAGE_KEY = 'accessToken';
 
 const loadPersistedAuth = () => {
   if (typeof window === 'undefined') {
@@ -8,44 +8,38 @@ const loadPersistedAuth = () => {
   }
 
   try {
-    const rawAuthState = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!rawAuthState) {
+    const token = window.sessionStorage.getItem(AUTH_STORAGE_KEY);
+    if (!token) {
       return { user: null, isAuthenticated: false };
     }
 
-    const parsedAuthState = JSON.parse(rawAuthState);
-    const user =
-      parsedAuthState?.user && typeof parsedAuthState.user === 'object'
-        ? parsedAuthState.user
-        : null;
+    // For now, we'll validate token existence but not decode it here
+    // The actual validation happens in AuthBootstrap
     return {
-      user,
-      isAuthenticated: Boolean(user),
+      user: null, // Will be populated by AuthBootstrap
+      isAuthenticated: Boolean(token),
     };
   } catch (error) {
-    console.error('Failed to load auth state from localStorage:', error);
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    console.error('Failed to load auth token from sessionStorage:', error);
+    window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
     return { user: null, isAuthenticated: false };
   }
 };
 
-const persistAuth = (user) => {
+const persistAuth = (user, token) => {
   if (typeof window === 'undefined') {
     return;
   }
 
   try {
-    if (user) {
-      window.localStorage.setItem(
-        AUTH_STORAGE_KEY,
-        JSON.stringify({ user }),
-      );
+    if (user && token) {
+      window.sessionStorage.setItem(AUTH_STORAGE_KEY, token);
       return;
     }
 
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
   } catch (error) {
-    console.error('Failed to persist auth state to localStorage:', error);
+    console.error('Failed to persist auth token to sessionStorage:', error);
   }
 };
 
@@ -62,11 +56,11 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user } = action.payload;
+      const { user, token } = action.payload;
       state.user = user;
       state.isAuthenticated = Boolean(user);
       state.isHydrating = false;
-      persistAuth(user);
+      persistAuth(user, token);
     },
     finishHydration: (state) => {
       state.isHydrating = false;
@@ -75,7 +69,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       state.isHydrating = false;
-      persistAuth(null);
+      persistAuth(null, null);
     },
   },
 });
