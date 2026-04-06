@@ -17,36 +17,13 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
-const AUTH_STORAGE_KEY = "authState";
-
-const addAuthHeader = (config) => {
-  try {
-    const rawAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (rawAuth) {
-      const { token } = JSON.parse(rawAuth);
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-  } catch (err) {
-    console.error("[axiosInstance] Failed to parse auth for header:", err);
-  }
-  return config;
-};
-
-const instance = axios.create({
+export default axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
 
-const privateInstance = axios.create({
+export const axiosPrivate = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
-
-instance.interceptors.request.use(addAuthHeader);
-privateInstance.interceptors.request.use(addAuthHeader);
-
-export default instance;
-export const axiosPrivate = privateInstance;
