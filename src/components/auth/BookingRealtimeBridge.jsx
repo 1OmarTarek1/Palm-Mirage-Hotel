@@ -8,11 +8,22 @@ import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import axiosInstance from "@/services/axiosInstance";
 import { refreshUserSnapshot } from "@/services/userSnapshot";
 
-const BASE_URL = (
-  import.meta.env.MODE === "development"
-    ? import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
-    : import.meta.env.VITE_API_BASE_URL
-).replace(/\/$/, "");
+const getSocketUrl = () => {
+  const url = import.meta.env.VITE_API_BASE_URL;
+  if (url) return url.trim().replace(/\/$/, "");
+
+  // Fallback only in development mode
+  if (import.meta.env.MODE === "development") {
+    return "http://localhost:5000";
+  }
+
+  // Explicitly fail in production if the variable is missing
+  throw new Error(
+    "[BookingRealtimeBridge] VITE_API_BASE_URL is not configured in production settings."
+  );
+};
+
+const BASE_URL = getSocketUrl();
 
 const SOCKET_SERVER_URL = BASE_URL;
 

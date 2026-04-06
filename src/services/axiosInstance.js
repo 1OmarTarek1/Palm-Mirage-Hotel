@@ -1,15 +1,21 @@
 import axios from "axios";
 
-const BASE_URL = (
-  import.meta.env.MODE === "development"
-    ? import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
-    : import.meta.env.VITE_API_BASE_URL ||
-      (() => {
-        throw new Error(
-          "[axiosInstance] VITE_API_BASE_URL is required in production but was not set."
-        );
-      })()
-).replace(/\/$/, "");
+const getBaseUrl = () => {
+  const url = import.meta.env.VITE_API_BASE_URL;
+  if (url) return url.trim().replace(/\/$/, "");
+
+  // Fallback to localhost only during local development
+  if (import.meta.env.MODE === "development") {
+    return "http://localhost:5000";
+  }
+
+  // Explicitly fail in production if the variable is missing
+  throw new Error(
+    "[axiosInstance] VITE_API_BASE_URL is not configured in production settings."
+  );
+};
+
+const BASE_URL = getBaseUrl();
 
 export default axios.create({
   baseURL: BASE_URL,
