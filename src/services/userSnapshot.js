@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "@/services/axiosInstance";
 import {
   fetchMyActivityBookings,
@@ -95,7 +96,24 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
 
   if (hasAuthFailure(entries)) {
     try {
-      const refreshResponse = await axiosPrivate.get("/auth/refresh-token");
+      const refreshToken = sessionStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      // Create separate axios instance for refresh
+      const refreshAxios = axios.create({
+        baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
+        headers: { "Content-Type": "application/json" },
+        withCredentials: false,
+      });
+
+      const refreshResponse = await refreshAxios.get("/auth/refresh-token", {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`
+        }
+      });
+      
       const newAccessToken = refreshResponse?.data?.data?.token?.accessToken;
       
       if (newAccessToken) {
@@ -107,6 +125,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
       if (isAuthFailure(error)) {
         dispatch(logout());
         sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
         return { status: "unauthenticated", entries };
       }
 
@@ -120,6 +139,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
     if (isAuthFailure(accountEntry.result.reason)) {
       dispatch(logout());
       sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
       return { status: "unauthenticated", entries };
     }
 
@@ -131,6 +151,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
   if (!user) {
     dispatch(logout());
     sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
     return { status: "unauthenticated", entries };
   }
 

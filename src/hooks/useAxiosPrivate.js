@@ -17,8 +17,9 @@ const useAxiosPrivate = () => {
             await refresh();
             return axiosPrivate(prevRequest);
           } catch (refreshError) {
-            // If refresh fails, clear token and let the app handle logout
+            // If refresh fails, clear tokens and let the app handle logout
             sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('refreshToken');
             return Promise.reject(error);
           }
         }

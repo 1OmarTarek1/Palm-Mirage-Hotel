@@ -34,6 +34,7 @@ export default function GoogleAuthButton() {
         setCredentials({
           user: response?.data?.data?.user ?? null,
           token: response?.data?.data?.accessToken ?? null,
+          refreshToken: response?.data?.data?.refreshToken ?? null,
         }),
       );
 

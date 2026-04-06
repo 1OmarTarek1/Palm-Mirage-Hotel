@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const AUTH_STORAGE_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
 
 const loadPersistedAuth = () => {
   if (typeof window === 'undefined') {
@@ -26,7 +27,7 @@ const loadPersistedAuth = () => {
   }
 };
 
-const persistAuth = (user, token) => {
+const persistAuth = (user, token, refreshToken) => {
   if (typeof window === 'undefined') {
     return;
   }
@@ -34,10 +35,14 @@ const persistAuth = (user, token) => {
   try {
     if (user && token) {
       window.sessionStorage.setItem(AUTH_STORAGE_KEY, token);
+      if (refreshToken) {
+        window.sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      }
       return;
     }
 
     window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    window.sessionStorage.removeItem(REFRESH_TOKEN_KEY);
   } catch (error) {
     console.error('Failed to persist auth token to sessionStorage:', error);
   }
@@ -56,11 +61,11 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, token } = action.payload;
+      const { user, token, refreshToken } = action.payload;
       state.user = user;
       state.isAuthenticated = Boolean(user);
       state.isHydrating = false;
-      persistAuth(user, token);
+      persistAuth(user, token, refreshToken);
     },
     finishHydration: (state) => {
       state.isHydrating = false;
@@ -69,7 +74,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       state.isHydrating = false;
-      persistAuth(null, null);
+      persistAuth(null, null, null);
     },
   },
 });
