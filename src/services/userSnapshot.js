@@ -96,7 +96,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
 
   if (hasAuthFailure(entries)) {
     try {
-      const refreshToken = sessionStorage.getItem('refreshToken');
+      const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -117,15 +117,16 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
       const newAccessToken = refreshResponse?.data?.data?.token?.accessToken;
       
       if (newAccessToken) {
-        sessionStorage.setItem('accessToken', newAccessToken);
+        localStorage.setItem('accessToken', newAccessToken);
         // Retry the snapshot requests with new token
         entries = await runSnapshotRequests({ dispatch, axiosPrivate });
       }
     } catch (error) {
       if (isAuthFailure(error)) {
         dispatch(logout());
-        sessionStorage.removeItem('accessToken');
-        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem("user");
         return { status: "unauthenticated", entries };
       }
 
@@ -138,8 +139,9 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
   if (accountEntry?.result.status === "rejected") {
     if (isAuthFailure(accountEntry.result.reason)) {
       dispatch(logout());
-      sessionStorage.removeItem('accessToken');
-      sessionStorage.removeItem('refreshToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem("user");
       return { status: "unauthenticated", entries };
     }
 
@@ -150,8 +152,9 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
 
   if (!user) {
     dispatch(logout());
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('refreshToken');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem("user");
     return { status: "unauthenticated", entries };
   }
 

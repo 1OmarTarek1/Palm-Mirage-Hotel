@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const AUTH_STORAGE_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
+const AUTH_STORAGE_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
 
 const loadPersistedAuth = () => {
   if (typeof window === 'undefined') {
@@ -9,20 +9,17 @@ const loadPersistedAuth = () => {
   }
 
   try {
-    const token = window.sessionStorage.getItem(AUTH_STORAGE_KEY);
-    if (!token) {
-      return { user: null, isAuthenticated: false };
+    const token = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    const refreshToken = window.localStorage.getItem(REFRESH_TOKEN_KEY);
+    const userStr = window.localStorage.getItem("user");
+    
+    if (token && userStr) {
+      const user = JSON.parse(userStr);
+      return { user, isAuthenticated: true };
     }
-
-    // For now, we'll validate token existence but not decode it here
-    // The actual validation happens in AuthBootstrap
-    return {
-      user: null, // Will be populated by AuthBootstrap
-      isAuthenticated: Boolean(token),
-    };
+    return { user: null, isAuthenticated: false };
   } catch (error) {
-    console.error('Failed to load auth token from sessionStorage:', error);
-    window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    console.error('Failed to load auth from localStorage:', error);
     return { user: null, isAuthenticated: false };
   }
 };
@@ -34,17 +31,19 @@ const persistAuth = (user, token, refreshToken) => {
 
   try {
     if (user && token) {
-      window.sessionStorage.setItem(AUTH_STORAGE_KEY, token);
+      window.localStorage.setItem(AUTH_STORAGE_KEY, token);
       if (refreshToken) {
-        window.sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+        window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
       }
+      window.localStorage.setItem("user", JSON.stringify(user));
       return;
     }
 
-    window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
-    window.sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+    window.localStorage.removeItem("user");
   } catch (error) {
-    console.error('Failed to persist auth token to sessionStorage:', error);
+    console.error('Failed to persist auth token to localStorage:', error);
   }
 };
 

@@ -459,15 +459,7 @@ function RestaurantMenuSectionSkeleton({ reverse = false }) {
 /** Matches /services/restaurant layout: hero grid, marquees, story, gallery, menu bands, promos, booking. */
 export function RestaurantPageSkeleton() {
   return (
-    <div className="text-foreground antialiased overflow-x-hidden pt-[3.25rem] sm:pt-16">
-      <div
-        className="pointer-events-none fixed top-3 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 sm:top-4"
-        aria-hidden
-      >
-        <Skeleton className="h-10 w-[7.5rem] rounded-full border border-border/40" />
-        <Skeleton className="h-10 w-[8.5rem] rounded-full border border-border/40" />
-      </div>
-
+    <div className="text-foreground antialiased overflow-x-hidden">
       <header className="mb-10 grid min-h-[100dvh] gap-4 lg:min-h-0 lg:h-[min(100dvh,900px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-6">
         <div className="order-2 flex flex-col justify-between rounded-2xl border border-border/60 px-6 py-10 shadow-sm sm:px-10 lg:order-1 lg:px-12 lg:py-12">
           <div className="space-y-6">

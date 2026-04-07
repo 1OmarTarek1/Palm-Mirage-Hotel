@@ -3,7 +3,8 @@ import { getBaseUrl } from "@/services/axiosInstance";
 
 const useRefreshToken = () => {
   const refresh = async () => {
-    const refreshToken = sessionStorage.getItem('refreshToken');
+    // Create a custom axios instance for refresh token to avoid infinite loop
+    const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -24,7 +25,7 @@ const useRefreshToken = () => {
     const newAccessToken = response?.data?.data?.token?.accessToken;
     
     if (newAccessToken) {
-      sessionStorage.setItem('accessToken', newAccessToken);
+      localStorage.setItem('accessToken', newAccessToken);
     }
     
     return response;

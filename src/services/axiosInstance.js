@@ -19,7 +19,7 @@ const BASE_URL = getBaseUrl();
 
 // Add Authorization header interceptor for requests
 const addAuthHeader = (config) => {
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
