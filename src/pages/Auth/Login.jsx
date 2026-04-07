@@ -31,11 +31,6 @@ export default function Login() {
     try {
       const response = await axiosInstance.post("/auth/login", formData);
       
-      console.log("[Login] Response:", response?.data);
-      console.log("[Login] User data:", response?.data?.data?.user);
-      console.log("[Login] Access token:", response?.data?.data?.accessToken ? "exists" : "missing");
-      console.log("[Login] Refresh token:", response?.data?.data?.refreshToken ? "exists" : "missing");
-      
       dispatch(
         setCredentials({
           user: response?.data?.data?.user ?? null,
@@ -47,7 +42,6 @@ export default function Login() {
       toast.success("Signed in successfully.");
       navigate(from, { replace: true });
     } catch (error) {
-      console.error("[Login] Error:", error);
       toast.error(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
