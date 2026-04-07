@@ -41,4 +41,6 @@ export const axiosPrivate = axios.create({
 axiosPrivate.interceptors.request.use(addAuthHeader);
 axiosInstance.interceptors.request.use(addAuthHeader);
 
+// Export both default and named exports
 export default axiosInstance;
+export { getBaseUrl };
