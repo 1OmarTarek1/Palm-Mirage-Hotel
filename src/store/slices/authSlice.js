@@ -34,6 +34,7 @@ const persistAuth = (user, token, refreshToken) => {
 
   try {
     if (user && token) {
+      console.log("[AuthSlice] Storing tokens - Access:", !!token, "Refresh:", !!refreshToken);
       window.sessionStorage.setItem(AUTH_STORAGE_KEY, token);
       if (refreshToken) {
         window.sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
@@ -41,6 +42,7 @@ const persistAuth = (user, token, refreshToken) => {
       return;
     }
 
+    console.log("[AuthSlice] Clearing tokens");
     window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
     window.sessionStorage.removeItem(REFRESH_TOKEN_KEY);
   } catch (error) {
