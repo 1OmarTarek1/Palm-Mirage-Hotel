@@ -5,7 +5,7 @@ import { ArrowDownRight, Clock, Mail, MapPin, Phone, Sparkles, UtensilsCrossed }
 import { Button } from "@/components/ui/button";
 import RestaurantBooking from "@/components/restaurant/RestaurantBooking";
 import RestaurantDishAddButton from "@/components/restaurant/RestaurantDishAddButton";
-import { RestaurantPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { RestaurantPageSkeleton } from "@/components/restaurant/loading/RestaurantPageSkeleton";
 import { useRestaurantMenuBundleQuery } from "@/hooks/useCatalogQueries";
 import { CarouselCard, SectionCarousel } from "@/components/profile/ProfileSectionParts";
 

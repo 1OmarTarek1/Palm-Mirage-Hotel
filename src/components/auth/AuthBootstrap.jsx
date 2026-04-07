@@ -20,10 +20,21 @@ export default function AuthBootstrap() {
 
     const bootstrapAuth = async () => {
       try {
+        // Check if we have tokens in localStorage
+        const hasTokens = localStorage.getItem('accessToken') && localStorage.getItem('user');
+        
+        if (!hasTokens) {
+          // No tokens found, finish hydration without trying to refresh
+          dispatch(finishHydration());
+          return;
+        }
+
         await refreshUserSnapshot({ dispatch, axiosPrivate });
       } catch (error) {
         if (isMounted) {
           console.error("Failed to bootstrap the authenticated user snapshot:", error);
+          // Don't logout on bootstrap failure, just finish hydration
+          // Let the user stay logged in if tokens exist
         }
       } finally {
         if (isMounted) {

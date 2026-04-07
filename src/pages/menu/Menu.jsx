@@ -3,7 +3,7 @@ import { useState } from "react";
 import MenuTabs from "../../components/menu/MenuTabs";
 import MenuGrid from "../../components/menu/MenuGrid";
 import MenuReservationHero from "../../components/menu/MenuReservationHero";
-import { MenuPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { MenuPageSkeleton } from "@/components/restaurant/loading/RestaurantPageSkeleton";
 import { useMenuGroupedQuery } from "@/hooks/useCatalogQueries";
 
 export default function MenuPage() {

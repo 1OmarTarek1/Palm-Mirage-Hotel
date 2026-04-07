@@ -1,10 +1,14 @@
 import { useMemo } from "react";
 import { Minus, Plus, Trash2, UtensilsCrossed } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 import { Button } from "@/components/ui/button";
 import { useRestaurantCart } from "@/context/RestaurantCartContext";
 import { useMenuGroupedQuery } from "@/hooks/useCatalogQueries";
 import { cn } from "@/lib/utils";
+import { closeCart } from "@/store/slices/cartSlice";
 
 const LINE_IMG_FALLBACK =
   "https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop";
@@ -47,6 +51,7 @@ function formatPrice(price) {
  * Restaurant order list + footer for the unified cart sidebar (rooms / restaurant tabs).
  */
 export function RestaurantOrderSidebarSection({ className }) {
+  const dispatch = useDispatch();
   const { cart, setQty, resetCart, goToBookingWithOrder } = useRestaurantCart();
   const menuItems = useMenuFlat();
 
@@ -72,14 +77,22 @@ export function RestaurantOrderSidebarSection({ className }) {
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
         {lines.length === 0 ? (
-          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-            <UtensilsCrossed className="mb-4 h-10 w-10 text-muted-foreground/40" strokeWidth={1.25} />
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Tap <span className="font-semibold text-foreground">+</span> on any dish to add it here, then use{" "}
-              <span className="font-semibold text-foreground">Order</span> in the booking section to finish date, time,
-              and guests.
-            </p>
-          </div>
+          <motion.div
+            key="restaurant-empty"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex h-64 flex-col items-center justify-center gap-4 text-muted-foreground"
+          >
+            <UtensilsCrossed className="h-12 w-12" />
+            <p className="text-sm font-medium">No dishes in your cart</p>
+            <Link
+              onClick={() => dispatch(closeCart())}
+              to="/services/restaurant"
+              className="cursor-pointer text-sm font-semibold text-primary hover:underline"
+            >
+              Browse Menu →
+            </Link>
+          </motion.div>
         ) : (
           <ul className="space-y-3">
             {lines.map((line) => (
@@ -145,31 +158,6 @@ export function RestaurantOrderSidebarSection({ className }) {
             ))}
           </ul>
         )}
-      </div>
-
-      <div className="space-y-4 border-t border-border/40 bg-card/95 px-6 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-sm">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">Subtotal</span>
-          <span className="font-header text-xl font-bold tabular-nums text-primary">${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex min-w-0 flex-row gap-2 sm:gap-3">
-          <Button
-            type="button"
-            variant="palmSecondary"
-            className="h-11 min-w-0 flex-1 rounded-2xl text-[11px] font-bold uppercase tracking-[0.15em]"
-            onClick={() => resetCart()}
-          >
-            Reset
-          </Button>
-          <Button
-            type="button"
-            variant="palmPrimary"
-            className="h-11 min-w-0 flex-1 rounded-2xl text-[11px] font-bold uppercase tracking-[0.15em]"
-            onClick={goToBookingWithOrder}
-          >
-            Order
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Eye, Heart, ShoppingBag, ShoppingCart, Ticket, Trash2, UtensilsCrossed } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, Heart, ShoppingBag, ShoppingCart, Ticket, Trash2, UtensilsCrossed, CreditCard } from "lucide-react";
 import { motion as Motion } from "framer-motion";
 import { toast } from "react-toastify";
 
@@ -295,12 +295,19 @@ export function RoomBookingCard({
   cancelBooking,
   runCancelAction,
 }) {
+  const navigate = useNavigate();
   const bookingId = booking?._id || booking?.id;
   const roomId = booking?.room?._id || booking?.room?.id;
   const roomName =
     booking?.room?.roomName || `Room ${booking?.room?.roomNumber || ""}`.trim();
   const image = resolveImage(booking?.room);
   const canCancel = isRoomBookingCancellable(booking);
+  const needsPayment = booking?.paymentStatus === "awaiting_payment";
+
+  const handleCompletePayment = () => {
+    // Navigate to checkout with the booking ID to complete payment
+    navigate(`/cart/checkout?bookingId=${bookingId}`);
+  };
 
   return (
     <CarouselCard className="relative overflow-hidden p-0">
@@ -365,26 +372,42 @@ export function RoomBookingCard({
         </div>
       </div>
 
-      {canCancel ? (
-        <Button
-          type="button"
-          variant="palmPrimary"
-          size="sm"
-          className="absolute bottom-3 right-3 z-20 px-4 shadow-md"
-          disabled={Boolean(pendingCancelKey)}
-          aria-label="Cancel room booking"
-          onClick={() =>
-            runCancelAction({
-              key: `room-${bookingId}`,
-              action: cancelBooking({ id: bookingId, axiosPrivate }),
-              successMessage: "Room booking cancelled successfully.",
-              fallbackMessage: "Failed to cancel room booking.",
-            })
-          }
-        >
-          {pendingCancelKey === `room-${bookingId}` ? "..." : "Cancel"}
-        </Button>
-      ) : null}
+      {/* Action Buttons */}
+      <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+        {needsPayment && (
+          <Button
+            type="button"
+            variant="palmPrimary"
+            size="sm"
+            className="px-4 shadow-md"
+            onClick={handleCompletePayment}
+            aria-label="Complete payment for room booking"
+          >
+            <CreditCard size={14} className="mr-1" />
+            Complete Payment
+          </Button>
+        )}
+        {canCancel && !needsPayment && (
+          <Button
+            type="button"
+            variant="palmPrimary"
+            size="sm"
+            className="px-4 shadow-md"
+            disabled={Boolean(pendingCancelKey)}
+            aria-label="Cancel room booking"
+            onClick={() =>
+              runCancelAction({
+                key: `room-${bookingId}`,
+                action: cancelBooking({ id: bookingId, axiosPrivate }),
+                successMessage: "Room booking cancelled successfully.",
+                fallbackMessage: "Failed to cancel room booking.",
+              })
+            }
+          >
+            {pendingCancelKey === `room-${bookingId}` ? "..." : "Cancel"}
+          </Button>
+        )}
+      </div>
     </CarouselCard>
   );
 }
@@ -396,11 +419,18 @@ export function ActivityBookingCard({
   cancelActivityBooking,
   runCancelAction,
 }) {
+  const navigate = useNavigate();
   const bookingId = booking?._id || booking?.id;
   const activityId = booking?.activity?.id || booking?.activity?._id;
   const activityName = booking?.activity?.title || "Activity session";
   const image = resolveImage(booking?.activity);
   const canCancel = isActivityBookingCancellable(booking);
+  const needsPayment = booking?.paymentStatus === "awaiting_payment";
+
+  const handleCompletePayment = () => {
+    // Navigate to checkout with the booking ID to complete payment
+    navigate(`/cart/checkout?bookingId=${bookingId}`);
+  };
 
   return (
     <CarouselCard className="relative overflow-hidden p-0">
@@ -462,26 +492,42 @@ export function ActivityBookingCard({
         </div>
       </div>
 
-      {canCancel ? (
-        <Button
-          type="button"
-          variant="palmSecondary"
-          size="sm"
-          className="absolute bottom-3 right-3 z-20 px-4 shadow-md"
-          disabled={Boolean(pendingCancelKey)}
-          aria-label="Cancel activity booking"
-          onClick={() =>
-            runCancelAction({
-              key: `activity-${bookingId}`,
-              action: cancelActivityBooking({ axiosPrivate, bookingId }),
-              successMessage: "Activity booking cancelled successfully.",
-              fallbackMessage: "Failed to cancel activity booking.",
-            })
-          }
-        >
-          {pendingCancelKey === `activity-${bookingId}` ? "..." : "Cancel"}
-        </Button>
-      ) : null}
+      {/* Action Buttons */}
+      <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+        {needsPayment && (
+          <Button
+            type="button"
+            variant="palmPrimary"
+            size="sm"
+            className="px-4 shadow-md"
+            onClick={handleCompletePayment}
+            aria-label="Complete payment for activity booking"
+          >
+            <CreditCard size={14} className="mr-1" />
+            Complete Payment
+          </Button>
+        )}
+        {canCancel && !needsPayment && (
+          <Button
+            type="button"
+            variant="palmSecondary"
+            size="sm"
+            className="px-4 shadow-md"
+            disabled={Boolean(pendingCancelKey)}
+            aria-label="Cancel activity booking"
+            onClick={() =>
+              runCancelAction({
+                key: `activity-${bookingId}`,
+                action: cancelActivityBooking({ axiosPrivate, bookingId }),
+                successMessage: "Activity booking cancelled successfully.",
+                fallbackMessage: "Failed to cancel activity booking.",
+              })
+            }
+          >
+            {pendingCancelKey === `activity-${bookingId}` ? "..." : "Cancel"}
+          </Button>
+        )}
+      </div>
     </CarouselCard>
   );
 }
@@ -493,11 +539,18 @@ export function TableBookingCard({
   cancelTableBooking,
   runCancelAction,
 }) {
+  const navigate = useNavigate();
   const bookingId = booking?.id || booking?._id;
   const canCancel = isTableBookingCancellable(booking);
+  const needsPayment = booking?.paymentStatus === "awaiting_payment";
   const tableLabel =
     booking?.tableNumber === null ? "Waitlist request" : `Table ${booking.tableNumber}`;
   const paymentBadgeStatus = booking?.paymentStatus === "paid" ? "paid" : booking?.paymentStatus === "refunded" ? "refunded" : "unpaid";
+
+  const handleCompletePayment = () => {
+    // Navigate to checkout with the booking ID to complete payment
+    navigate(`/cart/checkout?bookingId=${bookingId}`);
+  };
 
   return (
     <CarouselCard className="relative">
@@ -534,26 +587,42 @@ export function TableBookingCard({
         </div>
       </BookingActionBar>
 
-      {canCancel ? (
-        <Button
-          type="button"
-          variant="palmSecondary"
-          size="sm"
-          className="absolute bottom-5 right-5 z-20 px-4 shadow-md"
-          disabled={Boolean(pendingCancelKey)}
-          aria-label="Cancel restaurant booking"
-          onClick={() =>
-            runCancelAction({
-              key: `table-${bookingId}`,
-              action: cancelTableBooking({ axiosPrivate, bookingId }),
-              successMessage: "Restaurant booking cancelled successfully.",
-              fallbackMessage: "Failed to cancel restaurant booking.",
-            })
-          }
-        >
-          {pendingCancelKey === `table-${bookingId}` ? "..." : "Cancel"}
-        </Button>
-      ) : null}
+      {/* Action Buttons */}
+      <div className="absolute bottom-5 right-5 z-20 flex gap-2">
+        {needsPayment && (
+          <Button
+            type="button"
+            variant="palmPrimary"
+            size="sm"
+            className="px-4 shadow-md"
+            onClick={handleCompletePayment}
+            aria-label="Complete payment for table booking"
+          >
+            <CreditCard size={14} className="mr-1" />
+            Complete Payment
+          </Button>
+        )}
+        {canCancel && !needsPayment && (
+          <Button
+            type="button"
+            variant="palmSecondary"
+            size="sm"
+            className="px-4 shadow-md"
+            disabled={Boolean(pendingCancelKey)}
+            aria-label="Cancel restaurant booking"
+            onClick={() =>
+              runCancelAction({
+                key: `table-${bookingId}`,
+                action: cancelTableBooking({ axiosPrivate, bookingId }),
+                successMessage: "Restaurant booking cancelled successfully.",
+                fallbackMessage: "Failed to cancel restaurant booking.",
+              })
+            }
+          >
+            {pendingCancelKey === `table-${bookingId}` ? "..." : "Cancel"}
+          </Button>
+        )}
+      </div>
     </CarouselCard>
   );
 }

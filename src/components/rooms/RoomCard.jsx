@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { BedDouble, Maximize2, Users, ShoppingCart, Heart } from "lucide-react";
 
@@ -46,6 +46,9 @@ const normalizeRoomAmenities = (room) => {
 };
 
 const resolveRoomImage = (room) => {
+  // Check mainImage first
+  if (typeof room?.mainImage === "string" && room.mainImage) return room.mainImage;
+  
   if (typeof room?.image === "string" && room.image) return room.image;
   if (typeof room?.image?.secure_url === "string" && room.image.secure_url) {
     return room.image.secure_url;
@@ -68,6 +71,7 @@ const resolveRoomImage = (room) => {
 
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { flyToCart } = useFlyToCart();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const isHydrating = useSelector((state) => state.auth.isHydrating);
@@ -103,6 +107,7 @@ export default function RoomCard({ room, className }) {
   };
 
   const handleConfirmBooking = (bookingDraft) => {
+    // Add to cart first
     dispatch(
       upsertRoomBooking({
         room: {
@@ -117,7 +122,13 @@ export default function RoomCard({ room, className }) {
     if (cartTriggerRef.current) {
       flyToCart(cartTriggerRef.current);
     }
+    
     toast.success(cartItem ? `${roomName} booking updated in cart` : `${roomName} added to cart`);
+    
+    // Navigate to cart page
+    setTimeout(() => {
+      navigate('/cart');
+    }, 500);
   };
 
   const handleToggleWishlist = (e) => {
@@ -226,8 +237,44 @@ export default function RoomCard({ room, className }) {
         {/* Buttons & Partners */}
         <div className="flex items-center justify-between gap-4 mt-auto pt-2">
           <div className="flex items-center gap-2">
-            <Button asChild variant="palmSecondary" size="sm" className="px-7">
-              <Link to={`/rooms/${roomId}`}>Book Now</Link>
+            <Button 
+              onClick={() => {
+                if (!isAuthenticated) {
+                  toast.info("Please sign in first to book.");
+                  return;
+                }
+                if (isHydrating) {
+                  toast.info("Loading your saved room selections...");
+                  return;
+                }
+                // Add room to cart with default dates and navigate to cart
+                const defaultBookingDraft = {
+                  checkInDate: new Date().toISOString().split('T')[0],
+                  checkOutDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  guests: 1,
+                  roomsCount: 1,
+                };
+                
+                dispatch(
+                  upsertRoomBooking({
+                    room: {
+                      ...normalizedRoom,
+                      image: roomImage,
+                    },
+                    bookingDraft: defaultBookingDraft,
+                  })
+                );
+                
+                toast.success(`${roomName} added to cart`);
+                setTimeout(() => {
+                  navigate('/cart');
+                }, 300);
+              }}
+              variant="palmSecondary" 
+              size="sm" 
+              className="px-7"
+            >
+              Book Now
             </Button>
             <Button
               onClick={handleOpenBookingModal}

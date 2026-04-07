@@ -4,7 +4,7 @@ import ActivityCategories from "@/components/activities/ActivityCategories";
 import ActivityDetails from "@/components/activities/ActivityDetails";
 import ActivityBooking from "@/components/activities/ActivityBooking";
 import SharedPagination from "@/components/common/SharedPagination";
-import { ActivitiesPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { ActivitiesPageSkeleton } from "@/components/activities/loading/ActivitiesPageSkeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { useActivitiesListQuery } from "@/hooks/useCatalogQueries";
 

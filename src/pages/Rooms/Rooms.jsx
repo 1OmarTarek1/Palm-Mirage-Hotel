@@ -13,7 +13,7 @@ import RoomFilter from "@/components/rooms/RoomFilter";
 import BookingBar from "@/components/rooms/BookingBar";
 import Sidebar from "@/components/common/Sidebar";
 import MobileDrawer from "@/components/common/MobileDrawer";
-import { RoomsPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { RoomsPageSkeleton } from "@/components/rooms/loading/RoomsPageSkeleton";
 import { fetchRoomAvailability } from "@/services/roomsApi";
 
 export default function Rooms() {
@@ -35,7 +35,7 @@ export default function Rooms() {
     data: roomsPayload,
     isLoading,
     error: queryError,
-  } = useRoomsListQuery({ page: 1, limit: 20 });
+  } = useRoomsListQuery({ page: 1, limit: 200 });
   const rooms = roomsPayload?.rooms ?? [];
   const error = queryError ? queryError.message || "Failed to load rooms" : null;
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
@@ -243,6 +243,8 @@ export default function Rooms() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
+            pageSize={roomsPerPage}
+            totalEntries={filteredRooms.length}
             className="mt-2"
           />
         </div>

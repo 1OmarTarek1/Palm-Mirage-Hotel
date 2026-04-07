@@ -5,7 +5,7 @@ import AuthLayout from "@/layouts//AuthLayout";
 import MainLayout from "@/layouts/MainLayout.jsx";
 import NotFound from "@/pages/NotFound/NotFound";
 import ProtectedRoute from "@/routes/ProtectedRoute";
-import { ContactPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { ContactPageSkeleton } from "@/components/Contact/loading/ContactPageSkeleton";
 
 const About = lazy(() => import("@/pages/About/About"));
 const Blog = lazy(() => import("@/pages/Blog/Blog"));

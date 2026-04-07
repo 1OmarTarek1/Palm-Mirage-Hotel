@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,8 @@ import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useAuth from "@/hooks/useAuth";
 import { fetchActivitySchedules } from "@/services/activityService";
 import {
-  cancelActivityBooking,
-  createActivityBooking,
-  createActivityCheckoutSession,
-  fetchMyActivityBookings,
-  selectActiveActivityBookings,
-  selectActivityCheckoutLoading,
-  selectCancellingActivityBooking,
-  selectCreatingActivityBooking,
-} from "@/services/activityBookings/activityBookingsSlice";
+  addPendingActivityBooking,
+} from "@/store/slices/cartSlice";
 
 const formatScheduleLabel = (schedule) =>
   `${schedule.date} - ${schedule.startTime} to ${schedule.endTime}`;
@@ -36,13 +30,11 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   ref
 ) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
   const { isAuthenticated, user } = useAuth();
-  const isCreating = useSelector(selectCreatingActivityBooking);
-  const isCancelling = useSelector(selectCancellingActivityBooking);
-  const checkoutLoading = useSelector(selectActivityCheckoutLoading);
-  const myActiveBookings = useSelector(selectActiveActivityBookings);
   const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState("");
   const [selectedSchedule, setSelectedSchedule] = useState("");
   const [guests, setGuests] = useState("2");
@@ -51,8 +43,6 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [schedules, setSchedules] = useState([]);
   const sectionRef = useRef(null);
-
-  const isSubmitting = isCreating || isCancelling || checkoutLoading;
 
   useEffect(() => {
     let isMounted = true;
@@ -83,22 +73,16 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-    void dispatch(fetchMyActivityBookings(axiosPrivate));
-  }, [axiosPrivate, dispatch, isAuthenticated]);
-
-  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pay = params.get("payment");
     if (pay === "success") {
-      toast.success("Payment successful — your activity booking is confirmed.");
-      void dispatch(fetchMyActivityBookings(axiosPrivate));
+      toast.success("Payment successful - your activity booking is confirmed.");
       window.history.replaceState({}, "", window.location.pathname);
     } else if (pay === "cancel") {
       toast.info("Card payment was cancelled.");
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, [axiosPrivate, dispatch]);
+  }, []);
 
   useEffect(() => {
     if (!initialActivityId) return;
@@ -121,18 +105,9 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     [filteredSchedules, selectedSchedule]
   );
 
-  const existingBooking = useMemo(
-    () => myActiveBookings.find((booking) => booking.schedule?.id === selectedSchedule) ?? null,
-    [myActiveBookings, selectedSchedule]
-  );
-  const isPaidExistingBooking = existingBooking?.paymentStatus === "paid";
-  const isAwaitingPayment = existingBooking?.status === "awaiting_payment";
-
-  useEffect(() => {
-    if (!existingBooking && user?.phoneNumber && !phone) {
-      setPhone(user.phoneNumber);
-    }
-  }, [existingBooking, phone, user?.phoneNumber]);
+  const existingBooking = null; // Simplified for now - no existing bookings in Redux version
+  const isPaidExistingBooking = false;
+  const isAwaitingPayment = false;
 
   const totalPrice = useMemo(() => {
     if (!selectedScheduleData) return 0;
@@ -170,38 +145,34 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     const normalizedPhone = phone.trim();
     const normalizedNotes = notes.trim();
 
-    const created = await dispatch(
-      createActivityBooking({
-        axiosPrivate,
-        payload: {
-          scheduleId: selectedScheduleData.id,
-          guests: Number(guests),
-          contactPhone: normalizedPhone,
-          notes: normalizedNotes,
-          paymentMethod,
-        },
-      })
-    ).unwrap();
+    // Create booking data object and add to Redux store
+    const bookingData = {
+      activityId: selectedScheduleData.activityId,
+      activityTitle: selectedScheduleData.activityTitle,
+      scheduleId: selectedScheduleData.id,
+      scheduleDate: selectedScheduleData.date,
+      startTime: selectedScheduleData.startTime,
+      endTime: selectedScheduleData.endTime,
+      guests: Number(guests),
+      contactPhone: normalizedPhone,
+      notes: normalizedNotes,
+      paymentMethod,
+      price: selectedScheduleData.price || 0,
+    };
 
-    if (paymentMethod === "card") {
-      const checkout = await dispatch(
-        createActivityCheckoutSession({
-          axiosPrivate,
-          activityBookingId: created._id,
-        })
-      ).unwrap();
+    // Add to Redux store
+    dispatch(addPendingActivityBooking({
+      ...bookingData,
+      id: Date.now().toString(), // temporary ID
+      createdAt: new Date().toISOString()
+    }));
 
-      if (checkout?.url) {
-        window.location.href = checkout.url;
-        return;
-      }
-      toast.error("Could not start card payment. Try again or use pay on arrival.");
-      return;
-    }
-
-    void dispatch(fetchMyActivityBookings(axiosPrivate));
-    resetForm();
-    toast.success("Activity booking submitted — staff will confirm pay-on-arrival requests.");
+    toast.success("Activity booking added to cart!");
+    
+    // Navigate to cart page
+    setTimeout(() => {
+      navigate('/cart');
+    }, 300);
   };
 
   const handleCancelBooking = async () => {

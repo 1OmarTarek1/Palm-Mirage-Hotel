@@ -22,6 +22,7 @@ const getActivityId = (activity) => activity.id || activity._id || "";
 const getActivityImage = (activity) => activity.image?.url || activity.image || "";
 
 export default function ActivityDetails({ activities, onBookActivity }) {
+  
   if (!activities || activities.length === 0) {
     return (
       <section className="text-center">
@@ -35,15 +36,13 @@ export default function ActivityDetails({ activities, onBookActivity }) {
       {activities.map((activity, index) => {
         const activityId = getActivityId(activity);
         const image = getActivityImage(activity);
-
+        
         return (
           <motion.div
             key={activityId || activity.title}
             id={activityId}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            initial={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="scroll-mt-24"
           >
             <div

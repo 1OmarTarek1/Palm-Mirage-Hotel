@@ -104,7 +104,7 @@ export default function ProfileContentSections(props) {
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={1}>
+      <SectionCard index={1} id="room-bookings-section">
         <SectionHeader
           icon={ShoppingBag}
           title="Room Bookings"
@@ -147,7 +147,7 @@ export default function ProfileContentSections(props) {
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={2}>
+      <SectionCard index={2} id="activity-bookings-section">
         <SectionHeader
           icon={Ticket}
           title="Activity Bookings"
@@ -190,7 +190,7 @@ export default function ProfileContentSections(props) {
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={3}>
+      <SectionCard index={3} id="table-bookings-section">
         <SectionHeader
           icon={UtensilsCrossed}
           title="Restaurant Bookings"

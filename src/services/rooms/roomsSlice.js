@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import axiosInstance from "@/services/axiosInstance";
+import { normalizePagination } from "@/lib/pagination/normalizePagination";
 
 // ============================================================
 //                      ROOMS THUNKS
@@ -12,7 +13,7 @@ import axiosInstance from "@/services/axiosInstance";
  */
 export const fetchAllRooms = createAsyncThunk(
   "rooms/fetchAllRooms",
-  async ({ page = 1, limit = 20 } = {}, { rejectWithValue }) => {
+  async ({ page = 1, limit = 200 } = {}, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get("/rooms", {
         params: { page, limit },
@@ -22,12 +23,13 @@ export const fetchAllRooms = createAsyncThunk(
       const responseData = data?.data?.rooms || data?.data || data;
       
       if (Array.isArray(responseData?.data)) {
+        const pagination = normalizePagination(responseData, page, limit);
         return {
           rooms: responseData.data,
-          page,
-          limit,
-          totalPages: 1,
-          totalItems: responseData.data.length,
+          page: pagination.page,
+          limit: pagination.limit,
+          totalPages: pagination.totalPages,
+          totalItems: pagination.totalItems,
         };
       }
 
@@ -41,12 +43,13 @@ export const fetchAllRooms = createAsyncThunk(
         };
       }
 
+      const pagination = normalizePagination(responseData, page, limit);
       return {
         rooms: responseData?.data || responseData || [],
-        page: responseData?.page || page,
-        limit: responseData?.limit || limit,
-        totalPages: responseData?.totalPages || responseData?.pages || 1,
-        totalItems: responseData?.totalItems || responseData?.total || 0,
+        page: pagination.page,
+        limit: pagination.limit,
+        totalPages: pagination.totalPages,
+        totalItems: pagination.totalItems,
       };
     } catch (err) {
       return rejectWithValue(
@@ -85,7 +88,7 @@ const roomsSlice = createSlice({
     listLoading: false,
     listError: null,
     listPage: 1,
-    listLimit: 20,
+    listLimit: 200,
     listTotalPages: 1,
     listTotalItems: 0,
 

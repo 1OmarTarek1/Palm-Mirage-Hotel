@@ -4,7 +4,7 @@ import ActivityDetailHero from "@/components/activities/ActivityDetailHero";
 import ActivityDetailOverview from "@/components/activities/ActivityDetailOverview";
 import ActivityHighlightsSection from "@/components/activities/ActivityHighlightsSection";
 import ActivitySessionsSection from "@/components/activities/ActivitySessionsSection";
-import { ActivityDetailPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { ActivityDetailPageSkeleton } from "@/components/activities/loading/ActivitiesPageSkeleton";
 import {
   useActivityDetailQuery,
   useActivitySchedulesQuery,

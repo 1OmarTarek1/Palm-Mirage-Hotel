@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 
-import { RoomDetailsPageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { RoomDetailsPageSkeleton } from "@/components/rooms/loading/RoomsPageSkeleton";
 import {
   AmenitiesSection,
   AvailabilitySection,

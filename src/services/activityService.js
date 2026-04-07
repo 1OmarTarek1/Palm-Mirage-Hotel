@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import axiosInstance from "@/services/axiosInstance";
+import { normalizePagination } from "@/lib/pagination/normalizePagination";
 
 const resolveImage = (image) =>
   typeof image === "string" ? image : image?.secure_url || "";
@@ -70,8 +71,9 @@ export async function fetchActivities(options = {}) {
     if (sort) params.sort = sort;
 
     const { data } = await axiosInstance.get("/activity", { params });
+    
     const activities = (data?.data?.activities ?? []).map(mapActivity);
-    const pagination = data?.data?.pagination ?? null;
+    const pagination = normalizePagination(data?.data, page ?? 1, limit ?? 10);
 
     if (withPagination) {
       return { activities, pagination };

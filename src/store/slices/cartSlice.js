@@ -106,6 +106,10 @@ const cartSlice = createSlice({
     sidebarTab: "rooms",
     /** Restaurant menu picks — persisted to user preferences like room cart */
     restaurantMenuCart: {},
+    /** Pending restaurant bookings from cart page */
+    pendingRestaurantBookings: [],
+    /** Pending activity bookings from cart page */
+    pendingActivityBookings: [],
   },
   reducers: {
     openCart: (state, action) => {
@@ -126,7 +130,7 @@ const cartSlice = createSlice({
       }
     },
     setCartSidebarTab: (state, action) => {
-      if (action.payload === "rooms" || action.payload === "restaurant") {
+      if (action.payload === "rooms" || action.payload === "restaurant" || action.payload === "activities") {
         state.sidebarTab = action.payload;
       }
     },
@@ -233,6 +237,68 @@ const cartSlice = createSlice({
     clearCart: (state) => {
       state.items = [];
     },
+
+    // Pending Restaurant Bookings
+    addPendingRestaurantBooking: (state, action) => {
+      const booking = {
+        ...action.payload,
+        id: action.payload.id || Date.now().toString(),
+        createdAt: action.payload.createdAt || new Date().toISOString(),
+      };
+      state.pendingRestaurantBookings.push(booking);
+    },
+
+    updatePendingRestaurantBooking: (state, action) => {
+      const { id, updates } = action.payload;
+      const index = state.pendingRestaurantBookings.findIndex(booking => booking.id === id);
+      if (index >= 0) {
+        state.pendingRestaurantBookings[index] = {
+          ...state.pendingRestaurantBookings[index],
+          ...updates,
+        };
+      }
+    },
+
+    removePendingRestaurantBooking: (state, action) => {
+      state.pendingRestaurantBookings = state.pendingRestaurantBookings.filter(
+        booking => booking.id !== action.payload
+      );
+    },
+
+    clearPendingRestaurantBookings: (state) => {
+      state.pendingRestaurantBookings = [];
+    },
+
+    // Pending Activity Bookings
+    addPendingActivityBooking: (state, action) => {
+      const booking = {
+        ...action.payload,
+        id: action.payload.id || Date.now().toString(),
+        createdAt: action.payload.createdAt || new Date().toISOString(),
+      };
+      state.pendingActivityBookings.push(booking);
+    },
+
+    updatePendingActivityBooking: (state, action) => {
+      const { id, updates } = action.payload;
+      const index = state.pendingActivityBookings.findIndex(booking => booking.id === id);
+      if (index >= 0) {
+        state.pendingActivityBookings[index] = {
+          ...state.pendingActivityBookings[index],
+          ...updates,
+        };
+      }
+    },
+
+    removePendingActivityBooking: (state, action) => {
+      state.pendingActivityBookings = state.pendingActivityBookings.filter(
+        booking => booking.id !== action.payload
+      );
+    },
+
+    clearPendingActivityBookings: (state) => {
+      state.pendingActivityBookings = [];
+    },
   },
 });
 
@@ -253,6 +319,14 @@ export const {
   updateQuantity,
   updateItemBookingDates,
   clearCart,
+  addPendingRestaurantBooking,
+  updatePendingRestaurantBooking,
+  removePendingRestaurantBooking,
+  clearPendingRestaurantBookings,
+  addPendingActivityBooking,
+  updatePendingActivityBooking,
+  removePendingActivityBooking,
+  clearPendingActivityBookings,
 } = cartSlice.actions;
 
 // Selectors
@@ -273,6 +347,33 @@ export const selectRestaurantMenuCart = (state) => state.cart.restaurantMenuCart
 export const selectRestaurantMenuCartTotalQty = (state) => {
   const m = state.cart.restaurantMenuCart ?? {};
   return Object.values(m).reduce((s, q) => s + (typeof q === "number" ? q : 0), 0);
+};
+
+// Pending Bookings Selectors
+export const selectPendingRestaurantBookings = (state) => state.cart.pendingRestaurantBookings || [];
+export const selectPendingActivityBookings = (state) => state.cart.pendingActivityBookings || [];
+export const selectPendingRestaurantBookingById = (state, id) =>
+  state.cart.pendingRestaurantBookings.find(booking => booking.id === id) || null;
+export const selectPendingActivityBookingById = (state, id) =>
+  state.cart.pendingActivityBookings.find(booking => booking.id === id) || null;
+
+// Calculate totals for pending bookings
+export const selectPendingRestaurantTotal = (state) => {
+  return state.cart.pendingRestaurantBookings.reduce((sum, booking) => {
+    return sum + (booking.lineItems?.reduce((itemSum, item) => {
+      return itemSum + (item.price * item.qty);
+    }, 0) || 0);
+  }, 0);
+};
+
+export const selectPendingActivityTotal = (state) => {
+  return state.cart.pendingActivityBookings.reduce((sum, booking) => {
+    return sum + (booking.price * booking.guests || 0);
+  }, 0);
+};
+
+export const selectAllPendingTotal = (state) => {
+  return selectPendingRestaurantTotal(state) + selectPendingActivityTotal(state);
 };
 
 export default cartSlice.reducer;

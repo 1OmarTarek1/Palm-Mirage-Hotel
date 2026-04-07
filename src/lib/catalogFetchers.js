@@ -1,18 +1,17 @@
 import axiosInstance from "@/services/axiosInstance";
 import { fetchActivities, fetchActivityById, fetchActivitySchedules } from "@/services/activityService";
 import menuApi from "@/services/menuApi";
+import { normalizePagination } from "@/lib/pagination/normalizePagination";
 
 /** Mirrors roomsSlice normalization — single source for list shape */
 export function normalizeRoomsListPayload(data, page, limit) {
   const responseData = data?.data?.rooms || data?.data || data;
 
   if (Array.isArray(responseData?.data)) {
+    const pagination = normalizePagination(responseData, page, limit);
     return {
       rooms: responseData.data,
-      page,
-      limit,
-      totalPages: 1,
-      totalItems: responseData.data.length,
+      ...pagination,
     };
   }
 
@@ -26,12 +25,13 @@ export function normalizeRoomsListPayload(data, page, limit) {
     };
   }
 
+  const pagination = normalizePagination(responseData, page, limit);
   return {
     rooms: responseData?.data || responseData || [],
-    page: responseData?.page || page,
-    limit: responseData?.limit || limit,
-    totalPages: responseData?.totalPages || responseData?.pages || 1,
-    totalItems: responseData?.totalItems || responseData?.total || 0,
+    page: pagination.page,
+    limit: pagination.limit,
+    totalPages: pagination.totalPages,
+    totalItems: pagination.totalItems,
   };
 }
 

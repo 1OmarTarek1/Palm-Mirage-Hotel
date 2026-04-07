@@ -13,9 +13,10 @@ import {
 import { cn } from "@/lib/utils";
 import { fadeUp, getStatusTone } from "./profileUtils";
 
-export function SectionCard({ children, className, index = 0 }) {
+export function SectionCard({ children, className, index = 0, id }) {
   return (
     <motion.section
+      id={id}
       custom={index}
       variants={fadeUp}
       initial="hidden"

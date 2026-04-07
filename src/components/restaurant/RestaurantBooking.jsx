@@ -22,7 +22,11 @@ import {
   selectCreatingTableBooking,
   selectRestaurantCheckoutLoading,
 } from "@/services/restaurantBookings/restaurantBookingsSlice";
-import { resetRestaurantMenuCart } from "@/store/slices/cartSlice";
+import {
+  selectRestaurantMenuCart,
+  addPendingRestaurantBooking,
+  resetRestaurantMenuCart,
+} from "@/store/slices/cartSlice";
 
 const BOOKING_MODES = [
   { value: "table_only", label: "Table only (pay on arrival)" },
@@ -328,7 +332,8 @@ export default function RestaurantBooking() {
       }
     }
 
-    const payload = {
+    // Create booking data object and add to Redux store
+    const bookingData = {
       bookingMode,
       date,
       time,
@@ -338,46 +343,26 @@ export default function RestaurantBooking() {
     };
 
     if (bookingMode === "room_service") {
-      payload.roomNumber = Number(roomNumber);
+      bookingData.roomNumber = Number(roomNumber);
     }
 
     if (bookingMode === "table_only" || bookingMode === "dine_in") {
-      payload.number = Number(selectedTable);
+      bookingData.number = Number(selectedTable);
     }
 
-    try {
-      const response = await dispatch(
-        createTableBooking({
-          axiosPrivate,
-          payload,
-        })
-      ).unwrap();
+    // Add to Redux store
+    dispatch(addPendingRestaurantBooking({
+      ...bookingData,
+      id: Date.now().toString(), // temporary ID
+      createdAt: new Date().toISOString()
+    }));
 
-      const booking = response?.data?.booking ?? response?.booking;
-      const message = response?.message;
-
-      if (bookingMode !== "table_only" && paymentMethod === "stripe" && booking?._id) {
-        const checkout = await dispatch(
-          createRestaurantCheckoutSession({
-            axiosPrivate,
-            restaurantBookingId: booking._id,
-          })
-        ).unwrap();
-        if (checkout?.url) {
-          window.location.href = checkout.url;
-          return;
-        }
-        toast.error("Could not start card payment.");
-        return;
-      }
-
-      resetForm();
-      toast.success(message || "Request submitted successfully.");
-    } catch (error) {
-      toast.error(
-        typeof error === "string" ? error : error?.message || "Failed to submit booking"
-      );
-    }
+    toast.success("Restaurant booking added to cart!");
+    
+    // Navigate to cart page
+    setTimeout(() => {
+      navigate('/cart');
+    }, 300);
   };
 
   const busy = isCreating || checkoutLoading;

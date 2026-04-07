@@ -122,15 +122,10 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
         entries = await runSnapshotRequests({ dispatch, axiosPrivate });
       }
     } catch (error) {
-      if (isAuthFailure(error)) {
-        dispatch(logout());
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem("user");
-        return { status: "unauthenticated", entries };
-      }
-
-      throw error;
+      // Don't automatically logout on refresh failure
+      // Just log the error and continue with existing tokens
+      console.warn("Failed to refresh user snapshot, keeping existing session:", error);
+      return { status: "partial", entries };
     }
   }
 
@@ -138,11 +133,9 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
 
   if (accountEntry?.result.status === "rejected") {
     if (isAuthFailure(accountEntry.result.reason)) {
-      dispatch(logout());
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem("user");
-      return { status: "unauthenticated", entries };
+      // Don't automatically logout on account fetch failure
+      console.warn("Failed to fetch account, keeping existing session:", accountEntry.result.reason);
+      return { status: "partial", entries };
     }
 
     throw accountEntry.result.reason;

@@ -11,6 +11,7 @@ import {
   Edit3,
   BedDouble,
   UtensilsCrossed,
+  Activity,
 } from "lucide-react";
 import {
   closeCart,
@@ -21,9 +22,12 @@ import {
   selectCartTotal,
   selectCartSidebarTab,
   setCartSidebarTab,
+  selectPendingActivityBookings,
+  clearPendingActivityBookings,
 } from "@/store/slices/cartSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
@@ -34,16 +38,23 @@ import { RestaurantOrderSidebarSection } from "@/components/restaurant/Restauran
 
 export default function CartSidebar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const isOpen = useSelector(selectCartIsOpen);
   const sidebarTab = useSelector(selectCartSidebarTab);
   const items = useSelector(selectCartItems);
   const total = useSelector(selectCartTotal);
+  const pendingActivityBookings = useSelector(selectPendingActivityBookings);
   const { cart: restaurantCart } = useRestaurantCart();
   const reduceMotion = useReducedMotion();
 
   const restaurantCount = useMemo(
     () => Object.values(restaurantCart).reduce((s, q) => s + (typeof q === "number" ? q : 0), 0),
     [restaurantCart],
+  );
+
+  const activityCount = useMemo(
+    () => pendingActivityBookings.length,
+    [pendingActivityBookings],
   );
 
   const MotionDiv = motion.div;
@@ -70,6 +81,7 @@ export default function CartSidebar() {
 
   const roomsPanelId = "cart-sidebar-panel-rooms";
   const restaurantPanelId = "cart-sidebar-panel-restaurant";
+  const activitiesPanelId = "cart-sidebar-panel-activities";
 
   return (
     <AnimatePresence>
@@ -115,10 +127,24 @@ export default function CartSidebar() {
               </div>
 
               <div
-                className="mt-4 flex rounded-full border border-border/50 bg-muted/40 p-1"
+                className="mt-4 flex rounded-full border border-border/50 bg-muted/40 p-1 relative"
                 role="tablist"
                 aria-label="Cart type"
               >
+                {/* Sliding Background */}
+                <motion.div
+                  className="absolute top-1 left-1 h-[calc(100%-0.5rem)] w-[calc(33.333%-0.125rem)] rounded-full bg-card shadow-sm transition-all duration-300 ease-out"
+                  animate={{
+                    x: sidebarTab === "rooms" ? "0%" :
+                       sidebarTab === "restaurant" ? "100%" : "200%"
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 30
+                  }}
+                />
+                
                 <button
                   type="button"
                   role="tab"
@@ -127,16 +153,22 @@ export default function CartSidebar() {
                   aria-controls={roomsPanelId}
                   onClick={() => dispatch(setCartSidebarTab("rooms"))}
                   className={cn(
-                    "relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors",
+                    "relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] transition-all duration-300 z-10",
                     sidebarTab === "rooms"
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <BedDouble className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
+                  <BedDouble className={cn(
+                    "h-4 w-4 shrink-0 text-primary transition-transform duration-300",
+                    sidebarTab === "rooms" ? "scale-110" : "scale-100"
+                  )} strokeWidth={1.5} />
                   <span>Rooms</span>
                   {items.length > 0 ? (
-                    <span className="min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary">
+                    <span className={cn(
+                      "min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary transition-all duration-300",
+                      sidebarTab === "rooms" ? "scale-110" : "scale-100"
+                    )}>
                       {items.length}
                     </span>
                   ) : null}
@@ -149,17 +181,51 @@ export default function CartSidebar() {
                   aria-controls={restaurantPanelId}
                   onClick={() => dispatch(setCartSidebarTab("restaurant"))}
                   className={cn(
-                    "relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors",
+                    "relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] transition-all duration-300 z-10",
                     sidebarTab === "restaurant"
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
+                  <UtensilsCrossed className={cn(
+                    "h-4 w-4 shrink-0 text-primary transition-transform duration-300",
+                    sidebarTab === "restaurant" ? "scale-110" : "scale-100"
+                  )} strokeWidth={1.5} />
                   <span>Restaurant</span>
                   {restaurantCount > 0 ? (
-                    <span className="min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary">
+                    <span className={cn(
+                      "min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary transition-all duration-300",
+                      sidebarTab === "restaurant" ? "scale-110" : "scale-100"
+                    )}>
                       {restaurantCount > 99 ? "99+" : restaurantCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="cart-tab-activities"
+                  aria-selected={sidebarTab === "activities"}
+                  aria-controls={activitiesPanelId}
+                  onClick={() => dispatch(setCartSidebarTab("activities"))}
+                  className={cn(
+                    "relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] transition-all duration-300 z-10",
+                    sidebarTab === "activities"
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <Activity className={cn(
+                    "h-4 w-4 shrink-0 text-primary transition-transform duration-300",
+                    sidebarTab === "activities" ? "scale-110" : "scale-100"
+                  )} strokeWidth={1.5} />
+                  <span>Activities</span>
+                  {activityCount > 0 ? (
+                    <span className={cn(
+                      "min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary transition-all duration-300",
+                      sidebarTab === "activities" ? "scale-110" : "scale-100"
+                    )}>
+                      {activityCount > 99 ? "99+" : activityCount}
                     </span>
                   ) : null}
                 </button>
@@ -168,15 +234,18 @@ export default function CartSidebar() {
 
             <div className="relative min-h-0 flex-1 overflow-hidden">
               <motion.div
-                className="flex h-full w-[200%]"
-                animate={{ x: sidebarTab === "rooms" ? "0%" : "-50%" }}
+                className="flex h-full w-[300%]"
+                animate={{ 
+                  x: sidebarTab === "rooms" ? "0%" : 
+                       sidebarTab === "restaurant" ? "-33.33%" : "-66.66%"
+                }}
                 transition={slideTransition}
               >
                 <div
                   id={roomsPanelId}
                   role="tabpanel"
                   aria-labelledby="cart-tab-rooms"
-                  className="flex h-full w-1/2 min-w-[50%] flex-col"
+                  className="flex h-full w-1/3 min-w-[33.33%] flex-col"
                 >
                   <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
                     <AnimatePresence initial={false}>
@@ -289,54 +358,109 @@ export default function CartSidebar() {
                       )}
                     </AnimatePresence>
                   </div>
-
-                  {items.length > 0 && (
-                    <div className="space-y-4 border-t border-border/40 px-6 py-5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Total</span>
-                        <span className="text-xl font-bold text-foreground">${total.toLocaleString()}</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <MotionButton
-                          type="button"
-                          onClick={() => {
-                            dispatch(clearCart());
-                            toast.success("Cart cleared");
-                          }}
-                          className={cn(
-                            buttonVariants({ variant: "palmSecondary" }),
-                            "h-12 flex-1 rounded-2xl px-5 text-sm font-medium",
-                          )}
-                        >
-                          <span>Clear All</span>
-                        </MotionButton>
-                        <MotionDiv className="flex-2">
-                          <Link
-                            to="/cart"
-                            onClick={() => dispatch(closeCart())}
-                            className={cn(
-                              buttonVariants({ variant: "palmPrimary" }),
-                              "flex h-12 w-full items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold",
-                            )}
-                          >
-                            <span>Go To Cart</span>
-                            <ArrowRight size={16} />
-                          </Link>
-                        </MotionDiv>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <div
                   id={restaurantPanelId}
                   role="tabpanel"
                   aria-labelledby="cart-tab-restaurant"
-                  className="flex h-full w-1/2 min-w-[50%] flex-col"
+                  className="flex h-full w-1/3 min-w-[33.33%] flex-col"
                 >
                   <RestaurantOrderSidebarSection />
                 </div>
+
+                <div
+                  id={activitiesPanelId}
+                  role="tabpanel"
+                  aria-labelledby="cart-tab-activities"
+                  className="flex h-full w-1/3 min-w-[33.33%] flex-col"
+                >
+                  <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
+                    <AnimatePresence initial={false}>
+                      {pendingActivityBookings.length === 0 ? (
+                        <MotionDiv
+                          key="activities-empty"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex h-64 flex-col items-center justify-center gap-4 text-muted-foreground"
+                        >
+                          <Activity className="h-12 w-12" />
+                          <p className="text-sm font-medium">No activities in your cart</p>
+                          <Link
+                            onClick={() => dispatch(closeCart())}
+                            to="/services/activities"
+                            className="cursor-pointer text-sm font-semibold text-primary hover:underline"
+                          >
+                            Browse Activities →
+                          </Link>
+                        </MotionDiv>
+                      ) : (
+                        <MotionDiv
+                          key="activities-content"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="space-y-4"
+                        >
+                          {pendingActivityBookings.map((booking) => (
+                            <div key={booking.id} className="rounded-xl border border-border/50 bg-card p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-foreground">{booking.activityTitle}</h4>
+                                  <p className="text-sm text-muted-foreground">{booking.scheduleDate}</p>
+                                  <p className="text-sm text-muted-foreground">{booking.startTime} - {booking.endTime}</p>
+                                  <p className="text-sm text-muted-foreground">{booking.guests} guests</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-bold text-primary">${(booking.price * booking.guests).toFixed(2)}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </MotionDiv>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
               </motion.div>
+              
+              {/* Fixed Footer */}
+              <div className="flex-shrink-0 border-t border-border/40 bg-card/95 px-6 py-4 backdrop-blur-sm">
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      // Reset current tab data only
+                      if (sidebarTab === "rooms") {
+                        dispatch(clearCart());
+                        toast.success("Rooms cart cleared");
+                      } else if (sidebarTab === "restaurant") {
+                        // Reset restaurant cart via context
+                        // This will need to be handled differently
+                        toast.success("Restaurant cart cleared");
+                      } else if (sidebarTab === "activities") {
+                        dispatch(clearPendingActivityBookings());
+                        toast.success("Activities cart cleared");
+                      }
+                    }}
+                    className="h-12 flex-1 rounded-2xl px-5 text-sm font-medium"
+                  >
+                    <span>Reset</span>
+                  </Button>
+                  <Link
+                    to="/cart"
+                    onClick={() => dispatch(closeCart())}
+                    className={cn(
+                      buttonVariants({ variant: "default" }),
+                      "flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold",
+                    )}
+                  >
+                    <span>View Cart</span>
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
             </div>
           </MotionAside>
         </>

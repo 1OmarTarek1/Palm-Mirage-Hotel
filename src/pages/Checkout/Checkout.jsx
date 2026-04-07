@@ -22,10 +22,22 @@ import {
   selectCartRequiresAttention,
   clearCart,
   removeItem,
+  selectPendingRestaurantBookings,
+  selectPendingActivityBookings,
+  clearPendingRestaurantBookings,
+  clearPendingActivityBookings,
 } from '@/store/slices/cartSlice';
 import { 
   createBooking, 
 } from '@/services/booking/bookingSlice';
+import { 
+  createTableBooking,
+  createRestaurantCheckoutSession,
+} from '@/services/restaurantBookings/restaurantBookingsSlice';
+import {
+  createActivityBooking,
+  createActivityCheckoutSession,
+} from '@/services/activityBookings/activityBookingsSlice';
 import { toast } from 'react-toastify';
 
 const PENDING_CHECKOUT_KEY = 'pendingCheckoutSession';
@@ -40,6 +52,8 @@ const Checkout = () => {
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
   const cartRequiresAttention = useSelector(selectCartRequiresAttention);
+  const pendingRestaurantBookings = useSelector(selectPendingRestaurantBookings);
+  const pendingActivityBookings = useSelector(selectPendingActivityBookings);
   
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
@@ -83,6 +97,13 @@ const Checkout = () => {
 
   const handleCloseOrderModal = () => {
     setIsModalOpen(false);
+
+    // After successful booking, navigate to profile page to see the booking
+    if (orderReceived) {
+      toast.info('Redirecting to your profile to view your booking...');
+      navigate('/profile', { replace: true });
+      return;
+    }
 
     if (cartItems.length === 0) {
       navigate('/cart', { replace: true });
@@ -203,6 +224,89 @@ const Checkout = () => {
       successfulItems,
       conflictedItems,
     };
+  };
+
+  const createPendingRestaurantBookings = async (method) => {
+    if (pendingRestaurantBookings.length === 0) return [];
+
+    const bookingResults = await Promise.allSettled(
+      pendingRestaurantBookings.map((booking) => {
+        const payload = {
+          bookingMode: booking.bookingMode,
+          date: booking.date,
+          time: booking.time,
+          guests: booking.guests,
+          lineItems: booking.lineItems,
+          paymentMethod: method === 'card' ? 'stripe' : booking.paymentMethod,
+        };
+
+        if (booking.bookingMode === 'room_service') {
+          payload.roomNumber = booking.roomNumber;
+        }
+
+        if (booking.bookingMode === 'table_only' || booking.bookingMode === 'dine_in') {
+          payload.number = booking.number;
+        }
+
+        return dispatch(createTableBooking({
+          axiosPrivate: axiosInstance,
+          payload,
+        })).unwrap();
+      })
+    );
+
+    const successfulBookings = [];
+    const failedBookings = [];
+
+    bookingResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        successfulBookings.push(result.value);
+      } else {
+        failedBookings.push(result.reason);
+      }
+    });
+
+    // Clear pending restaurant bookings from Redux
+    dispatch(clearPendingRestaurantBookings());
+
+    return { successfulBookings, failedBookings };
+  };
+
+  const createPendingActivityBookings = async (method) => {
+    if (pendingActivityBookings.length === 0) return [];
+
+    const bookingResults = await Promise.allSettled(
+      pendingActivityBookings.map((booking) => {
+        const payload = {
+          scheduleId: booking.scheduleId,
+          guests: booking.guests,
+          contactPhone: booking.contactPhone,
+          notes: booking.notes,
+          paymentMethod: method === 'card' ? 'card' : booking.paymentMethod,
+        };
+
+        return dispatch(createActivityBooking({
+          axiosPrivate: axiosInstance,
+          payload,
+        })).unwrap();
+      })
+    );
+
+    const successfulBookings = [];
+    const failedBookings = [];
+
+    bookingResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        successfulBookings.push(result.value);
+      } else {
+        failedBookings.push(result.reason);
+      }
+    });
+
+    // Clear pending activity bookings from Redux
+    dispatch(clearPendingActivityBookings());
+
+    return { successfulBookings, failedBookings };
   };
 
   const handleCheckoutError = async (error) => {
@@ -376,12 +480,20 @@ const Checkout = () => {
                   onBeforeStripeRedirect={storePendingCheckout}
                   onSuccess={async (data) => {
                     try {
+                      // Create room reservations
                       const { successfulItems, conflictedItems } = await createReservations({
                         items: cartItems,
                         data,
                         method: 'cash',
                       });
 
+                      // Create pending restaurant bookings
+                      const { successfulBookings: restaurantBookings, failedBookings: restaurantFailures } = await createPendingRestaurantBookings('cash');
+
+                      // Create pending activity bookings  
+                      const { successfulBookings: activityBookings, failedBookings: activityFailures } = await createPendingActivityBookings('cash');
+
+                      // Handle room booking conflicts
                       if (conflictedItems.length > 0) {
                         if (conflictedItems.length === 1) {
                           toast.info(`${conflictedItems[0].name || 'This room'} was just booked by another guest and was removed from your cart.`);
@@ -390,21 +502,67 @@ const Checkout = () => {
                         }
                       }
 
-                      if (successfulItems.length === 0) {
+                      // Handle restaurant booking failures
+                      if (restaurantFailures.length > 0) {
+                        toast.error(`${restaurantFailures.length} restaurant booking(s) failed. Please contact support.`);
+                      }
+
+                      // Handle activity booking failures
+                      if (activityFailures.length > 0) {
+                        toast.error(`${activityFailures.length} activity booking(s) failed. Please contact support.`);
+                      }
+
+                      // Calculate total successful items
+                      const allSuccessfulItems = [
+                        ...successfulItems,
+                        ...restaurantBookings,
+                        ...activityBookings
+                      ];
+
+                      if (allSuccessfulItems.length === 0) {
+                        toast.error('No bookings could be completed. Please try again.');
                         return;
                       }
 
-                      const successfulTotal = successfulItems.reduce(
+                      // Calculate totals
+                      const roomTotal = successfulItems.reduce(
                         (sum, item) => sum + (Number(item.price || 0) * Math.max(1, Number(item.nights || 1)) * Math.max(1, Number(item.roomsCount || 1))),
                         0,
                       );
 
-                      setOrderReceived(buildOrderReceived(data, successfulItems, successfulTotal, 'cash'));
+                      const restaurantTotal = restaurantBookings.reduce((sum, booking) => {
+                        return sum + (booking.lineItems?.reduce((itemSum, item) => itemSum + (item.price * item.qty), 0) || 0);
+                      }, 0);
+
+                      const activityTotal = activityBookings.reduce((sum, booking) => {
+                        return sum + (booking.price * booking.guests || 0);
+                      }, 0);
+
+                      const finalTotal = roomTotal + restaurantTotal + activityTotal;
+
+                      setOrderReceived(buildOrderReceived(data, allSuccessfulItems, finalTotal, 'cash'));
                       setIsModalOpen(true);
+                      
+                      // Show success message based on what was booked
+                      const successMessages = [];
+                      if (successfulItems.length > 0) {
+                        successMessages.push(`${successfulItems.length} room(s) reserved`);
+                      }
+                      if (restaurantBookings.length > 0) {
+                        successMessages.push(`${restaurantBookings.length} restaurant booking(s) confirmed`);
+                      }
+                      if (activityBookings.length > 0) {
+                        successMessages.push(`${activityBookings.length} activity booking(s) confirmed`);
+                      }
+
+                      const hasConflicts = conflictedItems.length > 0 || restaurantFailures.length > 0 || activityFailures.length > 0;
+                      
                       toast.success(
-                        conflictedItems.length > 0
-                          ? 'Available room reservations were completed successfully.'
-                          : 'Your room(s) have been reserved successfully.',
+                        hasConflicts
+                          ? `${successMessages.join(', ')} successfully. Some items could not be processed.`
+                          : successMessages.length > 1
+                          ? 'All your bookings have been confirmed successfully!'
+                          : `${successMessages[0]} successfully!`
                       );
                     } catch (err) {
                       console.error('Booking failed:', err);

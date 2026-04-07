@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { Calendar, ShoppingCart, Ticket, UtensilsCrossed } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -50,11 +50,12 @@ import {
   AccountDetailsModal,
   EditProfileModal,
 } from "@/components/profile/ProfileAccountModals";
-import { ProfilePageSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { ProfilePageSkeleton } from "@/components/profile/loading/ProfilePageSkeleton";
 
 export default function Profile() {
   const dispatch = useDispatch();
   const axiosPrivate = useAxiosPrivate();
+  const location = useLocation();
   const { user, isAuthenticated, isHydrating } = useSelector((state) => state.auth);
   const wishlistItems = useSelector(selectWishlistItems);
   const wishlistCount = useSelector(selectWishlistCount);
@@ -77,6 +78,63 @@ export default function Profile() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isProfileSnapshotLoading, setIsProfileSnapshotLoading] = useState(true);
+  const hasScrolledToRecentBooking = useRef(false);
+
+  // Auto-scroll to recent booking functionality
+  useEffect(() => {
+    if (!isAuthenticated || isProfileSnapshotLoading || hasScrolledToRecentBooking.current) return;
+
+    // Check if user has any recent bookings (created in the last 5 minutes)
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    
+    const recentRoomBookings = roomBookings.filter(booking => 
+      new Date(booking.createdAt || booking.bookedAt) > fiveMinutesAgo
+    );
+    const recentActivityBookings = activityBookings.filter(booking => 
+      new Date(booking.createdAt) > fiveMinutesAgo
+    );
+    const recentTableBookings = tableBookings.filter(booking => 
+      new Date(booking.createdAt) > fiveMinutesAgo
+    );
+
+    const hasRecentBookings = recentRoomBookings.length > 0 || 
+                           recentActivityBookings.length > 0 || 
+                           recentTableBookings.length > 0;
+
+    if (hasRecentBookings) {
+      // Wait a bit for the page to render, then scroll
+      const timer = setTimeout(() => {
+        // Try to find booking sections in order of priority
+        const selectors = [
+          '#room-bookings-section',
+          '#activity-bookings-section', 
+          '#table-bookings-section'
+        ];
+        
+        for (const selector of selectors) {
+          const element = document.querySelector(selector);
+          if (element) {
+            element.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+            hasScrolledToRecentBooking.current = true;
+            break;
+          }
+        }
+      }, 500); // Small delay to ensure content is rendered
+
+      return () => clearTimeout(timer);
+    }
+  }, [
+    isAuthenticated, 
+    isProfileSnapshotLoading, 
+    roomBookings, 
+    activityBookings, 
+    tableBookings
+  ]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
