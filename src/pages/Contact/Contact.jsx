@@ -28,7 +28,7 @@ export default function Contact() {
   const onSubmit = async (data) => {
     try {
       // TODO: connect to API
-      console.log("Contact form data:", data);
+      void data;
       reset();
     } catch (error) {
       console.error(error);
