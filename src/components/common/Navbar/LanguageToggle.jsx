@@ -1,10 +1,14 @@
 import { Languages } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import NavTooltip from "./NavTooltip";
 import MobileAccordion from "./Mobile/MobileAccordion";
 import NavDropdown from "./Desktop/NavDropdown";
 import { selectLocale, setLocale, toggleLocale } from "@/store/slices/localeSlice";
+const MotionDiv = motion.div;
+const MotionSpan = motion.span;
+const MotionButton = motion.button;
 
 const LANGUAGES = [
   { code: "EN", label: "English", href: "#" },
@@ -60,7 +64,7 @@ function LocalePillSwitch({ currentLang, onToggle }) {
       >
         EN
       </span>
-      <motion.span
+      <MotionSpan
         className="pointer-events-none absolute top-1/2 z-[2] size-[1.125rem] -translate-y-1/2 rounded-full border border-border/50 bg-background shadow-md"
         initial={false}
         animate={{
@@ -79,15 +83,29 @@ export default function LanguageToggle({
   isExpanded,
   onToggle,
   onClose,
-  activeMenu,
-  onHover,
-  onLeave,
 }) {
   const dispatch = useDispatch();
   const currentLang = useSelector(selectLocale);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
   const icon = <Languages size={mobile ? 15 : 20} />;
 
-  const langLink = { label: "Language" };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleScrollClose = () => setOpen(false);
+    window.addEventListener("scroll", handleScrollClose, { passive: true });
+    return () => window.removeEventListener("scroll", handleScrollClose);
+  }, [open]);
 
   if (settingsCard) {
     const active = LANGUAGES.find((l) => l.code === currentLang) ?? LANGUAGES[0];
@@ -110,7 +128,7 @@ export default function LanguageToggle({
   if (embedded) {
     const active = LANGUAGES.find((l) => l.code === currentLang) ?? LANGUAGES[0];
     return (
-      <motion.div
+      <MotionDiv
         layout={false}
         className="flex items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-foreground/80 transition-[background-color] duration-300 ease-out hover:bg-primary/10"
       >
@@ -118,7 +136,7 @@ export default function LanguageToggle({
           <Languages size={16} className="shrink-0 text-foreground/70" aria-hidden />
           <div className="relative min-h-[1.35em] min-w-0 flex-1 overflow-hidden">
             <AnimatePresence mode="wait" initial={false}>
-              <motion.span
+              <MotionSpan
                 key={active.code}
                 variants={langLabelMotion}
                 initial="initial"
@@ -127,12 +145,12 @@ export default function LanguageToggle({
                 className="block truncate"
               >
                 {active.label}
-              </motion.span>
+              </MotionSpan>
             </AnimatePresence>
           </div>
         </div>
         <LocalePillSwitch currentLang={currentLang} onToggle={() => dispatch(toggleLocale())} />
-      </motion.div>
+      </MotionDiv>
     );
   }
 
@@ -166,32 +184,33 @@ export default function LanguageToggle({
   }
 
   return (
-    <div className="relative" onMouseEnter={() => onHover(langLink)} onMouseLeave={onLeave}>
+    <div ref={containerRef} className="relative">
       <NavTooltip label="Language">
-        <motion.button
-          className="w-11 h-11 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-white/60 border border-white/10 cursor-pointer"
+        <MotionButton
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="w-11 h-11 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-white/60 border border-white/10 cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-0"
           aria-label="Toggle Language"
+          aria-expanded={open}
         >
           {icon}
-        </motion.button>
+        </MotionButton>
       </NavTooltip>
 
       <AnimatePresence>
-        {activeMenu?.label === langLink.label && (
+        {open && (
           <NavDropdown
             links={LANGUAGES.map((l) => ({
               ...l,
               isActive: currentLang === l.code,
               onClick: () => {
                 dispatch(setLocale(l.code));
-                onLeave();
+                setOpen(false);
               },
             }))}
             isOpen={true}
             isRouterLink={false}
-            onMouseEnter={() => onHover(langLink)}
-            onMouseLeave={onLeave}
-            onItemClick={() => onLeave()}
+            onItemClick={() => setOpen(false)}
           />
         )}
       </AnimatePresence>

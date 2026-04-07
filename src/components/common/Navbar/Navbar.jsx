@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { useSelector } from "react-redux";
 import { navLinks } from "./navLinks";
@@ -91,8 +91,11 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [introStage, setIntroStage] = useState("drop");
   const { scrollY } = useScroll();
-  const timeoutRef = useRef(null);
   const hiddenRef = useRef(false);
+  const megaMenuRef = useRef(null);
+  const megaTriggerRef = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const mobileMenuButtonRef = useRef(null);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (introStage !== "done") return;
@@ -113,18 +116,12 @@ export default function Navbar() {
     }
   });
 
-  const handleMouseEnter = useCallback((link) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setActiveMenu(link);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setActiveMenu(null), 200);
-  }, []);
-
-  const keepOpen = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  const handleMenuToggle = useCallback((link) => {
+    if (!link?.megaMenu && !link?.dropdown) {
+      setActiveMenu(null);
+      return;
+    }
+    setActiveMenu((prev) => (prev?.label === link.label ? null : link));
   }, []);
 
   const handleAnimationComplete = useCallback((def) => {
@@ -135,6 +132,46 @@ export default function Navbar() {
   const toggleMobile = useCallback(() => setIsOpen((prev) => !prev), []);
   const closeMobile = useCallback(() => setIsOpen(false), []);
   const clearMenu = useCallback(() => setActiveMenu(null), []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!activeMenu) return;
+
+      const target = event.target;
+      const clickedInsideMega = megaMenuRef.current?.contains(target);
+      const clickedTrigger = megaTriggerRef.current?.contains(target);
+
+      if (clickedInsideMega || clickedTrigger) return;
+      setActiveMenu(null);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [activeMenu]);
+
+  useEffect(() => {
+    if (!activeMenu) return;
+    const handleScrollClose = () => setActiveMenu(null);
+    window.addEventListener("scroll", handleScrollClose, { passive: true });
+    return () => window.removeEventListener("scroll", handleScrollClose);
+  }, [activeMenu]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMobileOutsideClick = (event) => {
+      const target = event.target;
+      const clickedMenu = mobileMenuRef.current?.contains(target);
+      const clickedToggle = mobileMenuButtonRef.current?.contains(target);
+
+      // Keep burger button behavior intact (it already toggles open/close).
+      if (clickedToggle || clickedMenu) return;
+      setIsOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleMobileOutsideClick);
+    return () => document.removeEventListener("mousedown", handleMobileOutsideClick);
+  }, [isOpen]);
 
   const introDone = introStage === "done";
 
@@ -174,7 +211,11 @@ export default function Navbar() {
               variants={slideInLeft}
               className="md:hidden flex items-center gap-1 shrink-0 z-10"
             >
-              <MobileMenuButton isOpen={isOpen} onToggle={toggleMobile} />
+              <MobileMenuButton
+                isOpen={isOpen}
+                onToggle={toggleMobile}
+                buttonRef={mobileMenuButtonRef}
+              />
               {isAuthenticated && <WishlistButton />}
             </MotionDiv>
 
@@ -185,14 +226,13 @@ export default function Navbar() {
             <DesktopNav
               navLinks={navLinks}
               activeMenu={activeMenu}
-              onHover={handleMouseEnter}
-              onLeave={handleMouseLeave}
+              onToggle={handleMenuToggle}
+              onClose={clearMenu}
+              triggerRef={megaTriggerRef}
             />
 
             <NavActions
               activeMenu={activeMenu}
-              onHover={handleMouseEnter}
-              onLeave={handleMouseLeave}
             />
 
             <div className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-auto">
@@ -218,14 +258,18 @@ export default function Navbar() {
             <MegaMenu
               content={activeMenu.megaMenu}
               isOpen={!!activeMenu}
-              onMouseEnter={keepOpen}
-              onMouseLeave={handleMouseLeave}
               onItemClick={clearMenu}
+              containerRef={megaMenuRef}
             />
           )}
         </AnimatePresence>
 
-        <MobileNav navLinks={navLinks} isOpen={isOpen} onClose={closeMobile} />
+        <MobileNav
+          navLinks={navLinks}
+          isOpen={isOpen}
+          onClose={closeMobile}
+          containerRef={mobileMenuRef}
+        />
       </div>
     </header>
   );

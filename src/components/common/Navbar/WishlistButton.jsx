@@ -14,13 +14,17 @@ function WishlistButton({ itemCount: propCount }) {
 
   return (
     <NavTooltip label="Wishlist">
-      <Link to="/wishlist">
+      <Link
+        to="/wishlist"
+        className="focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+      >
         <motion.button
           id="navbar-wishlist-button"
           aria-label="Wishlist"
           className={`
             relative flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full
             transition-all duration-300 hover:bg-primary/20 cursor-pointer
+            focus:outline-none focus-visible:outline-none focus-visible:ring-0
             ${isWishlistPage
               ? 'text-primary bg-primary/20 shadow-inner border border-primary/20'
               : 'text-white/60 bg-primary/5 border border-white/10 hover:text-primary hover:border-primary/50'}

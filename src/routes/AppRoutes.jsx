@@ -6,6 +6,7 @@ import MainLayout from "@/layouts/MainLayout.jsx";
 import NotFound from "@/pages/NotFound/NotFound";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { ContactPageSkeleton } from "@/components/Contact/loading/ContactPageSkeleton";
+import { HomeHeroSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 
 const About = lazy(() => import("@/pages/About/About"));
 const Blog = lazy(() => import("@/pages/Blog/Blog"));
@@ -32,9 +33,14 @@ const ChangePassword = lazy(() => import("@/pages/Auth/ChangePassword"));
 const Restaurant = lazy(() => import("@/pages/Services/Restaurant.jsx"));
 const ConfirmEmail = lazy(() => import("@/pages/Auth/ConfirmEmail.jsx"));
 
-const routeFallback = (
-  <div className="flex min-h-[40vh] items-center justify-center px-4 py-12 text-sm text-muted-foreground">
-    Loading page...
+const routeFallback = <HomeHeroSkeleton />;
+const authFallback = (
+  <div className="w-full max-w-md space-y-4">
+    <div className="h-8 w-40 animate-pulse rounded-lg bg-muted/50" />
+    <div className="h-4 w-64 animate-pulse rounded bg-muted/50" />
+    <div className="h-11 w-full animate-pulse rounded-xl bg-muted/50" />
+    <div className="h-11 w-full animate-pulse rounded-xl bg-muted/50" />
+    <div className="h-11 w-full animate-pulse rounded-xl bg-muted/50" />
   </div>
 );
 
@@ -82,12 +88,12 @@ export const routes = createBrowserRouter([
     element: <AuthLayout />,
     errorElement: <NotFound />,
     children: [
-      { path: "login", element: withSuspense(Login) },
-      { path: "register", element: withSuspense(Register) },
-      { path: "forgot-password", element: withSuspense(ForgotPassword) },
-      { path: "reset-password", element: withSuspense(ResetPassword) },
-      { path: "change-password", element: withSuspense(ChangePassword) },
-      { path: "confirm-email", element: withSuspense(ConfirmEmail) },
+      { path: "login", element: withSuspense(Login, authFallback) },
+      { path: "register", element: withSuspense(Register, authFallback) },
+      { path: "forgot-password", element: withSuspense(ForgotPassword, authFallback) },
+      { path: "reset-password", element: withSuspense(ResetPassword, authFallback) },
+      { path: "change-password", element: withSuspense(ChangePassword, authFallback) },
+      { path: "confirm-email", element: withSuspense(ConfirmEmail, authFallback) },
     ],
   },
 ]);

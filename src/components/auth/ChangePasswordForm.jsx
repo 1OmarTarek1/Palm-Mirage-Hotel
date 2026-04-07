@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -26,15 +26,15 @@ export default function ChangePasswordForm({
   onCancel,
   submitLabel = "Update Password",
   className,
-  successDelayMs = 1800,
   successTitle = "Password changed successfully",
-  successMessage = "Signing you out now so you can log in securely with your new password.",
-  toastMessage = "Password changed successfully. Please log in again with your new password.",
+  successMessage = "Choose whether to continue here or sign out from all devices and log in again.",
+  toastMessage = "Password changed successfully.",
 }) {
   const axiosPrivate = useAxiosPrivate();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showSuccessNotice, setShowSuccessNotice] = useState(false);
+  const [isFinalizingAction, setIsFinalizingAction] = useState(false);
   const {
     register,
     handleSubmit,
@@ -49,24 +49,6 @@ export default function ChangePasswordForm({
     },
   });
 
-  useEffect(() => {
-    if (!showSuccessNotice || successDelayMs <= 0) {
-      return undefined;
-    }
-
-    const timerId = window.setTimeout(() => {
-      void axiosInstance.post("/auth/logout").catch(() => null).finally(() => {
-        dispatch(logout());
-        onSuccess?.();
-        navigate("/auth/login", { replace: true });
-      });
-    }, successDelayMs);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [dispatch, navigate, onSuccess, showSuccessNotice, successDelayMs]);
-
   const onSubmit = async (formData) => {
     setShowSuccessNotice(false);
 
@@ -75,6 +57,7 @@ export default function ChangePasswordForm({
         oldPassword: formData.oldPassword,
         newPassword: formData.newPassword,
         confirmationPassword: formData.confirmPassword,
+        logoutAllSessions: false,
       });
 
       toast.success(toastMessage);
@@ -85,6 +68,31 @@ export default function ChangePasswordForm({
         error?.response?.data?.message || "Failed to change password. Please try again.",
       );
     }
+  };
+
+  const handleStaySignedIn = async () => {
+    if (isFinalizingAction) return;
+    setIsFinalizingAction(true);
+    toast.success("Password updated. You are still signed in on this device.");
+    onSuccess?.();
+    onCancel?.();
+    setIsFinalizingAction(false);
+  };
+
+  const handleLogoutAllSessions = async () => {
+    if (isFinalizingAction) return;
+    setIsFinalizingAction(true);
+    try {
+      await axiosPrivate.post("/auth/logout-all-sessions");
+    } catch {
+      // Continue local logout even if server-side global logout fails.
+    }
+    void axiosInstance.post("/auth/logout").catch(() => null).finally(() => {
+      dispatch(logout());
+      onSuccess?.();
+      navigate("/auth/login", { replace: true });
+      setIsFinalizingAction(false);
+    });
   };
 
   return (
@@ -147,6 +155,24 @@ export default function ChangePasswordForm({
           >
             {successMessage}
           </MotionP>
+          <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button
+              type="button"
+              variant="palmSecondary"
+              onClick={handleStaySignedIn}
+              disabled={isFinalizingAction}
+            >
+              Continue here
+            </Button>
+            <Button
+              type="button"
+              variant="palmPrimary"
+              onClick={handleLogoutAllSessions}
+              disabled={isFinalizingAction}
+            >
+              Logout all devices
+            </Button>
+          </div>
         </MotionDiv>
       ) : (
         <>

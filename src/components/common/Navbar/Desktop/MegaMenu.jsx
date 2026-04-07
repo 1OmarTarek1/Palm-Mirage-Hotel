@@ -2,11 +2,12 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 
-export default function MegaMenu({ content, isOpen, onMouseEnter, onMouseLeave, onItemClick }) {
+export default function MegaMenu({ content, isOpen, onMouseEnter, onMouseLeave, onItemClick, containerRef }) {
   if (!content) return null;
 
   return (
     <motion.div
+      ref={containerRef}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
@@ -14,8 +15,8 @@ export default function MegaMenu({ content, isOpen, onMouseEnter, onMouseLeave, 
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={`
-        absolute top-full left-0 right-0 mt-4 overflow-hidden
-        bg-card backdrop-blur-2xl
+        absolute top-full left-0 right-0 mt-4 overflow-hidden z-[70]
+        bg-card/90 backdrop-blur-2xl
         border border-border/50 rounded-[2rem] shadow-2xl
         ${isOpen ? "pointer-events-auto" : "pointer-events-none"}
       `}

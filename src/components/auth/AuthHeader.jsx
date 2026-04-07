@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
 
+const resolveAuthLink = (linkTo = "") => {
+  if (!linkTo) return "/auth/login";
+  if (linkTo.startsWith("/auth/")) return linkTo;
+  if (linkTo.startsWith("/")) return `/auth${linkTo}`;
+  return `/auth/${linkTo}`;
+};
+
 export default function AuthHeader({
   title,
   description,
@@ -19,7 +26,7 @@ export default function AuthHeader({
         <p className="text-sm text-muted-foreground">
           {questionText}{" "}
           <Link
-            to={`/auth${linkTo}`}
+            to={resolveAuthLink(linkTo)}
             className="text-primary font-medium hover:text-secondary transition"
           >
             {linkText}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useSpring } from "framer-motion";
 import BookingBar from "@/components/rooms/BookingBar";
 import { Button } from "@/components/ui/button";
+import { HomeHeroSkeleton } from "@/components/common/loading/WebsiteSkeletons";
 
 
 const slides = [
@@ -31,6 +32,7 @@ const slides = [
 
 export default function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [heroReady, setHeroReady] = useState(false);
 
   const containerRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -75,6 +77,22 @@ export default function HeroCarousel() {
 
   const smoothX = useSpring(mousePosition.x, { stiffness: 100, damping: 30 });
   const smoothY = useSpring(mousePosition.y, { stiffness: 100, damping: 30 });
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = slides[0].image;
+    const markReady = () => setHeroReady(true);
+    img.onload = markReady;
+    img.onerror = markReady;
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, []);
+
+  if (!heroReady) {
+    return <HomeHeroSkeleton />;
+  }
 
   return (
     <div 

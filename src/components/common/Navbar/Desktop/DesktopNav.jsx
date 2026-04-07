@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { NavLink, useMatch, useResolvedPath } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import NavTooltip from "../NavTooltip";
 import NavDropdown from "./NavDropdown";
@@ -9,19 +9,25 @@ import NavDropdown from "./NavDropdown";
  * Uses `end: true` for leaf links (no children) to avoid false matches on "/".
  */
 function useIsParentActive(link) {
-  const hasChildren = !!(link.dropdown?.length || link.megaMenu?.links?.length);
-  const resolved = useResolvedPath(link.href);
-  // end:true for leaf links (like Home "/") — only exact match
-  // end:false for parents with children — match /activities AND /activities/hiking
-  const parentMatch = useMatch({ path: resolved.pathname, end: !hasChildren });
+  const { pathname } = useLocation();
 
-  // Also check if current path starts with any child href
+  const hasChildren = !!(link.dropdown?.length || link.megaMenu?.links?.length);
+  const hasHref = typeof link.href === "string" && link.href.length > 0;
+
+  const parentMatch = hasHref
+    ? hasChildren
+      ? pathname.startsWith(link.href)
+      : pathname === link.href
+    : false;
+
   const childHrefs = [
     ...(link.dropdown?.map((c) => c.href) ?? []),
     ...(link.megaMenu?.links?.map((c) => c.href) ?? []),
+    ...(link.activeMatch ?? []),
   ];
-  const currentPath = window.location.pathname;
-  const childMatch = childHrefs.some((href) => currentPath.startsWith(href));
+  const childMatch = childHrefs.some(
+    (href) => typeof href === "string" && pathname.startsWith(href),
+  );
 
   return !!(parentMatch || childMatch);
 }
@@ -35,44 +41,64 @@ const itemVariants = {
   },
 };
 
-function NavItem({ link, activeMenu, onHover, onLeave }) {
+function NavItem({ link, activeMenu, onToggle, onClose, triggerRef }) {
   const isActive = useIsParentActive(link);
+  const hasRoute = typeof link.href === "string" && link.href.length > 0;
+  const hasMenu = !!(link.dropdown || link.megaMenu);
+  const isOpen = activeMenu?.label === link.label;
 
   return (
     <motion.li
       variants={itemVariants}
-      onMouseEnter={() => onHover(link)}
-      onMouseLeave={onLeave}
       className="relative"
     >
       <NavTooltip label={link.label}>
-        <NavLink
-          to={link.href}
-          end={!link.dropdown && !link.megaMenu} // exact only for leaf links
-          className={() =>
-            `flex items-center justify-center w-11 h-11 rounded-full
+        {hasRoute ? (
+          <NavLink
+            ref={hasMenu ? triggerRef : undefined}
+            to={link.href}
+            end={!link.dropdown && !link.megaMenu} // exact only for leaf links
+            onClick={() => (hasMenu ? onToggle(link) : onClose())}
+            className={() =>
+              `flex items-center justify-center w-11 h-11 rounded-full cursor-pointer
+               transition-all duration-300 hover:bg-primary/20
+               focus:outline-none focus-visible:outline-none focus-visible:ring-0
+               ${
+                 isActive
+                   ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
+                   : "text-white/60 border border-transparent"
+               }`
+            }
+          >
+            <motion.div>{link.icon}</motion.div>
+          </NavLink>
+        ) : (
+          <button
+            type="button"
+            ref={hasMenu ? triggerRef : undefined}
+            onClick={() => onToggle(link)}
+            aria-expanded={isOpen}
+            className={`flex items-center justify-center w-11 h-11 rounded-full cursor-pointer
              transition-all duration-300 hover:bg-primary/20
-             ${isActive
-               ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
-               : "text-white/60"
-             }`
-          }
-        >
-          <motion.div>
-            {link.icon}
-          </motion.div>
-        </NavLink>
+             focus:outline-none focus-visible:outline-none focus-visible:ring-0
+             ${
+               isActive
+                 ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
+                 : "text-white/60 border border-transparent"
+             }`}
+          >
+            <motion.div>{link.icon}</motion.div>
+          </button>
+        )}
       </NavTooltip>
 
       {link.dropdown && (
         <AnimatePresence>
-          {activeMenu?.label === link.label && (
+          {isOpen && (
             <NavDropdown
               links={link.dropdown}
               isOpen={true}
-              onMouseEnter={() => onHover(link)}
-              onMouseLeave={onLeave}
-              onItemClick={() => onLeave()}
+              onItemClick={onClose}
             />
           )}
         </AnimatePresence>
@@ -81,7 +107,7 @@ function NavItem({ link, activeMenu, onHover, onLeave }) {
   );
 }
 
-function DesktopNav({ navLinks, activeMenu, onHover, onLeave }) {
+function DesktopNav({ navLinks, activeMenu, onToggle, onClose, triggerRef }) {
   return (
     <ul className="hidden md:flex items-center gap-3 lg:gap-4 absolute left-1/2 -translate-x-1/2">
       {navLinks.map((link) => (
@@ -89,8 +115,9 @@ function DesktopNav({ navLinks, activeMenu, onHover, onLeave }) {
           key={link.label}
           link={link}
           activeMenu={activeMenu}
-          onHover={onHover}
-          onLeave={onLeave}
+          onToggle={onToggle}
+          onClose={onClose}
+          triggerRef={triggerRef}
         />
       ))}
     </ul>

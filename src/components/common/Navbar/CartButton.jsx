@@ -31,6 +31,7 @@ function CartButton({ itemCount: propCount }) {
         className={`
           relative flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full
           transition-all duration-300 hover:bg-primary/20 cursor-pointer
+          focus:outline-none focus-visible:outline-none focus-visible:ring-0
           ${(isOpen || isCartPage)
             ? "text-primary bg-primary/20 shadow-inner border border-primary/20"
             : "text-white/60 bg-primary/5 border border-white/10"}

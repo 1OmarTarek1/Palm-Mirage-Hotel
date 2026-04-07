@@ -112,9 +112,8 @@ export function ChangePasswordModal({ isOpen, onClose, submitLabel = "Update" })
       <ChangePasswordForm
         onCancel={onClose}
         submitLabel={submitLabel}
-        successDelayMs={1200}
         successTitle="Password changed"
-        successMessage="Everything looks good. We are signing you out so you can log in again safely."
+        successMessage="Do you want to log out from all devices and sign in again, or continue here?"
         toastMessage="Password changed successfully. Your new password is ready to use."
       />
     </AppModal>

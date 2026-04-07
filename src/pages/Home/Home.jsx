@@ -9,6 +9,14 @@ import SectionNavigator from "../../components/home/SectionNavigator";
 import AwardsSection from "../../components/home/AwardsSection";
 import ContactCTA from "../../components/home/ContactCTA";
 import LazySection from "../../components/home/LazySection";
+import {
+  HomeActivitiesSkeleton,
+  HomeAwardsSkeleton,
+  HomeContactSkeleton,
+  HomeExperienceSkeleton,
+  HomePlatformsSkeleton,
+  HomeTestimonialsSkeleton,
+} from "@/components/common/loading/WebsiteSkeletons";
 
 export default function Home() {
   return (
@@ -19,22 +27,46 @@ export default function Home() {
       <LazySection sectionId="rooms" minHeight="520px">
         <RoomCardsSection />
       </LazySection>
-      <LazySection sectionId="experience" minHeight="520px">
+      <LazySection
+        sectionId="experience"
+        minHeight="520px"
+        fallback={<HomeExperienceSkeleton />}
+      >
         <HomeExperience />
       </LazySection>
-      <LazySection sectionId="activities" minHeight="680px">
+      <LazySection
+        sectionId="activities"
+        minHeight="680px"
+        fallback={<HomeActivitiesSkeleton />}
+      >
         <ActivitiesSection />
       </LazySection>
-      <LazySection sectionId="testimonials" minHeight="420px">
+      <LazySection
+        sectionId="testimonials"
+        minHeight="420px"
+        fallback={<HomeTestimonialsSkeleton />}
+      >
         <ActivitiesTestimonials />
       </LazySection>
-      <LazySection sectionId="platforms" minHeight="420px">
+      <LazySection
+        sectionId="platforms"
+        minHeight="420px"
+        fallback={<HomePlatformsSkeleton />}
+      >
         <RoomsPlatformsSection />
       </LazySection>
-      <LazySection sectionId="amenities" minHeight="420px">
+      <LazySection
+        sectionId="amenities"
+        minHeight="420px"
+        fallback={<HomeAwardsSkeleton />}
+      >
         <AwardsSection />
       </LazySection>
-      <LazySection sectionId="contact" minHeight="360px">
+      <LazySection
+        sectionId="contact"
+        minHeight="360px"
+        fallback={<HomeContactSkeleton />}
+      >
         <ContactCTA />
       </LazySection>
     </div>

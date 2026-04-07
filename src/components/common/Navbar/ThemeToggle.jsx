@@ -159,7 +159,7 @@ export default function ThemeToggle({ mobile = false, menuCard = false }) {
     <NavTooltip label={isDark ? "Light Mode" : "Dark Mode"}>
       <motion.button
         onClick={() => dispatch(toggleTheme())}
-        className="w-11 h-11 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-white/60 border border-white/10 cursor-pointer overflow-hidden"
+        className="w-11 h-11 flex items-center justify-center rounded-full bg-primary/5 hover:bg-primary/20 transition-all text-white/60 border border-white/10 cursor-pointer overflow-hidden focus:outline-none focus-visible:outline-none focus-visible:ring-0"
         aria-label="Toggle Theme"
       >
         {icon}

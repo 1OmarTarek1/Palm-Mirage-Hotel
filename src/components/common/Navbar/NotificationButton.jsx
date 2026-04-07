@@ -6,8 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import NavTooltip from "./NavTooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const NOTIFICATIONS_QUERY_KEY = ["notifications", "inbox"];
+const MotionDiv = motion.div;
+const MotionButton = motion.button;
+const MotionSpan = motion.span;
 
 function applyReadPatchToInboxCache(old, id, updated) {
   if (!old?.notifications || !updated?.id) return old;
@@ -27,6 +32,26 @@ function markAllReadInInboxCache(old) {
     ...old,
     notifications: old.notifications.map((n) => (n.readAt ? n : { ...n, readAt: now })),
     unreadCount: 0,
+  };
+}
+
+function removeNotificationFromInboxCache(old, id) {
+  if (!old?.notifications) return old;
+  const target = old.notifications.find((n) => n.id === id);
+  const wasUnread = Boolean(target && !target.readAt);
+  return {
+    ...old,
+    notifications: old.notifications.filter((n) => n.id !== id),
+    unreadCount: wasUnread ? Math.max(0, (old.unreadCount ?? 0) - 1) : (old.unreadCount ?? 0),
+  };
+}
+
+function removeReadNotificationsFromInboxCache(old) {
+  if (!old?.notifications) return old;
+  return {
+    ...old,
+    notifications: old.notifications.filter((n) => !n.readAt),
+    unreadCount: old.notifications.filter((n) => !n.readAt).length,
   };
 }
 
@@ -61,7 +86,7 @@ export default function NotificationButton() {
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
   const [panelOpen, setPanelOpen] = useState(false);
-  const timeoutRef = useRef(null);
+  const containerRef = useRef(null);
   const isMdUp = useIsMdUp();
 
   const { data, isLoading, isFetching } = useQuery({
@@ -75,24 +100,9 @@ export default function NotificationButton() {
 
   const notifications = data?.notifications ?? [];
   const notificationCount = data?.unreadCount ?? 0;
-
-  const openPanel = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setPanelOpen(true);
-    void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
-  }, [queryClient]);
-
-  const scheduleClose = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setPanelOpen(false), 180);
-  }, []);
-
-  const cancelClose = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  }, []);
+  const readCount = notifications.filter((n) => Boolean(n.readAt)).length;
 
   const closePanel = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setPanelOpen(false);
   }, []);
 
@@ -104,17 +114,39 @@ export default function NotificationButton() {
     });
   }, [queryClient]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setPanelOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const handleScrollClose = () => setPanelOpen(false);
+    window.addEventListener("scroll", handleScrollClose, { passive: true });
+    return () => window.removeEventListener("scroll", handleScrollClose);
+  }, [panelOpen]);
+
   const markRead = useCallback(
     async (id) => {
       try {
+        // Optimistic update to avoid full-list loading flash/re-render.
+        queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) =>
+          applyReadPatchToInboxCache(old, id, { id, readAt: new Date().toISOString() }),
+        );
         const res = await axiosPrivate.patch(`/notifications/${id}/read`);
         const updated = res.data?.data?.notification;
         queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) =>
           applyReadPatchToInboxCache(old, id, updated),
         );
-        await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
       } catch (e) {
         console.error("Failed to mark notification read:", e);
+        // Re-sync only on failure.
+        await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
       }
     },
     [axiosPrivate, queryClient],
@@ -122,11 +154,40 @@ export default function NotificationButton() {
 
   const markAllRead = useCallback(async () => {
     try {
-      await axiosPrivate.post("/notifications/read-all");
+      // Optimistic update to keep panel stable.
       queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) => markAllReadInInboxCache(old));
-      await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+      await axiosPrivate.post("/notifications/read-all");
     } catch (e) {
       console.error("Failed to mark all notifications read:", e);
+      // Re-sync only on failure.
+      await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+    }
+  }, [axiosPrivate, queryClient]);
+
+  const deleteOne = useCallback(
+    async (id) => {
+      try {
+        queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) =>
+          removeNotificationFromInboxCache(old, id),
+        );
+        await axiosPrivate.delete(`/notifications/${id}`);
+      } catch (e) {
+        console.error("Failed to delete notification:", e);
+        await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+      }
+    },
+    [axiosPrivate, queryClient],
+  );
+
+  const clearRead = useCallback(async () => {
+    try {
+      queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) =>
+        removeReadNotificationsFromInboxCache(old),
+      );
+      await axiosPrivate.post("/notifications/clear-read");
+    } catch (e) {
+      console.error("Failed to clear read notifications:", e);
+      await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
     }
   }, [axiosPrivate, queryClient]);
 
@@ -139,7 +200,7 @@ export default function NotificationButton() {
       ? createPortal(
           <AnimatePresence>
             {panelOpen && !isMdUp ? (
-              <motion.div
+              <MotionDiv
                 key="notification-mobile"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -151,7 +212,7 @@ export default function NotificationButton() {
                 aria-label="Notifications"
                 onClick={closePanel}
               >
-                <motion.div
+                <MotionDiv
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -170,6 +231,14 @@ export default function NotificationButton() {
                         >
                           Mark all read
                         </button>
+                      ) : readCount > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => void clearRead()}
+                          className="cursor-pointer text-xs font-medium text-primary hover:underline"
+                        >
+                          Clear read
+                        </button>
                       ) : null}
                       <button
                         type="button"
@@ -186,10 +255,11 @@ export default function NotificationButton() {
                       notifications={notifications}
                       busy={listBusy}
                       onMarkRead={markRead}
+                      onDeleteOne={deleteOne}
                     />
                   </div>
-                </motion.div>
-              </motion.div>
+                </MotionDiv>
+              </MotionDiv>
             ) : null}
           </AnimatePresence>,
           document.body,
@@ -199,56 +269,56 @@ export default function NotificationButton() {
   return (
     <>
       <div
+        ref={containerRef}
         className="relative"
-        onMouseEnter={isMdUp ? openPanel : undefined}
-        onMouseLeave={isMdUp ? scheduleClose : undefined}
       >
-        <motion.button
-          type="button"
-          aria-label={
-            notificationCount > 0 ? `Notifications, ${notificationCount} unread` : "Notifications"
-          }
-          aria-expanded={panelOpen}
-          aria-haspopup="true"
-          onClick={togglePanel}
-          className={`
-          relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition-all duration-300 hover:bg-primary/20 md:h-11 md:w-11
-          ${
-            panelOpen
-              ? "border border-primary/20 bg-primary/20 text-primary shadow-inner"
-              : "border border-white/10 bg-primary/5 text-white/60"
-          }
-        `}
-        >
-          <Bell className="h-[18px] w-[18px] md:h-5 md:w-5" />
+        <NavTooltip label="Notifications">
+          <MotionButton
+            type="button"
+            aria-label={
+              notificationCount > 0 ? `Notifications, ${notificationCount} unread` : "Notifications"
+            }
+            aria-expanded={panelOpen}
+            aria-haspopup="true"
+            onClick={togglePanel}
+            className={`
+            relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition-all duration-300 hover:bg-primary/20 md:h-11 md:w-11
+            focus:outline-none focus-visible:outline-none focus-visible:ring-0
+            ${
+              panelOpen
+                ? "border border-primary/20 bg-primary/20 text-primary shadow-inner"
+                : "border border-white/10 bg-primary/5 text-white/60"
+            }
+          `}
+          >
+            <Bell className="h-[18px] w-[18px] md:h-5 md:w-5" />
 
-          <AnimatePresence>
-            {notificationCount > 0 && (
-              <motion.span
-                key="notification-badge"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="pointer-events-none absolute -right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white shadow-md md:h-[18px] md:min-w-[18px] md:text-[10px]"
-                aria-hidden
-              >
-                {notificationCount > 99 ? "99+" : notificationCount}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
+            <AnimatePresence>
+              {notificationCount > 0 && (
+                <MotionSpan
+                  key="notification-badge"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  className="pointer-events-none absolute -right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white shadow-md md:h-[18px] md:min-w-[18px] md:text-[10px]"
+                  aria-hidden
+                >
+                  {notificationCount > 99 ? "99+" : notificationCount}
+                </MotionSpan>
+              )}
+            </AnimatePresence>
+          </MotionButton>
+        </NavTooltip>
 
         <AnimatePresence>
           {panelOpen && isMdUp ? (
-            <motion.div
-              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.98 }}
-              transition={{ type: "spring", damping: 26, stiffness: 320 }}
-              onMouseEnter={cancelClose}
-              onMouseLeave={scheduleClose}
-              className="absolute right-0 top-full z-[60] mt-3 hidden w-[min(100vw-2rem,20rem)] max-h-[min(70vh,22rem)] overflow-hidden rounded-2xl border border-border/50 bg-card/95 shadow-2xl backdrop-blur-2xl md:block"
+            <MotionDiv
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="absolute right-0 top-full z-[60] mt-3 hidden w-[min(100vw-2rem,20rem)] min-w-[18rem] min-h-[21.5rem] max-h-[min(70vh,22rem)] overflow-hidden rounded-2xl border border-border/50 bg-card/95 shadow-2xl backdrop-blur-2xl md:block"
               role="region"
               aria-label="Notification list"
             >
@@ -262,6 +332,14 @@ export default function NotificationButton() {
                   >
                     Mark all read
                   </button>
+                ) : readCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => void clearRead()}
+                    className="cursor-pointer text-[11px] font-medium text-primary hover:underline"
+                  >
+                    Clear read
+                  </button>
                 ) : null}
               </div>
               <div className="max-h-[min(60vh,18rem)] overflow-y-auto">
@@ -269,9 +347,10 @@ export default function NotificationButton() {
                   notifications={notifications}
                   busy={listBusy}
                   onMarkRead={markRead}
+                  onDeleteOne={deleteOne}
                 />
               </div>
-            </motion.div>
+            </MotionDiv>
           ) : null}
         </AnimatePresence>
       </div>
@@ -280,9 +359,28 @@ export default function NotificationButton() {
   );
 }
 
-function NotificationListBody({ notifications, busy, onMarkRead }) {
+function NotificationListBody({ notifications, busy, onMarkRead, onDeleteOne }) {
   if (busy && notifications.length === 0) {
-    return <p className="p-4 text-center text-sm text-muted-foreground">Loading…</p>;
+    return (
+      <ul className="space-y-1 p-2 md:max-h-[min(60vh,18rem)] md:overflow-y-auto">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <li
+            key={`notification-loading-${index}`}
+            className="rounded-xl border border-border/50 px-3 py-2.5"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-2/3 rounded-md" />
+                <Skeleton className="h-3 w-full rounded-md" />
+                <Skeleton className="h-3 w-5/6 rounded-md" />
+                <Skeleton className="h-2.5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-5 w-14 shrink-0 rounded-md" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
   }
 
   if (notifications.length === 0) {
@@ -293,8 +391,14 @@ function NotificationListBody({ notifications, busy, onMarkRead }) {
 
   return (
     <ul className="space-y-1 p-2 md:max-h-[min(60vh,18rem)] md:overflow-y-auto">
+      <AnimatePresence initial={false}>
       {notifications.map((n) => (
-        <li
+        <motion.li
+          layout
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.18 }}
           key={n.id}
           className={`rounded-xl px-3 py-2.5 transition-colors hover:bg-primary/10 ${
             n.readAt ? "cursor-default" : "cursor-pointer"
@@ -317,10 +421,19 @@ function NotificationListBody({ notifications, busy, onMarkRead }) {
               >
                 Mark read
               </button>
-            ) : null}
+            ) : (
+              <button
+                type="button"
+                onClick={() => void onDeleteOne(n.id)}
+                className="shrink-0 cursor-pointer text-[10px] font-medium uppercase tracking-wide text-primary hover:underline"
+              >
+                Remove
+              </button>
+            )}
           </div>
-        </li>
+        </motion.li>
       ))}
+      </AnimatePresence>
     </ul>
   );
 }

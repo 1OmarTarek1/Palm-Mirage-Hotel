@@ -34,6 +34,9 @@ const persistAuth = (user, token, refreshToken) => {
       window.localStorage.setItem(AUTH_STORAGE_KEY, token);
       if (refreshToken) {
         window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      } else if (!window.localStorage.getItem(REFRESH_TOKEN_KEY)) {
+        // Keep storage shape predictable when token exists but no refresh token is available.
+        window.localStorage.removeItem(REFRESH_TOKEN_KEY);
       }
       window.localStorage.setItem("user", JSON.stringify(user));
       return;
@@ -61,10 +64,19 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (state, action) => {
       const { user, token, refreshToken } = action.payload;
+      const persistedToken =
+        typeof window !== "undefined" ? window.localStorage.getItem(AUTH_STORAGE_KEY) : null;
+      const persistedRefreshToken =
+        typeof window !== "undefined" ? window.localStorage.getItem(REFRESH_TOKEN_KEY) : null;
+
+      // Allow profile-only refreshes to update user data without dropping existing session tokens.
+      const effectiveToken = token || persistedToken;
+      const effectiveRefreshToken = refreshToken || persistedRefreshToken;
+
       state.user = user;
       state.isAuthenticated = Boolean(user);
       state.isHydrating = false;
-      persistAuth(user, token, refreshToken);
+      persistAuth(user, effectiveToken, effectiveRefreshToken);
     },
     finishHydration: (state) => {
       state.isHydrating = false;

@@ -14,10 +14,9 @@ export default function ChangePassword() {
 
       <ChangePasswordForm
         submitLabel="Update Password"
-        successDelayMs={1400}
         successTitle="Password changed"
-        successMessage="Nice. We are signing you out now so you can log in with the new password."
-        toastMessage="Password changed successfully. Redirecting you to login."
+        successMessage="Choose whether to keep this session active or sign out from all devices."
+        toastMessage="Password changed successfully."
       />
     </section>
   );

@@ -15,6 +15,11 @@ const DynamicTitle = ({ customTitle }) => {
     let foundLabel = "";
     const searchLinks = (links) => {
       for (const link of links) {
+        if (!link?.href || typeof link.href !== "string") {
+          if (link?.megaMenu?.links && searchLinks(link.megaMenu.links)) return true;
+          if (link?.dropdown && searchLinks(link.dropdown)) return true;
+          continue;
+        }
         // Normalize path for comparison
         const normalizedLinkHref = link.href.replace(/\/$/, "");
         const normalizedPathname = pathname.replace(/\/$/, "");

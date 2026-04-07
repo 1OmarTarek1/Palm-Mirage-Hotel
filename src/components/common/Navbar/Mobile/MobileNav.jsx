@@ -6,7 +6,7 @@ import ThemeToggle from "../ThemeToggle";
 import LanguageToggle from "../LanguageToggle";
 import MobileAccordion from "./MobileAccordion";
 
-export default function MobileNav({ navLinks, isOpen, onClose }) {
+export default function MobileNav({ navLinks, isOpen, onClose, containerRef }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [expandedLink, setExpandedLink] = useState(null);
 
@@ -18,11 +18,12 @@ export default function MobileNav({ navLinks, isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          ref={containerRef}
           initial={{ height: 0, opacity: 0, y: -20 }}
           animate={{ height: "auto", opacity: 1, y: 0 }}
           exit={{ height: 0, opacity: 0, y: -20 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="md:hidden absolute left-2 right-2 sm:left-3 sm:right-3 mt-2 overflow-hidden z-40"
+          className="md:hidden absolute left-2 right-2 sm:left-3 sm:right-3 mt-2 overflow-hidden z-[70]"
         >
           <div className="p-4 sm:p-5 bg-primary/20 backdrop-blur-xl backdrop-brightness-50 border border-white/20 rounded-2xl shadow-2xl max-h-[70vh] overflow-y-auto no-scrollbar">
             <ul className="grid grid-cols-1 gap-2.5">

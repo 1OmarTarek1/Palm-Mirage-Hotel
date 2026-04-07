@@ -31,7 +31,8 @@ export const navLinks = [
   },
   {
     label: "Services",
-    href: "/services",
+    href: null,
+    activeMatch: ["/services"],
     icon: <ConciergeBell size={20} />,
     megaMenu: {
       title: "Our Premium Services",
@@ -42,7 +43,7 @@ export const navLinks = [
       promotion: {
         title: "Quick Escape, Quality Time",
         subtitle: "Save up to 20% with a Getaway Deal",
-        href: "/services",
+        href: "/services/restaurant",
       },
       //change this links for demo
       links: [
@@ -77,7 +78,7 @@ export const navLinks = [
           icon: <CalendarDays size={20} />,
         },
         {
-          label: "Activities & Experiences",
+          label: "Activities",
           href: "/services/activities",
           description: "Explore adventures and cultural experiences in Luxor.",
           icon: <Palmtree size={20} />,

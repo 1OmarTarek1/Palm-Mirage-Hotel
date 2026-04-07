@@ -23,7 +23,7 @@ export default function Login() {
     handleSubmit,
     formState: { isSubmitting, errors },
   } = useForm({
-    defaultValues: { email: "cr7omartarek@gmail.com", password: "moAhmed123" },
+    defaultValues: { email: location.state?.email ?? "", password: "" },
     resolver: zodResolver(loginSchema),
   });
 
@@ -42,7 +42,17 @@ export default function Login() {
       toast.success("Signed in successfully.");
       navigate(from, { replace: true });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed. Please try again.");
+      const message = error.response?.data?.message || "Login failed. Please try again.";
+      const shouldConfirmEmail = /verify|confirm/i.test(message);
+
+      if (shouldConfirmEmail) {
+        navigate("/auth/confirm-email", {
+          replace: true,
+          state: { email: formData.email },
+        });
+      }
+
+      toast.error(message);
     }
   };
 

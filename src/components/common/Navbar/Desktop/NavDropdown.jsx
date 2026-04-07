@@ -15,7 +15,7 @@ export default function NavDropdown({ links, isOpen, onMouseEnter, onMouseLeave,
       className={`
         absolute top-full transform -translate-x-1/2 left-1/2 mt-4 w-56
         bg-card/90 backdrop-blur-2xl
-        border border-border/50 rounded-2xl shadow-2xl overflow-hidden
+        border border-border/50 rounded-2xl shadow-2xl overflow-hidden z-[60]
         ${isOpen ? "pointer-events-auto" : "pointer-events-none"}
       `}
     >
@@ -31,7 +31,7 @@ export default function NavDropdown({ links, isOpen, onMouseEnter, onMouseLeave,
                 onItemClick();
               }}
               className={({ isActive }) => `
-                block px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200
+                block px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer
                 ${isActive
                   ? "text-primary bg-primary/10"
                   : "text-foreground/80 hover:text-primary hover:bg-primary/10"}

@@ -36,10 +36,10 @@ export default function Register() {
     setServerError("");
     try {
       await axiosInstance.post("/auth/signup", formData);
-      toast.success("Account created successfully. Please log in.");
-      navigate("/auth/login", {
+      toast.success("Account created. Enter the verification code sent to your email.");
+      navigate("/auth/confirm-email", {
         replace: true,
-        state: { email: formData.email },
+        state: { email: formData.email, password: formData.password },
       });
     } catch (error) {
       const msg = error.response?.data?.message || "Registration failed. Please try again.";
