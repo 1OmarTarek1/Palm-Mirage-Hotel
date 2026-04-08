@@ -55,6 +55,7 @@ export default function BookingRealtimeBridge() {
   const queryClient = useQueryClient();
   const { isAuthenticated, isHydrating } = useSelector((state) => state.auth);
   const refreshTimeoutRef = useRef(null);
+  const notificationRefreshTimeoutRef = useRef(null);
   const refreshingSocketAuthRef = useRef(false);
   const seenEventKeysRef = useRef(new Set());
 
@@ -105,6 +106,17 @@ export default function BookingRealtimeBridge() {
       }, 250);
     };
 
+    const queueNotificationsRefresh = () => {
+      if (notificationRefreshTimeoutRef.current) {
+        clearTimeout(notificationRefreshTimeoutRef.current);
+      }
+
+      notificationRefreshTimeoutRef.current = window.setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
+        void queryClient.refetchQueries({ queryKey: ["notifications", "inbox"], type: "active" });
+      }, 450);
+    };
+
     const markEventAsSeen = (key) => {
       if (!key) return false;
       if (seenEventKeysRef.current.has(key)) return true;
@@ -118,7 +130,12 @@ export default function BookingRealtimeBridge() {
     };
 
     const toastNewNotification = ({ title, message, severity = "info", toastId }) => {
-      const body = title ? `${title}: ${message}` : message;
+      const cleanTitle = title?.trim();
+      const cleanMessage = message?.trim();
+      const body =
+        cleanTitle && cleanMessage && cleanTitle.toLowerCase() !== cleanMessage.toLowerCase()
+          ? `${cleanTitle}: ${cleanMessage}`
+          : cleanMessage || cleanTitle || "New notification";
       if (severity === "warning") {
         toast.warning(body, { toastId });
         return;
@@ -149,7 +166,7 @@ export default function BookingRealtimeBridge() {
           toastId: eventKey,
         });
       }
-      void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
+      queueNotificationsRefresh();
       queueSnapshotRefresh();
     };
 
@@ -160,13 +177,13 @@ export default function BookingRealtimeBridge() {
         const message = payload?.message || "Your bookings were refreshed.";
         const severity = payload?.severity || "info";
         toastNewNotification({
-          title: "New notification",
-          message: title === "New notification" ? message : `${title}: ${message}`,
+          title,
+          message,
           severity,
           toastId: eventKey,
         });
       }
-      void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
+      queueNotificationsRefresh();
       queueSnapshotRefresh();
     };
 
@@ -209,6 +226,10 @@ export default function BookingRealtimeBridge() {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
         refreshTimeoutRef.current = null;
+      }
+      if (notificationRefreshTimeoutRef.current) {
+        clearTimeout(notificationRefreshTimeoutRef.current);
+        notificationRefreshTimeoutRef.current = null;
       }
     };
   }, [axiosPrivate, dispatch, isAuthenticated, isHydrating, queryClient]);

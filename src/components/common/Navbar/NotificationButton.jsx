@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
@@ -123,6 +124,8 @@ export default function NotificationButton() {
   const navigate = useNavigate();
   const [panelOpen, setPanelOpen] = useState(false);
   const containerRef = useRef(null);
+  const initializedNotificationIdsRef = useRef(new Set());
+  const hasHydratedNotificationsRef = useRef(false);
   const isMdUp = useIsMdUp();
   const isAuthenticated = useSelector((state) => state.auth?.isAuthenticated);
 
@@ -139,6 +142,41 @@ export default function NotificationButton() {
   const notifications = data?.notifications ?? [];
   const notificationCount = data?.unreadCount ?? 0;
   const readCount = notifications.filter((n) => Boolean(n.readAt)).length;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      initializedNotificationIdsRef.current = new Set();
+      hasHydratedNotificationsRef.current = false;
+      return;
+    }
+
+    const currentIds = new Set(notifications.map((notification) => notification.id).filter(Boolean));
+
+    if (!hasHydratedNotificationsRef.current) {
+      initializedNotificationIdsRef.current = currentIds;
+      if (!isLoading && !isFetching) {
+        hasHydratedNotificationsRef.current = true;
+      }
+      return;
+    }
+
+    let hasNewNotification = false;
+
+    notifications.forEach((notification) => {
+      if (!notification?.id || initializedNotificationIdsRef.current.has(notification.id)) {
+        return;
+      }
+
+      initializedNotificationIdsRef.current.add(notification.id);
+      hasNewNotification = true;
+    });
+
+    initializedNotificationIdsRef.current = currentIds;
+
+    if (!hasNewNotification) return;
+
+    toast.info("You have a new notification.", { toastId: "notifications:new-inbox-item" });
+  }, [isAuthenticated, notifications, isLoading, isFetching]);
 
   const closePanel = useCallback(() => {
     setPanelOpen(false);
