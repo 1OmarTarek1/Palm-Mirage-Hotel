@@ -45,6 +45,7 @@ import {
 import {
   createActivityBooking,
   createActivityCheckoutSession,
+  fetchMyActivityBookings,
 } from '@/services/activityBookings/activityBookingsSlice';
 import { toast } from 'react-toastify';
 import { store } from '@/store/store';
@@ -556,6 +557,10 @@ const Checkout = () => {
         );
 
         if (/already booked this activity session/i.test(normalizedError)) {
+          successfulBookings.push({
+            ...pendingActivityBookings[index],
+            _recovered: true,
+          });
           dispatch(removePendingActivityBookingAction(pendingActivityBookings[index].id));
           return;
         }
@@ -883,6 +888,10 @@ const Checkout = () => {
 
                       // Create pending activity bookings  
                       const { successfulBookings: activityBookings, failedBookings: activityFailures } = await createPendingActivityBookings('cash');
+
+                      if (activityBookings.some((booking) => booking?._recovered)) {
+                        await dispatch(fetchMyActivityBookings(axiosPrivate)).unwrap().catch(() => []);
+                      }
 
                       // Handle room booking conflicts
                       if (conflictedItems.length > 0) {
