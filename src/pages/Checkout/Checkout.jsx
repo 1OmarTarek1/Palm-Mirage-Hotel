@@ -20,6 +20,7 @@ import { checkoutSchema } from './checkoutSchema';
 import axiosInstance from '@/services/axiosInstance';
 import useAxiosPrivate from '@/hooks/useAxiosPrivate';
 import { refreshUserSnapshot } from '@/services/userSnapshot';
+import { updateUserPreferences } from '@/services/userPreferencesApi';
 import { fetchRoomAvailability } from '@/services/roomsApi';
 import {
   selectCartItems,
@@ -46,6 +47,7 @@ import {
   createActivityCheckoutSession,
 } from '@/services/activityBookings/activityBookingsSlice';
 import { toast } from 'react-toastify';
+import { store } from '@/store/store';
 
 const PENDING_CHECKOUT_KEY = 'pendingCheckoutSession';
 const PENDING_PAYMENT_SYNC_KEY = 'pendingPaymentSync';
@@ -386,6 +388,17 @@ const Checkout = () => {
 
     window.sessionStorage.setItem(EMPTY_CHECKOUT_TOAST_KEY, 'true');
     toast.info('Your cart is empty. Please add at least one booking before checkout.');
+  };
+
+  const syncCartCollectionsToServer = async () => {
+    const state = store.getState();
+
+    await updateUserPreferences({
+      cartItems: state.cart?.items ?? [],
+      restaurantCart: state.cart?.restaurantMenuCart ?? {},
+      pendingRestaurantBookings: state.cart?.pendingRestaurantBookings ?? [],
+      pendingActivityBookings: state.cart?.pendingActivityBookings ?? [],
+    });
   };
 
   const createReservations = async ({ items, data, method }) => {
@@ -733,6 +746,10 @@ const Checkout = () => {
         );
 
         await waitForCheckoutFulfillment(sessionId);
+        dispatch(clearCart());
+        dispatch(clearPendingRestaurantBookings());
+        dispatch(clearPendingActivityBookings());
+        await syncCartCollectionsToServer();
         await refreshUserSnapshot({ dispatch, axiosPrivate });
         await queryClient.invalidateQueries({ queryKey: ['notifications', 'inbox'] });
 
@@ -768,9 +785,6 @@ const Checkout = () => {
           setOrderReceived(orderReceivedObj);
           setIsModalOpen(true);
           
-          dispatch(clearCart());
-          dispatch(clearPendingRestaurantBookings());
-          dispatch(clearPendingActivityBookings());
           window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
           
           // Clear query params purely from the URL without triggering a route refresh
@@ -931,6 +945,7 @@ const Checkout = () => {
 
                       const finalTotal = roomTotal + restaurantTotal + activityTotal;
 
+                      await syncCartCollectionsToServer();
                       await refreshUserSnapshot({ dispatch, axiosPrivate });
                       await queryClient.invalidateQueries({ queryKey: ['notifications', 'inbox'] });
 
