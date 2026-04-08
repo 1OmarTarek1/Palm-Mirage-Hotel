@@ -1,6 +1,290 @@
+import { useMemo, useState, useEffect, useRef } from "react";
+import { SlidersHorizontal } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+import SharedPagination from "@/components/common/SharedPagination";
+import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/usePagination";
+import { useMatchMedia } from "@/hooks/useMatchMedia";
+import { useRoomsListQuery } from "@/hooks/useCatalogQueries";
+import RoomCard from "@/components/rooms/RoomCard";
+import RoomFilter from "@/components/rooms/RoomFilter";
+import BookingBar from "@/components/rooms/BookingBar";
+import Sidebar from "@/components/common/Sidebar";
+import MobileDrawer from "@/components/common/MobileDrawer";
+import { RoomsPageSkeleton } from "@/components/rooms/loading/RoomsPageSkeleton";
+import { fetchRoomAvailability } from "@/services/roomsApi";
 
 export default function Rooms() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const bookingBarRef = useRef(null);
+  const isLgUp = useMatchMedia("(min-width: 1024px)");
+  const prevSearchRef = useRef(location.search);
+  const [filter, setFilter] = useState({
+    price: [0, Number.MAX_SAFE_INTEGER],
+    roomTypes: [],
+    ratings: [],
+    unrated: false,
+  });
+  const [availabilityMap, setAvailabilityMap] = useState({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const {
+    data: roomsPayload,
+    isLoading,
+    error: queryError,
+  } = useRoomsListQuery({ page: 1, limit: 200 });
+  const rooms = roomsPayload?.rooms ?? [];
+  const error = queryError ? queryError.message || "Failed to load rooms" : null;
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const selectedCheckIn = searchParams.get("checkIn") || "";
+  const selectedCheckOut = searchParams.get("checkOut") || "";
+  const selectedAdults = Math.max(1, Number(searchParams.get("adults") || 1));
+  const selectedChildren = Math.max(0, Number(searchParams.get("children") || 0));
+  const totalGuests = selectedAdults + selectedChildren;
+  const hasAvailabilitySearch = Boolean(selectedCheckIn && selectedCheckOut);
+  const roomPrices = useMemo(
+    () => rooms.map((room) => Number(room.price ?? 0)).filter((price) => Number.isFinite(price) && price > 0),
+    [rooms]
+  );
+
+  const minRoomPrice = useMemo(() => {
+    if (!roomPrices.length) return 0;
+    return Math.floor(Math.min(...roomPrices) / 100) * 100;
+  }, [roomPrices]);
+
+  const maxRoomPrice = useMemo(() => {
+    if (!roomPrices.length) return Number.MAX_SAFE_INTEGER;
+    return Math.ceil(Math.max(...roomPrices) / 100) * 100;
+  }, [roomPrices]);
+
+  const roomsPerPage = 8;
+
+  const filteredRooms = useMemo(() => {
+    if (!rooms?.length) return [];
+    const [minPrice, maxPrice] = filter.price;
+
+    return rooms.filter((room) => {
+      const roomPrice = Number(room.price ?? 0);
+      const inPrice = roomPrice >= minPrice && roomPrice <= maxPrice;
+      const typeMatch =
+        !filter.roomTypes.length || filter.roomTypes.includes(String(room.roomType || "").toLowerCase());
+      const roomRating = Number(room.rating) || 0;
+      const ratingMatch = filter.unrated
+        ? roomRating === 0
+        : !filter.ratings.length
+        ? true
+        : filter.ratings.includes(Math.floor(roomRating));
+      const roomCapacity = Number(room.capacity ?? room.guests ?? 0);
+      const roomId = room._id || room.id;
+      const guestMatch = !hasAvailabilitySearch || roomCapacity >= totalGuests;
+      const availabilityMatch =
+        !hasAvailabilitySearch ||
+        !roomId ||
+        availabilityMap[roomId]?.isBookable === true;
+
+      return inPrice && typeMatch && ratingMatch && guestMatch && availabilityMatch;
+    });
+  }, [rooms, filter, hasAvailabilitySearch, totalGuests, availabilityMap]);
+
+  const applyFilter = (criteria) => {
+    setFilter({
+      price: criteria?.price ?? [minRoomPrice, maxRoomPrice || Number.MAX_SAFE_INTEGER],
+      roomTypes: criteria?.roomTypes ?? [],
+      ratings: criteria?.ratings ?? [],
+      unrated: criteria?.unrated ?? false,
+    });
+    resetPage();
+  };
+
+  const handleResetAll = () => {
+    bookingBarRef.current?.resetToDefaults?.();
+    navigate("/rooms", { replace: true });
+  };
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    paginatedItems: paginatedRooms,
+    resetPage,
+  } = usePagination(filteredRooms, roomsPerPage);
+
+  useEffect(() => {
+    if (isLgUp) setIsFilterOpen(false);
+  }, [isLgUp]);
+
+  useEffect(() => {
+    if (prevSearchRef.current === location.search) return;
+    prevSearchRef.current = location.search;
+    if (!isLgUp) setIsFilterOpen(false);
+  }, [location.search, isLgUp]);
+
+  useEffect(() => {
+    if (!hasAvailabilitySearch || !rooms.length) {
+      setAvailabilityMap({});
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadAvailability = async () => {
+      setAvailabilityLoading(true);
+
+      try {
+        const results = await Promise.all(
+          rooms.map(async (room) => {
+            const roomId = room._id || room.id;
+            if (!roomId) return null;
+
+            const availability = await fetchRoomAvailability(roomId, {
+              checkInDate: selectedCheckIn,
+              checkOutDate: selectedCheckOut,
+            });
+
+            return [roomId, availability];
+          }),
+        );
+
+        if (isCancelled) return;
+        setAvailabilityMap(Object.fromEntries(results.filter(Boolean)));
+      } catch {
+        if (!isCancelled) {
+          setAvailabilityMap({});
+          toast.error("Failed to load availability for the selected stay.");
+        }
+      } finally {
+        if (!isCancelled) {
+          setAvailabilityLoading(false);
+        }
+      }
+    };
+
+    void loadAvailability();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [hasAvailabilitySearch, rooms, selectedCheckIn, selectedCheckOut]);
+
+  if (isLoading)
+    return <RoomsPageSkeleton count={roomsPerPage} />;
+
+  if (error) return <p>Error: {error}</p>;
+
   return (
-    <div>Rooms</div>
-  )
+    <section className="text-center">
+      {isLgUp ? (
+        <div className="mb-10">
+          <div className="mt-12">
+            <BookingBar
+              ref={bookingBarRef}
+              variant="default"
+              className="max-w-full! px-0!"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-12 items-start gap-8">
+        <div className="col-span-12 lg:col-span-9">
+          {/* Mobile: centered entry above room cards */}
+          <div className="mb-5 flex w-full justify-center px-4 lg:hidden">
+            <Button
+              variant="palmPrimary"
+              onClick={() => setIsFilterOpen(true)}
+              className="h-12 w-full max-w-sm gap-2 rounded-full px-6 text-xs font-bold uppercase tracking-widest shadow-md"
+            >
+              <SlidersHorizontal size={18} className="shrink-0" />
+              Search & filters
+            </Button>
+          </div>
+
+          {hasAvailabilitySearch ? (
+            <div className="mb-5 rounded-2xl border border-border bg-muted/20 px-4 py-3 text-left text-sm text-muted-foreground">
+              {availabilityLoading
+                ? "Checking room availability for your selected stay..."
+                : `Showing rooms available for ${selectedAdults} adult(s), ${selectedChildren} children from ${selectedCheckIn} to ${selectedCheckOut}.`}
+            </div>
+          ) : null}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {paginatedRooms.length ? (
+              paginatedRooms.map((room) => (
+                <RoomCard key={room._id || room.roomNumber} room={room} />
+              ))
+            ) : (
+              <p className="col-span-full text-left text-stone-500">
+                {hasAvailabilitySearch
+                  ? "No rooms match the selected stay details and filters."
+                  : "No rooms match the selected filters."}
+              </p>
+            )}
+          </div>
+
+        </div>
+
+        <div className="hidden lg:col-span-3 lg:sticky lg:top-24 lg:block lg:self-start">
+          <Sidebar className="max-h-[calc(100vh-7rem)] overflow-y-auto">
+            <RoomFilter
+              rooms={rooms}
+              onReset={handleResetAll}
+              onFilter={(criteria) => {
+                applyFilter(criteria);
+                setIsFilterOpen(false);
+              }}
+            />
+          </Sidebar>
+        </div>
+
+      </div>
+
+      <SharedPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={roomsPerPage}
+        totalEntries={filteredRooms.length}
+        className="mt-6"
+      />
+
+      <MobileDrawer
+        isOpen={isFilterOpen && !isLgUp}
+        onClose={() => setIsFilterOpen(false)}
+        fullScreen
+        title="Search & filter"
+        subtitle="Set your stay, then narrow results by price, type, and rating."
+      >
+        <div className="space-y-9">
+          <section className="text-left">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Check availability
+            </p>
+            <BookingBar
+              ref={bookingBarRef}
+              variant="default"
+              flat
+              animateEntrance={false}
+              className="max-w-full! px-0!"
+            />
+          </section>
+
+          <section className="text-left">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Refine results
+            </p>
+            <RoomFilter
+              rooms={rooms}
+              onReset={handleResetAll}
+              onFilter={(criteria) => {
+                applyFilter(criteria);
+                setIsFilterOpen(false);
+              }}
+            />
+          </section>
+        </div>
+      </MobileDrawer>
+    </section>
+  );
 }

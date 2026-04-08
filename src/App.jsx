@@ -1,13 +1,25 @@
 import { ToastContainer } from "react-toastify";
 import { RouterProvider } from "react-router-dom";
 
+import AuthBootstrap from "./components/auth/AuthBootstrap";
+import BookingRealtimeBridge from "./components/auth/BookingRealtimeBridge";
 import { routes } from "./routes/AppRoutes";
+import FlyToCartOverlay from "./components/common/FlyToCartOverlay";
 
 export default function App() {
   return (
     <>
-      <ToastContainer />
+      <AuthBootstrap />
+      <BookingRealtimeBridge />
+      <ToastContainer
+        position="bottom-left"
+        autoClose={3000}
+        limit={4}
+        toastClassName="!bg-card !text-foreground !font-main !rounded-xl !border !border-border !shadow-lg !shadow-black/5 !overflow-hidden !px-4 !pr-6 !py-4"
+        toastStyle={{ fontSize: "0.8rem" }}
+      />
       <RouterProvider router={routes} />
+      <FlyToCartOverlay />
     </>
   );
 }
