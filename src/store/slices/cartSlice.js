@@ -140,6 +140,12 @@ const cartSlice = createSlice({
     hydrateRestaurantMenuCart: (state, action) => {
       state.restaurantMenuCart = sanitizeRestaurantMenuCart(action.payload);
     },
+    hydratePendingRestaurantBookings: (state, action) => {
+      state.pendingRestaurantBookings = Array.isArray(action.payload) ? action.payload : [];
+    },
+    hydratePendingActivityBookings: (state, action) => {
+      state.pendingActivityBookings = Array.isArray(action.payload) ? action.payload : [];
+    },
     addRestaurantMenuToCart: (state, action) => {
       const id = String(action.payload?.itemId ?? "").trim();
       if (!id) return;
@@ -170,6 +176,8 @@ const cartSlice = createSlice({
       state.isOpen = false;
       state.sidebarTab = "rooms";
       state.restaurantMenuCart = {};
+      state.pendingRestaurantBookings = [];
+      state.pendingActivityBookings = [];
     },
 
     addItem: (state, action) => {
@@ -309,6 +317,8 @@ export const {
   setCartSidebarTab,
   hydrateCart,
   hydrateRestaurantMenuCart,
+  hydratePendingRestaurantBookings,
+  hydratePendingActivityBookings,
   addRestaurantMenuToCart,
   setRestaurantMenuCartQty,
   resetRestaurantMenuCart,

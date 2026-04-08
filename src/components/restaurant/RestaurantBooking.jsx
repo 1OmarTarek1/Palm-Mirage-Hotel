@@ -17,21 +17,21 @@ import useAuth from "@/hooks/useAuth";
 import { useRestaurantCart } from "@/context/RestaurantCartContext";
 import { useMenuGroupedQuery } from "@/hooks/useCatalogQueries";
 import {
-  createRestaurantCheckoutSession,
-  createTableBooking,
   selectCreatingTableBooking,
   selectRestaurantCheckoutLoading,
 } from "@/services/restaurantBookings/restaurantBookingsSlice";
 import {
-  selectRestaurantMenuCart,
   addPendingRestaurantBooking,
   resetRestaurantMenuCart,
+  openCart,
 } from "@/store/slices/cartSlice";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 
 const BOOKING_MODES = [
   { value: "table_only", label: "Table only (pay on arrival)" },
   { value: "dine_in", label: "Dine in — food at your table" },
   { value: "room_service", label: "Room service" },
+  { value: "pickup", label: "Pickup - order now, collect at the restaurant" },
 ];
 
 export default function RestaurantBooking() {
@@ -49,13 +49,13 @@ export default function RestaurantBooking() {
   const [bookingMode, setBookingMode] = useState("table_only");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [guests, setGuests] = useState("2");
   const [selectedTable, setSelectedTable] = useState("");
   const [availableTables, setAvailableTables] = useState([]);
   const [tablesLoading, setTablesLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [roomNumber, setRoomNumber] = useState("");
   const [activeStay, setActiveStay] = useState(null);
+  const [submitBtnEl, setSubmitBtnEl] = useState(null);
+  const { flyToCart } = useFlyToCart();
 
   const { data: menuGrouped } = useMenuGroupedQuery();
   const menuItems = useMemo(() => {
@@ -71,6 +71,7 @@ export default function RestaurantBooking() {
           name: it.name,
           price: Number(it.price ?? 0),
           available: it.available !== false,
+          image: it.image?.secure_url || it.image || "",
         });
       });
     });
@@ -107,12 +108,6 @@ export default function RestaurantBooking() {
   }, [bookingPrefill, clearBookingPrefill]);
 
   useEffect(() => {
-    if (bookingMode === "table_only") {
-      setPaymentMethod("cash");
-    }
-  }, [bookingMode]);
-
-  useEffect(() => {
     if (bookingMode === "room_service") {
       setSelectedTable("");
       setAvailableTables([]);
@@ -129,16 +124,10 @@ export default function RestaurantBooking() {
       setAvailableTables([]);
       return;
     }
-    const g = Number(guests);
-    if (!Number.isInteger(g) || g < 1) {
-      setAvailableTables([]);
-      return;
-    }
-
     let cancelled = false;
     setTablesLoading(true);
     void axiosPrivate
-      .get("/booking/available-tables", { params: { date, time, guests: g } })
+      .get("/booking/available-tables", { params: { date, time } })
       .then((res) => {
         if (!cancelled) {
           setAvailableTables(Array.isArray(res?.data?.data?.tables) ? res.data.data.tables : []);
@@ -157,7 +146,7 @@ export default function RestaurantBooking() {
     return () => {
       cancelled = true;
     };
-  }, [axiosPrivate, isAuthenticated, bookingMode, date, time, guests]);
+  }, [axiosPrivate, isAuthenticated, bookingMode, date, time]);
 
   useEffect(() => {
     if (!selectedTable) return;
@@ -269,10 +258,8 @@ export default function RestaurantBooking() {
   const resetForm = () => {
     setDate("");
     setTime("");
-    setGuests("2");
     setSelectedTable("");
     setAvailableTables([]);
-    setPaymentMethod("cash");
     setRoomNumber(activeStay?.roomNumber != null ? String(activeStay.roomNumber) : "");
     resetCartContext();
   };
@@ -290,13 +277,10 @@ export default function RestaurantBooking() {
       return;
     }
 
-    const guestCount = Number(guests);
-    if (!Number.isInteger(guestCount) || guestCount < 1) {
-      toast.info("Please enter a valid number of guests.");
-      return;
-    }
-
-    if ((bookingMode === "dine_in" || bookingMode === "room_service") && cartLineItems.length === 0) {
+    if (
+      (bookingMode === "dine_in" || bookingMode === "room_service" || bookingMode === "pickup") &&
+      cartLineItems.length === 0
+    ) {
       toast.info("Add dishes from the header cart (Restaurant tab), then submit this form.");
       return;
     }
@@ -332,14 +316,31 @@ export default function RestaurantBooking() {
       }
     }
 
+    const selectedTableData =
+      bookingMode === "table_only" || bookingMode === "dine_in"
+        ? availableTables.find((t) => Number(t.number) === Number(selectedTable))
+        : null;
+    const derivedGuests = selectedTableData?.chairs != null ? Number(selectedTableData.chairs) : 1;
+
     // Create booking data object and add to Redux store
+    const lineItemsSnapshot = cartLineItems.map(({ menuItemId, qty }) => {
+      const item = menuItems.find((m) => m.id === menuItemId);
+      return {
+        menuItemId,
+        qty,
+        name: item?.name || "Menu item",
+        price: Number(item?.price || 0),
+        image: item?.image || "",
+      };
+    });
+
     const bookingData = {
       bookingMode,
       date,
       time,
-      guests: guestCount,
-      lineItems: cartLineItems,
-      paymentMethod: bookingMode === "table_only" ? "cash" : paymentMethod,
+      guests: derivedGuests,
+      lineItems: lineItemsSnapshot,
+      lineItemsTotal: Number(cartTotal.toFixed(2)),
     };
 
     if (bookingMode === "room_service") {
@@ -350,19 +351,39 @@ export default function RestaurantBooking() {
       bookingData.number = Number(selectedTable);
     }
 
-    // Add to Redux store
+    // Add to Redux store as a unified booking (food + table details)
     dispatch(addPendingRestaurantBooking({
       ...bookingData,
-      id: Date.now().toString(), // temporary ID
+      id: Date.now().toString(),
       createdAt: new Date().toISOString()
     }));
 
-    toast.success("Restaurant booking added to cart!");
-    
-    // Navigate to cart page
+    // Clear the food items from the floating menu cart — they're now bundled in the booking
+    dispatch(resetRestaurantMenuCart());
+
+    // Fly animation then open cart sidebar on the restaurant tab
+    if (submitBtnEl) {
+      flyToCart(submitBtnEl, "navbar-cart-button");
+    }
     setTimeout(() => {
-      navigate('/cart');
-    }, 300);
+      dispatch(openCart({ tab: "restaurant" }));
+    }, 600);
+
+    if (bookingMode === "pickup") {
+      toast.success("Pickup order added to cart - collect it from the restaurant.");
+    } else if (bookingMode === "table_only") {
+      toast.success("Table booking added to cart.");
+    } else {
+      toast.success("Booking added to cart - food and service bundled together.");
+    }
+
+    // Reset booking form fields
+    setDate("");
+    setTime("");
+    setSelectedTable("");
+    setAvailableTables([]);
+    setBookingMode("table_only");
+    setRoomNumber("");
   };
 
   const busy = isCreating || checkoutLoading;
@@ -380,10 +401,11 @@ export default function RestaurantBooking() {
             </h2>
             <div className="space-y-5 text-sm leading-relaxed text-muted-foreground">
               <p>
-                For table-only and dine-in, pick an available table after you set date, time, and guests — only
-                free tables that fit your party are shown. Room service uses your stay&apos;s room. Add dishes
-                from the header cart (Restaurant tab) for dine-in or room service. Card checkout confirms
-                immediately; cash stays pending until the team approves or collects payment.
+                For table-only and dine-in, pick an available table after you set date and time. Room service
+                uses your stay&apos;s room, and pickup lets you order food in advance and collect it from the
+                restaurant. Add dishes from the header cart (Restaurant tab) for dine-in, room service, or
+                pickup. Card checkout confirms immediately; cash stays pending until the team approves or
+                collects payment.
               </p>
               <p>
                 Questions? <span className="font-bold text-secondary">+20 95 123 4567</span>
@@ -441,29 +463,11 @@ export default function RestaurantBooking() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="guests" className="block text-[12px] font-bold text-muted-foreground">
-                Guests*
-              </label>
-              <Input
-                id="guests"
-                name="guests"
-                type="number"
-                min="1"
-                max="20"
-                value={guests}
-                onChange={(event) => setGuests(event.target.value)}
-                required
-                variant="palm"
-              />
-            </div>
-
             {bookingMode === "table_only" || bookingMode === "dine_in" ? (
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-muted-foreground">Table*</label>
                 <p className="text-xs text-muted-foreground">
-                  Only tables free for your date, time, and party size are listed (capacity includes your
-                  guests).
+                  Only free tables for this date and time are listed. Each option shows max seats.
                 </p>
                 {tablesLoading ? (
                   <div className="flex h-12 items-center gap-2 rounded-xl border border-border/40 bg-muted/20 px-3 text-sm text-muted-foreground">
@@ -476,7 +480,7 @@ export default function RestaurantBooking() {
                   </p>
                 ) : availableTables.length === 0 ? (
                   <p className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-3 text-sm text-amber-800 dark:text-amber-200/90">
-                    No tables available for this slot — try another time or fewer guests.
+                    No tables available for this slot — try another time.
                   </p>
                 ) : (
                   <Select value={selectedTable} onValueChange={setSelectedTable}>
@@ -522,19 +526,6 @@ export default function RestaurantBooking() {
 
             {bookingMode !== "table_only" ? (
               <>
-                <div className="space-y-2">
-                  <label className="block text-[12px] font-bold text-muted-foreground">Payment*</label>
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">Cash — pending approval / on delivery</SelectItem>
-                      <SelectItem value="stripe">Card — pay now</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="rounded-2xl border border-border/50 bg-muted/15 p-4">
                   <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                     Your order (from cart)
@@ -567,8 +558,9 @@ export default function RestaurantBooking() {
               <Button
                 variant="palmPrimary"
                 type="submit"
+                ref={setSubmitBtnEl}
                 disabled={busy}
-                className="flex w-full sm:w-auto justify-center items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-full px-6 text-xs font-bold uppercase tracking-[0.12em] sm:w-auto"
               >
                 {busy ? (
                   <>
@@ -576,7 +568,7 @@ export default function RestaurantBooking() {
                     Submitting…
                   </>
                 ) : (
-                  "Submit request"
+                  "Add to cart"
                 )}
               </Button>
             </div>

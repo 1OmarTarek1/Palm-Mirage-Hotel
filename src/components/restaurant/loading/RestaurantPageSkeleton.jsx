@@ -190,7 +190,3 @@ function RestaurantCarouselCardSkeleton() {
   );
 }
 
-// Menu page skeleton (alias for RestaurantPageSkeleton)
-export function MenuPageSkeleton() {
-  return <RestaurantPageSkeleton />;
-}

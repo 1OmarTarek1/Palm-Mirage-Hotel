@@ -42,6 +42,12 @@ export default function ActivityEditModal({
   const [schedulesLoading, setSchedulesLoading] = useState(false);
 
   useEffect(() => {
+    if (isOpen) {
+      setDraft(buildInitialDraft(booking));
+    }
+  }, [isOpen, booking]);
+
+  useEffect(() => {
     if (!isOpen) return;
     
     let cancelled = false;
@@ -180,7 +186,7 @@ export default function ActivityEditModal({
       onClose={onClose}
       layout="card"
       zIndex={80}
-      closeOnBackdrop={false}
+      closeOnBackdrop={true}
       showTint
       tintClassName="bg-black/55 px-4 py-6 backdrop-blur-sm max-sm:p-0"
       maxWidthClassName="max-w-[620px] sm:max-w-[620px]"
@@ -206,13 +212,13 @@ export default function ActivityEditModal({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
         <div className="space-y-6">
           {/* Activity Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">Activity*</label>
+          <label className="space-y-2 block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Activity</span>
             <Select value={draft.activityId} onValueChange={(value) => handleChange("activityId", value)}>
-              <SelectTrigger className="h-12 rounded-xl">
+              <SelectTrigger className="h-12 border-border bg-background rounded-xl">
                 <SelectValue placeholder="Choose an activity" />
               </SelectTrigger>
               <SelectContent>
@@ -226,17 +232,17 @@ export default function ActivityEditModal({
                 })}
               </SelectContent>
             </Select>
-          </div>
+          </label>
 
           {/* Schedule Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">Schedule*</label>
+          <label className="space-y-2 block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Schedule</span>
             <Select 
               value={draft.scheduleId} 
               onValueChange={(value) => handleChange("scheduleId", value)}
-              disabled={schedulesLoading || filteredSchedules.length === 0}
+              disabled={!schedulesLoading && filteredSchedules.length === 0 && !draft.scheduleId}
             >
-              <SelectTrigger className="h-12 rounded-xl">
+              <SelectTrigger className="h-12 border-border bg-background rounded-xl">
                 <SelectValue 
                   placeholder={schedulesLoading ? "Loading schedules..." : "Choose a schedule"} 
                 />
@@ -249,32 +255,32 @@ export default function ActivityEditModal({
                 ))}
               </SelectContent>
             </Select>
-            {filteredSchedules.length === 0 && draft.activityId && (
-              <p className="text-sm text-amber-600">
+            {filteredSchedules.length === 0 && !schedulesLoading && draft.activityId && (
+              <p className="text-sm text-amber-600 mt-2">
                 No schedules available for this activity.
               </p>
             )}
-          </div>
+          </label>
 
           {/* Selected Schedule Info */}
           {selectedScheduleData && (
-            <div className="rounded-xl border border-border/50 bg-muted/30 p-4">
+            <div className="rounded-[24px] border border-border bg-muted/25 p-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Date</p>
-                  <p className="text-sm font-semibold">{selectedScheduleData.date}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Date</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{selectedScheduleData.date}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Time</p>
-                  <p className="text-sm font-semibold">{selectedScheduleData.startTime} - {selectedScheduleData.endTime}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Time</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{selectedScheduleData.startTime} - {selectedScheduleData.endTime}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Available Seats</p>
-                  <p className="text-sm font-semibold">{selectedScheduleData.availableSeats}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Available Seats</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{selectedScheduleData.availableSeats}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Price</p>
-                  <p className="text-sm font-semibold">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Price</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">
                     ${selectedScheduleData.resolvedPrice}
                     {selectedScheduleData.pricingType === "per_group" ? " (per group)" : " (per person)"}
                   </p>
@@ -284,99 +290,84 @@ export default function ActivityEditModal({
           )}
 
           {/* Guests */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">Number of Guests*</label>
+          <label className="space-y-2 block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Number of Guests</span>
             <Input
               type="number"
               min="1"
               max={selectedScheduleData?.availableSeats || 20}
               value={draft.guests}
               onChange={(e) => handleChange("guests", e.target.value)}
-              className="h-12 rounded-xl"
+              className="h-12 border-border bg-background rounded-xl"
             />
             {selectedScheduleData && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-2">
                 Maximum {selectedScheduleData.availableSeats} guests available.
               </p>
             )}
-          </div>
+          </label>
 
           {/* Contact Phone */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">Contact Phone*</label>
+          <label className="space-y-2 block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Contact Phone</span>
             <Input
               type="tel"
               value={draft.contactPhone}
               onChange={(e) => handleChange("contactPhone", e.target.value)}
               placeholder="+20 1xx xxxx xxxx"
-              className="h-12 rounded-xl"
+              className="h-12 border-border bg-background rounded-xl"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-2">
               Include country code for international numbers
             </p>
-          </div>
-
-          {/* Payment Method */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">Payment Method*</label>
-            <Select value={draft.paymentMethod} onValueChange={(value) => handleChange("paymentMethod", value)}>
-              <SelectTrigger className="h-12 rounded-xl">
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                {paymentMethods.map((method) => (
-                  <SelectItem key={method.value} value={method.value}>
-                    {method.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          </label>
 
           {/* Special Notes */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">Special Requirements (Optional)</label>
+          <label className="space-y-2 block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Special Requirements (Optional)</span>
             <Textarea
               value={draft.notes || ""}
               onChange={(e) => handleChange("notes", e.target.value)}
               placeholder="Any special requirements or notes..."
-              className="min-h-[100px] rounded-xl resize-none"
+              className="min-h-[100px] border-border bg-background rounded-xl resize-none"
             />
-          </div>
+          </label>
 
-          {/* Total Price */}
-          {selectedScheduleData && (
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Total Price</p>
-                  <p className="text-xs text-muted-foreground">
-                    {draft.guests} guests × ${selectedScheduleData.resolvedPrice}
-                    {selectedScheduleData.pricingType === "per_group" ? " (group rate)" : " (per person)"}
-                  </p>
-                </div>
-                <p className="text-2xl font-bold text-primary">
-                  ${totalPrice.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="flex shrink-0 justify-end gap-3 border-t border-border px-6 py-5">
+      {/* Total Price - outside scroll, above footer */}
+      {selectedScheduleData && (
+        <div className="mx-6 mb-2 rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Total Price</p>
+              <p className="text-xs text-muted-foreground">
+                {draft.guests} guests × ${selectedScheduleData.resolvedPrice}
+                {selectedScheduleData.pricingType === "per_group" ? " (group rate)" : " (per person)"}
+              </p>
+            </div>
+            <p className="text-2xl font-bold text-primary">
+              ${totalPrice.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex shrink-0 flex-col gap-3 border-t border-border bg-card px-6 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] sm:flex-row sm:justify-end sm:pb-5">
         <Button
           type="button"
-          variant="outline"
+          variant="palmSecondary"
           onClick={onClose}
-          className="h-12 rounded-xl px-8"
+          className="h-11 px-6"
         >
           Cancel
         </Button>
         <Button
           type="button"
+          variant="palmPrimary"
           onClick={handleConfirm}
-          className="h-12 rounded-xl px-8"
+          className="h-11 px-6"
         >
           Save Changes
         </Button>

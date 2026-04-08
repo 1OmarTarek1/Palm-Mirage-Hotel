@@ -1,6 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import { fetchActivitySchedules } from "@/services/activityService";
 import {
   addPendingActivityBooking,
 } from "@/store/slices/cartSlice";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 
 const formatScheduleLabel = (schedule) =>
   `${schedule.date} - ${schedule.startTime} to ${schedule.endTime}`;
@@ -30,7 +30,6 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   ref
 ) {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
   const { isAuthenticated, user } = useAuth();
   const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
@@ -40,9 +39,10 @@ const ActivityBooking = forwardRef(function ActivityBooking(
   const [guests, setGuests] = useState("2");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [schedules, setSchedules] = useState([]);
   const sectionRef = useRef(null);
+  const submitBtnRef = useRef(null);
+  const { flyToCart } = useFlyToCart();
 
   useEffect(() => {
     let isMounted = true;
@@ -96,7 +96,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
 
   const filteredSchedules = useMemo(() => {
     return schedules.filter((schedule) =>
-      selectedActivity ? schedule.activityId === selectedActivity : true
+      selectedActivity ? String(schedule.activityId) === String(selectedActivity) : true
     );
   }, [schedules, selectedActivity]);
 
@@ -124,6 +124,16 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     setSelectedSchedule("");
   };
 
+  const handleScheduleChange = (value) => {
+    setSelectedSchedule(value);
+    if (!selectedActivity) {
+      const schedule = schedules.find(s => String(s.id) === value);
+      if (schedule && schedule.activityId) {
+        setSelectedActivity(schedule.activityId);
+      }
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     selectActivity(activityId, scheduleId = "") {
       setSelectedActivity(activityId);
@@ -138,7 +148,6 @@ const ActivityBooking = forwardRef(function ActivityBooking(
     setGuests("2");
     setPhone("");
     setNotes("");
-    setPaymentMethod("cash");
   };
 
   const handleBookingSubmit = async () => {
@@ -156,8 +165,16 @@ const ActivityBooking = forwardRef(function ActivityBooking(
       guests: Number(guests),
       contactPhone: normalizedPhone,
       notes: normalizedNotes,
-      paymentMethod,
-      price: selectedScheduleData.price || 0,
+      pricingType: selectedScheduleData.pricingType,
+      price: selectedScheduleData.pricingType === "per_group"
+        ? (selectedScheduleData.resolvedPrice / Number(guests))
+        : (selectedScheduleData.resolvedPrice || 0),
+      activityImage: (() => {
+        const act = activities.find(a => String(a._id || a.id) === String(selectedActivity));
+        if (!act) return "";
+        if (typeof act.image === "string") return act.image;
+        return act.image?.secure_url || act.image?.url || "";
+      })()
     };
 
     // Add to Redux store
@@ -167,12 +184,13 @@ const ActivityBooking = forwardRef(function ActivityBooking(
       createdAt: new Date().toISOString()
     }));
 
-    toast.success("Activity booking added to cart!");
+    if (submitBtnRef.current) {
+      flyToCart(submitBtnRef.current, "navbar-cart-button");
+    }
+    toast.success("Activity booking added to cart.");
     
-    // Navigate to cart page
-    setTimeout(() => {
-      navigate('/cart');
-    }, 300);
+    // Clear inputs upon adding successfully
+    resetForm();
   };
 
   const handleCancelBooking = async () => {
@@ -357,7 +375,7 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                     {activities
                       .filter((activity) => activity.isActive)
                       .map((activity) => (
-                        <SelectItem key={activity.id} value={activity.id}>
+                        <SelectItem key={activity.id} value={String(activity.id)}>
                           {activity.title}
                         </SelectItem>
                       ))}
@@ -365,27 +383,35 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                 </Select>
               </div>
 
-              <div className="space-y-2 sm:col-span-2">
-                <label className="block text-[12px] font-bold text-muted-foreground">Session*</label>
-                <Select
-                  value={selectedSchedule}
-                  onValueChange={setSelectedSchedule}
-                  disabled={isLoadingSchedules || filteredSchedules.length === 0}
-                >
-                  <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm text-muted-foreground">
-                    <SelectValue
-                      placeholder={isLoadingSchedules ? "Loading sessions..." : "Choose a session"}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredSchedules.map((schedule) => (
-                      <SelectItem key={schedule.id} value={schedule.id}>
-                        {formatScheduleLabel(schedule)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {selectedActivity && (
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="block text-[12px] font-bold text-muted-foreground">Session*</label>
+                  <Select
+                    value={selectedSchedule}
+                    onValueChange={handleScheduleChange}
+                    disabled={isLoadingSchedules || filteredSchedules.length === 0}
+                  >
+                    <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm text-muted-foreground">
+                      <SelectValue
+                        placeholder={isLoadingSchedules ? "Loading sessions..." : "Choose a session"}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredSchedules.length === 0 ? (
+                        <div className="py-4 text-center text-sm text-muted-foreground">
+                          No available sessions right now.
+                        </div>
+                      ) : (
+                        filteredSchedules.map((schedule) => (
+                          <SelectItem key={schedule.id} value={String(schedule.id)}>
+                            {formatScheduleLabel(schedule)}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -425,21 +451,6 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                 />
               </div>
             </div>
-
-            {!existingBooking ? (
-              <div className="space-y-2 sm:col-span-2">
-                <label className="block text-[12px] font-bold text-muted-foreground">Payment*</label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="h-12 rounded-xl border-border/40 bg-transparent text-sm text-muted-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Pay on arrival (pending approval)</SelectItem>
-                    <SelectItem value="card">Card — confirm after payment</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : null}
 
             <div className="space-y-2">
               <label htmlFor="notes" className="block text-[12px] font-bold text-muted-foreground">
@@ -494,22 +505,23 @@ const ActivityBooking = forwardRef(function ActivityBooking(
                 </>
               ) : (
                 <Button
+                  ref={submitBtnRef}
                   variant={existingBooking ? "palmSecondary" : "palmPrimary"}
                   type="submit"
                   disabled={isSubmitting || !selectedActivity || !selectedSchedule || isPaidExistingBooking}
-                  className="flex items-center gap-2 rounded-full px-10 py-7 text-[13px] font-bold uppercase tracking-widest"
+                  className="flex h-10 items-center gap-2 rounded-full px-6 text-xs font-bold uppercase tracking-[0.12em]"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {existingBooking ? "Cancelling..." : paymentMethod === "card" ? "Continue..." : "Booking..."}
+                      {existingBooking ? "Cancelling..." : "Adding..."}
                     </>
                   ) : isPaidExistingBooking ? (
                     "Paid Booking"
                   ) : existingBooking ? (
                     "Cancel Booking"
                   ) : (
-                    "Confirm Booking"
+                    "Add to cart"
                   )}
                 </Button>
               )}

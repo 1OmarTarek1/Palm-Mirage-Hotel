@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-const OrderReceived = ({ orderReceived }) => {
+const OrderReceived = ({ orderReceived, onDownloadComplete }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   if (!orderReceived) return null;
 
@@ -23,6 +23,7 @@ const OrderReceived = ({ orderReceived }) => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      onDownloadComplete?.();
     } catch (error) {
       console.error("PDF generation error:", error);
     } finally {

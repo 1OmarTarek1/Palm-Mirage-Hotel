@@ -27,10 +27,13 @@ export default function LoginButton() {
     } catch {
       // Clear frontend auth state even if the server logout request fails.
     } finally {
+      navigate("/", { replace: true });
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
       dispatch(logout());
       setOpen(false);
       toast.success("You've been logged out.");
-      navigate("/");
     }
   }, [dispatch, navigate]);
 

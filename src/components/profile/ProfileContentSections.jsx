@@ -24,6 +24,8 @@ import {
   ActivityBookingCard,
   CartCard,
   RestaurantMenuCartLineCard,
+  CartPendingRestaurantBookingCard,
+  CartPendingActivityBookingCard,
   RoomBookingCard,
   TableBookingCard,
   WishlistCard,
@@ -31,6 +33,7 @@ import {
 
 export default function ProfileContentSections(props) {
   const {
+    highlightedSectionId,
     stats,
     snapshotCards,
     wishlistItems,
@@ -55,6 +58,8 @@ export default function ProfileContentSections(props) {
     cancelBooking,
     cancelActivityBooking,
     cancelTableBooking,
+    pendingRestaurantBookings = [],
+    pendingActivityBookings = [],
     runCancelAction,
   } = props;
 
@@ -82,11 +87,32 @@ export default function ProfileContentSections(props) {
     [restaurantCartLines],
   );
 
-  const cartSectionBothEmpty = cartItems.length === 0 && restaurantCartLines.length === 0;
+  const activityCartSubtotal = useMemo(
+    () => pendingActivityBookings.reduce((sum, b) => sum + (b.price * b.guests), 0),
+    [pendingActivityBookings]
+  );
+
+  const unifiedRestaurantItems = useMemo(() => {
+    // Return individual lines followed by bundled collections
+    return [
+      ...restaurantCartLines.map(l => ({ ...l, _profileCardType: "line" })),
+      ...pendingRestaurantBookings.map(b => ({ ...b, _profileCardType: "collection" }))
+    ];
+  }, [restaurantCartLines, pendingRestaurantBookings]);
+
+  const cartSectionBothEmpty =
+    cartItems.length === 0 &&
+    restaurantCartLines.length === 0 &&
+    pendingRestaurantBookings.length === 0 &&
+    pendingActivityBookings.length === 0;
 
   return (
     <div className="mt-8 space-y-6">
-      <SectionCard index={0}>
+      <SectionCard
+        index={0}
+        id="profile-overview-section"
+        highlighted={highlightedSectionId === "profile-overview-section"}
+      >
         <SectionHeader
           icon={BadgeCheck}
           title="Profile Overview"
@@ -104,7 +130,11 @@ export default function ProfileContentSections(props) {
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={1} id="room-bookings-section">
+      <SectionCard
+        index={1}
+        id="room-bookings-section"
+        highlighted={highlightedSectionId === "room-bookings-section"}
+      >
         <SectionHeader
           icon={ShoppingBag}
           title="Room Bookings"
@@ -142,12 +172,17 @@ export default function ProfileContentSections(props) {
                 runCancelAction={runCancelAction}
               />
             )}
+            stretchItems={true}
           />
         )}
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={2} id="activity-bookings-section">
+      <SectionCard
+        index={2}
+        id="activity-bookings-section"
+        highlighted={highlightedSectionId === "activity-bookings-section"}
+      >
         <SectionHeader
           icon={Ticket}
           title="Activity Bookings"
@@ -185,12 +220,17 @@ export default function ProfileContentSections(props) {
                 runCancelAction={runCancelAction}
               />
             )}
+            stretchItems={true}
           />
         )}
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={3} id="table-bookings-section">
+      <SectionCard
+        index={3}
+        id="table-bookings-section"
+        highlighted={highlightedSectionId === "table-bookings-section"}
+      >
         <SectionHeader
           icon={UtensilsCrossed}
           title="Restaurant Bookings"
@@ -228,12 +268,17 @@ export default function ProfileContentSections(props) {
                 runCancelAction={runCancelAction}
               />
             )}
+            stretchItems={true}
           />
         )}
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={4}>
+      <SectionCard
+        index={4}
+        id="wishlist-section"
+        highlighted={highlightedSectionId === "wishlist-section"}
+      >
         <SectionHeader
           icon={Heart}
           title="Wishlist"
@@ -254,21 +299,28 @@ export default function ProfileContentSections(props) {
             items={wishlistItems}
             getItemKey={(room, index) => getWishlistRoomId(room) || `wishlist-${index}`}
             renderItem={(room) => <WishlistCard room={room} />}
+            stretchItems={true}
           />
         )}
       </SectionCard>
       <SectionDivider />
 
-      <SectionCard index={5}>
+      <SectionCard
+        index={5}
+        id="cart-section"
+        highlighted={highlightedSectionId === "cart-section"}
+      >
         <SectionHeader
           icon={ShoppingCart}
           title="Cart"
           subtitle="Swipe through restaurant dishes and room stays separately—same data as the header cart (Restaurant / Rooms tabs)."
-          count={`${cartCount} room${cartCount === 1 ? "" : "s"}${
-            restaurantMenuTotalQty > 0
-              ? ` · ${restaurantMenuTotalQty} dish${restaurantMenuTotalQty === 1 ? "" : "es"}`
+          count={`${cartCount} room${cartCount === 1 ? "" : "s"}${restaurantMenuTotalQty > 0 || pendingRestaurantBookings.length > 0
+            ? ` · ${restaurantMenuTotalQty + pendingRestaurantBookings.length} restaurant order${(restaurantMenuTotalQty + pendingRestaurantBookings.length) === 1 ? "" : "s"}`
+            : ""
+            }${pendingActivityBookings.length > 0
+              ? ` · ${pendingActivityBookings.length} activity`
               : ""
-          }`}
+            }`}
           actionLabel="Open cart page"
           actionTo="/cart"
         />
@@ -299,9 +351,9 @@ export default function ProfileContentSections(props) {
                   </Button>
                 ) : null}
               </div>
-              {restaurantCartLines.length === 0 ? (
+              {unifiedRestaurantItems.length === 0 ? (
                 <div className="rounded-[1.5rem] border border-dashed border-border/60 bg-muted/10 px-5 py-10 text-center">
-                  <p className="text-sm font-medium text-foreground">No restaurant dishes in your cart</p>
+                  <p className="text-sm font-medium text-foreground">No restaurant items in your cart</p>
                   <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                     Add items from the restaurant page or full menu, then finish date and time on the booking block.
                   </p>
@@ -312,21 +364,80 @@ export default function ProfileContentSections(props) {
               ) : (
                 <>
                   <SectionCarousel
-                    items={restaurantCartLines}
-                    getItemKey={(line) => line.id}
-                    renderItem={(line) => <RestaurantMenuCartLineCard line={line} />}
+                    items={unifiedRestaurantItems}
+                    getItemKey={(item) => item.id}
+                    renderItem={(item) =>
+                      item._profileCardType === "line"
+                        ? <RestaurantMenuCartLineCard line={item} />
+                        : <CartPendingRestaurantBookingCard booking={item} />
+                    }
+                    stretchItems={true}
+                  />
+                  {restaurantCartSubtotal > 0 && (
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                          Restaurant dishes subtotal
+                        </p>
+                        <p className="mt-2 text-lg font-black text-foreground">
+                          {formatCurrency(restaurantCartSubtotal)}
+                        </p>
+                      </div>
+                      <Button asChild variant="palmPrimary" size="sm" className="px-6">
+                        <Link to="/services/restaurant#table-booking">Go to restaurant booking</Link>
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Activities in Cart */}
+            <div className="border-t border-border/40 pt-10">
+              <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Activity cart</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {pendingActivityBookings.length > 0
+                      ? `${pendingActivityBookings.length} activity selection${pendingActivityBookings.length === 1 ? "" : "s"}`
+                      : "No activities in your cart."}
+                  </p>
+                </div>
+                {pendingActivityBookings.length > 0 ? (
+                  <Button asChild variant="outline" size="sm" className="mt-2 w-fit shrink-0 rounded-full sm:mt-0">
+                    <Link to="/cart">Review on cart page</Link>
+                  </Button>
+                ) : null}
+              </div>
+              {pendingActivityBookings.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-border/60 bg-muted/10 px-5 py-10 text-center">
+                  <p className="text-sm font-medium text-foreground">No activities in your cart</p>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                    Add activities from the activity listings, then review them in your cart before checkout.
+                  </p>
+                  <Button asChild variant="palmSecondary" size="sm" className="mt-5 rounded-full px-6">
+                    <Link to="/services/activities">Browse activities</Link>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <SectionCarousel
+                    items={pendingActivityBookings}
+                    getItemKey={(booking) => booking.id}
+                    renderItem={(booking) => <CartPendingActivityBookingCard booking={booking} />}
+                    stretchItems={true}
                   />
                   <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                        Restaurant subtotal
+                        Activity cart subtotal
                       </p>
                       <p className="mt-2 text-lg font-black text-foreground">
-                        {formatCurrency(restaurantCartSubtotal)}
+                        {formatCurrency(activityCartSubtotal)}
                       </p>
                     </div>
                     <Button asChild variant="palmPrimary" size="sm" className="px-6">
-                      <Link to="/services/restaurant#table-booking">Go to restaurant booking</Link>
+                      <Link to="/services/activities">Go to activities booking</Link>
                     </Button>
                   </div>
                 </>
@@ -367,6 +478,7 @@ export default function ProfileContentSections(props) {
                     items={cartItems}
                     getItemKey={(item, index) => item.id || `cart-${index}`}
                     renderItem={(item) => <CartCard item={item} />}
+                    stretchItems={true}
                   />
                   <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
                     <div>

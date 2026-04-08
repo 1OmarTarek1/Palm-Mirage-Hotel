@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import AppModal from "@/components/common/AppModal";
 import { ChangePasswordModal, EditProfileModal } from "@/components/profile/ProfileAccountModals";
 import LanguageToggle from "@/components/common/Navbar/LanguageToggle";
+import { SettingsPageSkeleton } from "@/components/common/loading/AppPageSkeletons";
 import { toast } from "react-toastify";
 
 const MotionDiv = motion.div;
@@ -43,6 +44,9 @@ export default function Settings() {
     try {
       await axiosPrivate.patch("/user/profile/deleteAccount");
       await axiosInstance.post("/auth/logout").catch(() => null);
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
       dispatch(logout());
       toast.success("Your account has been deleted successfully.");
       navigate("/", { replace: true });
@@ -54,7 +58,7 @@ export default function Settings() {
     }
   };
 
-  if (isHydrating) return null;
+  if (isHydrating) return <SettingsPageSkeleton />;
 
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
 

@@ -30,6 +30,8 @@ import {
   selectCartTotal,
   selectRestaurantMenuCart,
   selectRestaurantMenuCartTotalQty,
+  selectPendingRestaurantBookings,
+  selectPendingActivityBookings,
 } from "@/store/slices/cartSlice";
 import {
   selectWishlistCount,
@@ -73,15 +75,23 @@ export default function Profile() {
   const activityBookingsError = useSelector(selectActivityBookingsError);
   const tableBookings = useSelector(selectTableBookings);
   const tableBookingsLoading = useSelector(selectTableBookingsLoading);
-  const tableBookingsError = useSelector(selectTableBookingsError);
+   const tableBookingsError = useSelector(selectTableBookingsError);
+  const pendingRestaurantBookings = useSelector(selectPendingRestaurantBookings);
+  const pendingActivityBookings = useSelector(selectPendingActivityBookings);
   const [pendingCancelKey, setPendingCancelKey] = useState("");
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isProfileSnapshotLoading, setIsProfileSnapshotLoading] = useState(true);
+  const [highlightedSectionId, setHighlightedSectionId] = useState("");
   const hasScrolledToRecentBooking = useRef(false);
+  const pendingPaymentSyncRef = useRef(false);
+
+  const PENDING_PAYMENT_SYNC_KEY = "pendingPaymentSync";
 
   // Auto-scroll to recent booking functionality
   useEffect(() => {
+    const hasHashTarget = Boolean(location.hash?.trim());
+    if (hasHashTarget) return;
     if (!isAuthenticated || isProfileSnapshotLoading || hasScrolledToRecentBooking.current) return;
 
     // Check if user has any recent bookings (created in the last 5 minutes)
@@ -129,6 +139,7 @@ export default function Profile() {
       return () => clearTimeout(timer);
     }
   }, [
+    location.hash,
     isAuthenticated, 
     isProfileSnapshotLoading, 
     roomBookings, 
@@ -162,6 +173,85 @@ export default function Profile() {
       isMounted = false;
     };
   }, [axiosPrivate, dispatch, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || pendingPaymentSyncRef.current) return;
+    const raw = window.sessionStorage.getItem(PENDING_PAYMENT_SYNC_KEY);
+    const pending = raw ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : null;
+    const sessionId = pending?.sessionId;
+    const createdAt = Number(pending?.createdAt || 0);
+    if (!sessionId) return;
+    // Don't keep retrying forever.
+    if (createdAt && Date.now() - createdAt > 10 * 60 * 1000) {
+      window.sessionStorage.removeItem(PENDING_PAYMENT_SYNC_KEY);
+      return;
+    }
+
+    pendingPaymentSyncRef.current = true;
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const maxAttempts = 30; // ~60s
+        for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+          if (cancelled) return;
+          const res = await axiosPrivate.get(`/payment/checkout-session/${encodeURIComponent(sessionId)}`);
+          const status = res?.data?.data?.status;
+          if (status === "fulfilled") {
+            window.sessionStorage.removeItem(PENDING_PAYMENT_SYNC_KEY);
+            await refreshUserSnapshot({ dispatch, axiosPrivate });
+            toast.success("Reservation synced. Your booking should be visible now.");
+            return;
+          }
+          if (status === "failed" || status === "expired" || status === "cancelled") {
+            window.sessionStorage.removeItem(PENDING_PAYMENT_SYNC_KEY);
+            toast.error("Payment sync failed. Contact support if you were charged.");
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+      } catch (e) {
+        // Silent: this is best-effort.
+      } finally {
+        pendingPaymentSyncRef.current = false;
+      }
+    };
+
+    void poll();
+    return () => {
+      cancelled = true;
+    };
+  }, [axiosPrivate, dispatch, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || isHydrating || isProfileSnapshotLoading) return;
+
+    const targetId = location.hash?.replace("#", "").trim();
+    if (!targetId) return;
+
+    hasScrolledToRecentBooking.current = true;
+
+    const targetElement = document.getElementById(targetId);
+    if (!targetElement) return;
+
+    const timer = window.setTimeout(() => {
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+      setHighlightedSectionId(targetId);
+    }, 120);
+
+    const clearTimer = window.setTimeout(() => {
+      setHighlightedSectionId((current) => (current === targetId ? "" : current));
+    }, 2200);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(clearTimer);
+    };
+  }, [isAuthenticated, isHydrating, isProfileSnapshotLoading, location.hash]);
 
   const activeRoomBookingsCount = useMemo(
     () => roomBookings.filter(isRoomBookingCancellable).length,
@@ -241,6 +331,7 @@ export default function Profile() {
         onOpenEdit={() => setIsEditModalOpen(true)}
       />
       <ProfileContentSections
+        highlightedSectionId={highlightedSectionId}
         stats={stats}
         snapshotCards={snapshotCards}
         wishlistItems={wishlistItems}
@@ -260,6 +351,8 @@ export default function Profile() {
         tableBookings={tableBookings}
         tableBookingsLoading={tableBookingsLoading}
         tableBookingsError={tableBookingsError}
+        pendingRestaurantBookings={pendingRestaurantBookings}
+        pendingActivityBookings={pendingActivityBookings}
         pendingCancelKey={pendingCancelKey}
         axiosPrivate={axiosPrivate}
         cancelBooking={cancelBooking}

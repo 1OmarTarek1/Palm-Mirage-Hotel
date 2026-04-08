@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Activity } from "lucide-react";
+import { UtensilsCrossed, Activity, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +9,10 @@ import {
   isCartItemReady,
 } from "@/utils/roomBooking";
 
-export default function OrderSummary({ cartItems, totalPrice, pendingTotals }) {
+export default function OrderSummary({ cartItems, totalPrice, pendingTotals, hasConflicts = false, conflictList = [] }) {
   const navigate = useNavigate();
-  const hasInvalidBookings = cartItems.some((item) => !isCartItemReady(item));
+  const roomItems = cartItems.filter((item) => !item.type);
+  const hasInvalidBookings = roomItems.some((item) => !isCartItemReady(item));
   
   const regularItems = cartItems.filter(item => !item.type);
   const restaurantItems = cartItems.filter(item => item.type === 'restaurant');
@@ -115,24 +116,37 @@ export default function OrderSummary({ cartItems, totalPrice, pendingTotals }) {
           )}
         </div>
 
-        {/* Validation Messages */}
-        {hasInvalidBookings ? (
-          <div className="rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            Some rooms still need date selection or are unavailable for the chosen stay.
+        {/* Conflict Summary */}
+        {hasConflicts && conflictList.length > 0 && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 space-y-2">
+            <div className="flex items-center gap-2 text-destructive font-semibold text-sm">
+              <AlertTriangle className="h-4 w-4" />
+              {conflictList.length === 1 ? "1 issue needs your attention" : `${conflictList.length} issues need your attention`}
+            </div>
+            <ul className="space-y-1.5 pl-1">
+              {conflictList.map((c, i) => (
+                <li key={i} className="text-xs text-destructive flex items-start gap-1.5">
+                  <span className="mt-0.5">•</span>
+                  <span>{c.message}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        ) : null}
+        )}
 
         {/* Checkout Button */}
         <Button
           onClick={() => navigate("/cart/checkout")}
           variant="palmPrimary"
           className="mt-5 h-12 w-full rounded-xl text-sm font-bold shadow-sm"
-          disabled={!hasAnyItems || hasInvalidBookings}
+          disabled={!hasAnyItems || hasInvalidBookings || hasConflicts}
         >
-          {!hasAnyItems 
-            ? "Cart is Empty" 
-            : hasInvalidBookings 
-            ? "Select Dates First" 
+          {!hasAnyItems
+            ? "Cart is Empty"
+            : hasConflicts
+            ? "Resolve Conflicts First"
+            : hasInvalidBookings
+            ? "Select Dates First"
             : "Proceed to Checkout"
           }
         </Button>

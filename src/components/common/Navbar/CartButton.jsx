@@ -9,6 +9,8 @@ import {
   selectCartCount,
   selectCartIsOpen,
   selectRestaurantMenuCartTotalQty,
+  selectPendingActivityBookings,
+  selectPendingRestaurantBookings,
 } from "@/store/slices/cartSlice";
 
 function CartButton({ itemCount: propCount }) {
@@ -18,9 +20,14 @@ function CartButton({ itemCount: propCount }) {
   const isOpen = useSelector(selectCartIsOpen);
   const isCartPage = useMatch("/cart");
   const restaurantQty = useSelector(selectRestaurantMenuCartTotalQty);
+  const pendingActivityBookings = useSelector(selectPendingActivityBookings);
+
+  const pendingRestaurantBookings = useSelector(selectPendingRestaurantBookings);
 
   const roomLineCount = isHydrating ? 0 : propCount !== undefined ? propCount : reduxCount;
-  const itemCount = roomLineCount + restaurantQty;
+  const activityQty = pendingActivityBookings ? pendingActivityBookings.length : 0;
+  const restaurantOrdersQty = pendingRestaurantBookings ? pendingRestaurantBookings.length : 0;
+  const itemCount = roomLineCount + restaurantQty + activityQty + restaurantOrdersQty;
 
   return (
     <NavTooltip label="Cart">

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch, useSelector } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -13,8 +14,12 @@ import OrderSummary from '@/components/Checkout/OrderSummary';
 import CheckoutForm from '@/components/Checkout/CheckoutForm';
 import OrderReceived from '@/components/Checkout/OrderReceived';
 import BillingDetails from '@/components/Checkout/BillingDetails';
+import { CheckoutPageSkeleton } from '@/components/common/loading/AppPageSkeletons';
+import { getRestaurantBookingModeLabel, isRestaurantTableMode } from '@/components/profile/profileUtils';
 import { checkoutSchema } from './checkoutSchema';
 import axiosInstance from '@/services/axiosInstance';
+import useAxiosPrivate from '@/hooks/useAxiosPrivate';
+import { refreshUserSnapshot } from '@/services/userSnapshot';
 import { fetchRoomAvailability } from '@/services/roomsApi';
 import {
   selectCartItems,
@@ -24,6 +29,8 @@ import {
   removeItem,
   selectPendingRestaurantBookings,
   selectPendingActivityBookings,
+  removePendingRestaurantBooking as removePendingRestaurantBookingAction,
+  removePendingActivityBooking as removePendingActivityBookingAction,
   clearPendingRestaurantBookings,
   clearPendingActivityBookings,
 } from '@/store/slices/cartSlice';
@@ -41,23 +48,51 @@ import {
 import { toast } from 'react-toastify';
 
 const PENDING_CHECKOUT_KEY = 'pendingCheckoutSession';
+const PENDING_PAYMENT_SYNC_KEY = 'pendingPaymentSync';
+const COMPLETED_CHECKOUT_KEY = 'completedCheckoutOrder';
+const COMPLETED_CHECKOUT_TOAST_KEY = 'completedCheckoutToast';
+const EMPTY_CHECKOUT_TOAST_KEY = 'emptyCheckoutToastShown';
+
+const normalizeCheckoutErrorMessage = (error, fallbackMessage) => {
+  if (typeof error === 'string' && error.trim()) {
+    return error.trim();
+  }
+
+  return (
+    error?.response?.data?.details?.[0]?.message ||
+    error?.response?.data?.message ||
+    error?.message ||
+    fallbackMessage
+  );
+};
 
 const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const MotionDiv = motion.div;
   const isHydrating = useSelector((state) => state.auth.isHydrating);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
   const cartRequiresAttention = useSelector(selectCartRequiresAttention);
   const pendingRestaurantBookings = useSelector(selectPendingRestaurantBookings);
   const pendingActivityBookings = useSelector(selectPendingActivityBookings);
+  const hasRoomBookings = cartItems.length > 0;
+  const hasRestaurantBookings = pendingRestaurantBookings.length > 0;
+  const hasActivityBookings = pendingActivityBookings.length > 0;
+  const isCheckoutEmpty = !hasRoomBookings && !hasRestaurantBookings && !hasActivityBookings;
   
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isResolvingCheckoutCart, setIsResolvingCheckoutCart] = useState(false);
+  const [isFinalizingCheckout, setIsFinalizingCheckout] = useState(false);
+  const [hasResolvedInitialCheckoutSnapshot, setHasResolvedInitialCheckoutSnapshot] = useState(false);
+  const hasStartedInitialCheckoutSnapshotRef = useRef(false);
 
   const isAvailabilityConflictError = (error) => {
     const statusCode = error?.response?.status;
@@ -95,13 +130,75 @@ const Checkout = () => {
     return unavailableItems;
   };
 
+  /**
+   * Pre-flight: verify every cart item is still available BEFORE sending
+   * any booking to the backend. Returns an array of conflict objects or
+   * an empty array if everything is OK.
+   */
+  const runPreflightChecks = async () => {
+    const preflightConflicts = [];
+
+    // ── Rooms ──
+    await Promise.allSettled(
+      cartItems.map(async (item) => {
+        if (!item.checkInDate || !item.checkOutDate) {
+          preflightConflicts.push({
+            name: item.name || 'Room',
+            reason: 'Missing check-in or check-out dates.',
+          });
+          return;
+        }
+        try {
+          const avail = await fetchRoomAvailability(item.id, {
+            checkInDate: item.checkInDate,
+            checkOutDate: item.checkOutDate,
+          });
+          if (avail?.isBookable === false) {
+            preflightConflicts.push({
+              name: item.name || 'Room',
+              reason: `Not available for ${item.checkInDate} → ${item.checkOutDate}.`,
+            });
+          }
+        } catch {
+          // network error — allow through, backend will catch it
+        }
+      })
+    );
+
+    // ── Restaurant tables ──
+    const tableBookings = pendingRestaurantBookings.filter((b) => isRestaurantTableMode(b.bookingMode));
+    await Promise.allSettled(
+      tableBookings.map(async (booking) => {
+        if (!booking.date || !booking.time) return;
+        try {
+          const res = await axiosInstance.get('/booking/available-tables', {
+            params: { date: booking.date, time: booking.time },
+          });
+          const tables = res?.data?.data?.tables || [];
+          const tableNum = Number(booking.number ?? booking.selectedTable);
+          const stillAvailable = tables.some((t) => Number(t.number) === tableNum);
+          if (!stillAvailable) {
+            preflightConflicts.push({
+              name: `Table ${tableNum}`,
+              reason: `Table ${tableNum} on ${booking.date} at ${booking.time} is no longer available.`,
+            });
+          }
+        } catch {
+          // network error — allow through
+        }
+      })
+    );
+
+    return preflightConflicts;
+  };
+
   const handleCloseOrderModal = () => {
     setIsModalOpen(false);
 
     // After successful booking, navigate to profile page to see the booking
     if (orderReceived) {
       toast.info('Redirecting to your profile to view your booking...');
-      navigate('/profile', { replace: true });
+      navigate(orderReceived.profileTarget || '/profile', { replace: true });
       return;
     }
 
@@ -148,12 +245,54 @@ const Checkout = () => {
 
   const buildOrderReceived = (data, items, total, method) => {
     const isCardPayment = method === 'card';
+    const sumRestaurantLineItems = (lineItems = []) =>
+      lineItems.reduce((sum, li) => {
+        const unitPrice = Number(li?.price ?? li?.unitPrice ?? 0);
+        const qty = Number(li?.qty ?? 0);
+        return sum + (unitPrice * qty);
+      }, 0);
+
+    // Normalize items for the invoice display
+    const normalizedItems = items.map((item) => {
+      // Room item
+      if (item.nights) {
+        return {
+          name: `${item.name || 'Room'} (${item.nights} nights)`,
+          quantity: item.roomsCount || 1,
+          price: item.price || 0,
+        };
+      }
+      // Restaurant booking (pending)
+      if (item.bookingMode) {
+        const itemCount = (item.lineItems || []).reduce((s, li) => s + (li.qty || 0), 0);
+        return {
+          name: `Restaurant: ${getRestaurantBookingModeLabel(item.bookingMode)}${itemCount > 0 ? ` (${itemCount} dishes)` : ''}`,
+          quantity: 1,
+          price: sumRestaurantLineItems(item.lineItems || []),
+        };
+      }
+      // Activity booking (pending)
+      if (item.activityTitle || item.activity?.title) {
+        return {
+          name: `Activity: ${item.activityTitle || item.activity?.title || 'Experience'}`,
+          quantity: item.guests || 1,
+          price: item.price || item.unitPrice || item.totalPrice || 0,
+        };
+      }
+      // Fallback
+      return {
+        name: item.name || 'Service',
+        quantity: item.quantity || 1,
+        price: item.price || 0,
+      };
+    });
 
     return {
       ...data,
+      orderId: Math.floor(10000 + Math.random() * 90000).toString(), // Consistent with orderNumber
       orderNumber: Math.floor(10000 + Math.random() * 90000).toString(),
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      items,
+      items: normalizedItems,
       total,
       documentTitle: isCardPayment ? 'Invoice & Payment Receipt' : 'Reservation Confirmation',
       downloadLabel: isCardPayment ? 'Download Invoice (PDF)' : 'Download Reservation Confirmation (PDF)',
@@ -165,7 +304,88 @@ const Checkout = () => {
       paymentNote: isCardPayment
         ? 'Your payment was completed securely via Stripe and your reservation has been confirmed.'
         : 'Your reservation is confirmed. Please pay the amount due in cash when you arrive at the hotel.',
+      profileTarget: items.some((item) => item?.nights)
+        ? '/profile#room-bookings-section'
+        : items.some((item) => item?.bookingMode)
+          ? '/profile#table-bookings-section'
+          : items.some((item) => item?.activityTitle || item?.activity?.title)
+            ? '/profile#activity-bookings-section'
+            : '/profile',
     };
+  };
+
+  const storeCompletedCheckout = (sessionIdValue, orderReceivedValue) => {
+    if (typeof window === 'undefined' || !sessionIdValue || !orderReceivedValue) return;
+
+    window.sessionStorage.setItem(
+      COMPLETED_CHECKOUT_KEY,
+      JSON.stringify({
+        sessionId: sessionIdValue,
+        orderReceived: orderReceivedValue,
+        createdAt: Date.now(),
+      }),
+    );
+  };
+
+  const loadCompletedCheckout = (sessionIdValue) => {
+    if (typeof window === 'undefined' || !sessionIdValue) return null;
+
+    const rawValue = window.sessionStorage.getItem(COMPLETED_CHECKOUT_KEY);
+    if (!rawValue) return null;
+
+    try {
+      const parsed = JSON.parse(rawValue);
+      if (parsed?.sessionId === sessionIdValue) {
+        return parsed.orderReceived || null;
+      }
+    } catch (error) {
+      console.error('Failed to parse completed checkout snapshot:', error);
+    }
+
+    return null;
+  };
+
+  const waitForCheckoutFulfillment = async (sessionIdValue) => {
+    const maxAttempts = 8;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const response = await axiosInstance.get(`/payment/checkout-session/${encodeURIComponent(sessionIdValue)}`);
+      const checkoutData = response?.data?.data ?? {};
+
+      if (checkoutData.status === 'fulfilled' || checkoutData.paymentStatus === 'paid') {
+        return checkoutData;
+      }
+
+      if (['failed', 'expired', 'cancelled'].includes(checkoutData.status)) {
+        throw new Error(`Checkout finalization failed with status "${checkoutData.status}".`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+    }
+
+    throw new Error('Timed out while waiting for payment confirmation.');
+  };
+
+  const showCheckoutSuccessToastOnce = (sessionIdValue) => {
+    if (typeof window === 'undefined' || !sessionIdValue) return;
+
+    const rawValue = window.sessionStorage.getItem(COMPLETED_CHECKOUT_TOAST_KEY);
+    if (rawValue === sessionIdValue) {
+      return;
+    }
+
+    window.sessionStorage.setItem(COMPLETED_CHECKOUT_TOAST_KEY, sessionIdValue);
+    toast.success('Payment completed successfully!');
+  };
+
+  const showEmptyCheckoutToastOnce = () => {
+    if (typeof window === 'undefined') return;
+    if (window.sessionStorage.getItem(EMPTY_CHECKOUT_TOAST_KEY) === 'true') {
+      return;
+    }
+
+    window.sessionStorage.setItem(EMPTY_CHECKOUT_TOAST_KEY, 'true');
+    toast.info('Your cart is empty. Please add at least one booking before checkout.');
   };
 
   const createReservations = async ({ items, data, method }) => {
@@ -227,7 +447,9 @@ const Checkout = () => {
   };
 
   const createPendingRestaurantBookings = async (method) => {
-    if (pendingRestaurantBookings.length === 0) return [];
+    if (pendingRestaurantBookings.length === 0) {
+      return { successfulBookings: [], failedBookings: [] };
+    }
 
     const bookingResults = await Promise.allSettled(
       pendingRestaurantBookings.map((booking) => {
@@ -235,21 +457,28 @@ const Checkout = () => {
           bookingMode: booking.bookingMode,
           date: booking.date,
           time: booking.time,
-          guests: booking.guests,
-          lineItems: booking.lineItems,
-          paymentMethod: method === 'card' ? 'stripe' : booking.paymentMethod,
+          guests: Number(booking.guests) || 1,
+          lineItems: Array.isArray(booking.lineItems)
+            ? booking.lineItems
+                .map((lineItem) => ({
+                  menuItemId: lineItem?.menuItemId,
+                  qty: Number(lineItem?.qty) || 0,
+                }))
+                .filter((lineItem) => lineItem.menuItemId && lineItem.qty > 0)
+            : [],
+          paymentMethod: method === 'card' ? 'stripe' : booking.paymentMethod || 'cash',
         };
 
         if (booking.bookingMode === 'room_service') {
-          payload.roomNumber = booking.roomNumber;
+          payload.roomNumber = Number(booking.roomNumber) || null;
         }
 
-        if (booking.bookingMode === 'table_only' || booking.bookingMode === 'dine_in') {
-          payload.number = booking.number;
+        if (isRestaurantTableMode(booking.bookingMode)) {
+          payload.number = Number(booking.number) || null;
         }
 
         return dispatch(createTableBooking({
-          axiosPrivate: axiosInstance,
+          axiosPrivate,
           payload,
         })).unwrap();
       })
@@ -260,33 +489,39 @@ const Checkout = () => {
 
     bookingResults.forEach((result, index) => {
       if (result.status === 'fulfilled') {
-        successfulBookings.push(result.value);
+        const booking = result.value?.data?.booking;
+        if (booking) {
+          successfulBookings.push(booking);
+          dispatch(removePendingRestaurantBookingAction(pendingRestaurantBookings[index].id));
+        }
       } else {
-        failedBookings.push(result.reason);
+        failedBookings.push({
+          booking: pendingRestaurantBookings[index],
+          error: normalizeCheckoutErrorMessage(result.reason, 'Failed to create restaurant booking'),
+        });
       }
     });
-
-    // Clear pending restaurant bookings from Redux
-    dispatch(clearPendingRestaurantBookings());
 
     return { successfulBookings, failedBookings };
   };
 
   const createPendingActivityBookings = async (method) => {
-    if (pendingActivityBookings.length === 0) return [];
+    if (pendingActivityBookings.length === 0) {
+      return { successfulBookings: [], failedBookings: [] };
+    }
 
     const bookingResults = await Promise.allSettled(
       pendingActivityBookings.map((booking) => {
         const payload = {
           scheduleId: booking.scheduleId,
-          guests: booking.guests,
+          guests: Number(booking.guests) || 1,
           contactPhone: booking.contactPhone,
           notes: booking.notes,
-          paymentMethod: method === 'card' ? 'card' : booking.paymentMethod,
+          paymentMethod: method === 'card' ? 'card' : booking.paymentMethod || 'cash',
         };
 
         return dispatch(createActivityBooking({
-          axiosPrivate: axiosInstance,
+          axiosPrivate,
           payload,
         })).unwrap();
       })
@@ -297,14 +532,27 @@ const Checkout = () => {
 
     bookingResults.forEach((result, index) => {
       if (result.status === 'fulfilled') {
-        successfulBookings.push(result.value);
+        if (result.value) {
+          successfulBookings.push(result.value);
+          dispatch(removePendingActivityBookingAction(pendingActivityBookings[index].id));
+        }
       } else {
-        failedBookings.push(result.reason);
+        const normalizedError = normalizeCheckoutErrorMessage(
+          result.reason,
+          'Failed to create activity booking',
+        );
+
+        if (/already booked this activity session/i.test(normalizedError)) {
+          dispatch(removePendingActivityBookingAction(pendingActivityBookings[index].id));
+          return;
+        }
+
+        failedBookings.push({
+          booking: pendingActivityBookings[index],
+          error: normalizedError,
+        });
       }
     });
-
-    // Clear pending activity bookings from Redux
-    dispatch(clearPendingActivityBookings());
 
     return { successfulBookings, failedBookings };
   };
@@ -334,6 +582,8 @@ const Checkout = () => {
       formData,
       cartItems,
       cartTotal,
+      pendingRestaurantBookings,
+      pendingActivityBookings,
       paymentMethod,
       createdAt: Date.now(),
     };
@@ -346,21 +596,110 @@ const Checkout = () => {
       return;
     }
 
-    if (isModalOpen || orderReceived) {
+    const paymentState = searchParams.get('payment');
+    const paymentMethodParam = searchParams.get('method');
+    if (paymentMethodParam === 'card' && (paymentState === 'success' || paymentState === 'cancel')) {
+      setHasResolvedInitialCheckoutSnapshot(true);
+      hasStartedInitialCheckoutSnapshotRef.current = true;
       return;
     }
 
-    if (cartItems.length === 0) {
-      toast.info('Your cart is empty. Please add a room before checkout.');
+    if (!isAuthenticated || !isCheckoutEmpty || isModalOpen || orderReceived) {
+      setHasResolvedInitialCheckoutSnapshot(true);
+      hasStartedInitialCheckoutSnapshotRef.current = true;
+      return;
+    }
+
+    if (
+      hasResolvedInitialCheckoutSnapshot ||
+      isResolvingCheckoutCart ||
+      hasStartedInitialCheckoutSnapshotRef.current
+    ) {
+      return;
+    }
+
+    hasStartedInitialCheckoutSnapshotRef.current = true;
+
+    const resolveCheckoutSnapshot = async () => {
+      setIsResolvingCheckoutCart(true);
+
+      try {
+        await refreshUserSnapshot({ dispatch, axiosPrivate });
+      } catch (error) {
+        console.error('Checkout snapshot refresh failed:', error);
+      } finally {
+        setIsResolvingCheckoutCart(false);
+        setHasResolvedInitialCheckoutSnapshot(true);
+      }
+    };
+
+    void resolveCheckoutSnapshot();
+  }, [
+    axiosPrivate,
+    dispatch,
+    hasResolvedInitialCheckoutSnapshot,
+    isAuthenticated,
+    isCheckoutEmpty,
+    isHydrating,
+    isModalOpen,
+    isResolvingCheckoutCart,
+    orderReceived,
+    searchParams,
+  ]);
+
+  useEffect(() => {
+    if (isHydrating) {
+      return;
+    }
+
+    // When returning from Stripe, the cart may already be cleared.
+    // Never redirect away from checkout based on an empty cart while processing payment return params.
+    const paymentState = searchParams.get('payment');
+    const paymentMethodParam = searchParams.get('method');
+    if (paymentMethodParam === 'card' && (paymentState === 'success' || paymentState === 'cancel')) {
+      return;
+    }
+
+    if (isModalOpen || orderReceived || isFinalizingCheckout) {
+      return;
+    }
+
+    if (isResolvingCheckoutCart) {
+      return;
+    }
+
+    if (isAuthenticated && !hasResolvedInitialCheckoutSnapshot) {
+      return;
+    }
+
+    if (isCheckoutEmpty) {
+      showEmptyCheckoutToastOnce();
       navigate('/cart', { replace: true });
       return;
     }
 
-    if (cartItems.length > 0 && cartRequiresAttention) {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(EMPTY_CHECKOUT_TOAST_KEY);
+    }
+
+    if (hasRoomBookings && cartRequiresAttention) {
       toast.info('Please review your cart dates before checkout.');
       navigate('/cart', { replace: true });
     }
-  }, [cartItems.length, cartRequiresAttention, isHydrating, isModalOpen, navigate, orderReceived]);
+  }, [
+    cartRequiresAttention,
+    hasRoomBookings,
+    isCheckoutEmpty,
+    isHydrating,
+    isAuthenticated,
+    isModalOpen,
+    isFinalizingCheckout,
+    isResolvingCheckoutCart,
+    hasResolvedInitialCheckoutSnapshot,
+    navigate,
+    orderReceived,
+    searchParams,
+  ]);
 
   useEffect(() => {
     if (isHydrating) {
@@ -381,43 +720,65 @@ const Checkout = () => {
       try {
         const rawSnapshot = window.sessionStorage.getItem(PENDING_CHECKOUT_KEY);
         const snapshot = rawSnapshot ? JSON.parse(rawSnapshot) : null;
+        const cachedOrderReceived = loadCompletedCheckout(sessionId);
 
         if (!sessionId) {
           toast.error('Payment succeeded, but the checkout session id is missing.');
           return;
         }
 
-        const maxAttempts = 15;
+        window.sessionStorage.setItem(
+          PENDING_PAYMENT_SYNC_KEY,
+          JSON.stringify({ sessionId, createdAt: Date.now(), kind: "room" }),
+        );
 
-        for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-          const response = await axiosInstance.get(`/payment/checkout-session/${sessionId}`);
-          const status = response?.data?.data?.status;
+        await waitForCheckoutFulfillment(sessionId);
+        await refreshUserSnapshot({ dispatch, axiosPrivate });
+        await queryClient.invalidateQueries({ queryKey: ['notifications', 'inbox'] });
 
-          if (status === 'fulfilled') {
-            setOrderReceived(
-              buildOrderReceived(
-                snapshot?.formData || {},
-                snapshot?.cartItems || [],
-                snapshot?.cartTotal || 0,
-                'card'
-              )
-            );
-            setIsModalOpen(true);
-            dispatch(clearCart());
-            window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
-            toast.success('Payment completed and your reservation is confirmed.');
-            return;
-          }
-
-          if (status === 'failed' || status === 'expired' || status === 'cancelled') {
-            toast.error('Payment was received, but reservation confirmation requires review. Please contact support.');
-            return;
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (cachedOrderReceived) {
+          showCheckoutSuccessToastOnce(sessionId);
+          setOrderReceived(cachedOrderReceived);
+          setIsModalOpen(true);
+          return;
         }
 
-        toast.info('Payment is confirmed. Reservation sync is still processing and should appear shortly.');
+        if (snapshot) {
+          // Re-calculate or use stored total
+          const finalTotal = snapshot.cartTotal;
+          
+          // Bundle all items for the success summary / invoice
+          const allItems = [
+            ...(snapshot.cartItems || []),
+            ...(snapshot.pendingRestaurantBookings || []),
+            ...(snapshot.pendingActivityBookings || [])
+          ];
+
+          // Note: Backend webhook handles the actually DB insertion for card payments.
+          const orderReceivedObj = buildOrderReceived(
+            snapshot.formData || {}, 
+            allItems, 
+            finalTotal, 
+            'card'
+          );
+
+          storeCompletedCheckout(sessionId, orderReceivedObj);
+          
+          showCheckoutSuccessToastOnce(sessionId);
+          setOrderReceived(orderReceivedObj);
+          setIsModalOpen(true);
+          
+          dispatch(clearCart());
+          dispatch(clearPendingRestaurantBookings());
+          dispatch(clearPendingActivityBookings());
+          window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+          
+          // Clear query params purely from the URL without triggering a route refresh
+        } else {
+          // Fallback if snapshot is lost
+          toast.info('Payment is confirmed. Syncing your reservation…');
+          navigate('/profile#room-bookings-section', { replace: true });
+        }
       } catch (err) {
         console.error('Stripe checkout finalization failed:', err);
         toast.error('Payment succeeded, but reservation confirmation failed. Please contact support.');
@@ -426,9 +787,9 @@ const Checkout = () => {
 
     void finalizeStripeCheckout();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, isHydrating, navigate, searchParams, sessionId]);
+  }, [axiosPrivate, dispatch, isHydrating, navigate, queryClient, searchParams, sessionId]);
 
-  if (isHydrating) return null;
+  if (isHydrating || isResolvingCheckoutCart) return <CheckoutPageSkeleton />;
 
   return (
     <div className="relative min-h-screen">
@@ -476,10 +837,26 @@ const Checkout = () => {
                     checkInDate: item.checkInDate,
                     checkOutDate: item.checkOutDate,
                     guests: item.guests || 1,
+                    name: item.name,
+                    price: item.price,
                   }))}
+                  restaurantBookings={pendingRestaurantBookings}
+                  activityBookings={pendingActivityBookings}
                   onBeforeStripeRedirect={storePendingCheckout}
                   onSuccess={async (data) => {
+                    setIsFinalizingCheckout(true);
                     try {
+                      // Pre-flight: verify availability before sending anything to backend
+                      const preflightConflicts = await runPreflightChecks();
+                      if (preflightConflicts.length > 0) {
+                        const names = preflightConflicts.map((c) => `\u2022 ${c.name}: ${c.reason}`).join('\n');
+                        toast.error(
+                          `Some items are no longer available:\n${names}\n\nPlease update or remove them before checkout.`,
+                          { autoClose: 8000 }
+                        );
+                        return;
+                      }
+
                       // Create room reservations
                       const { successfulItems, conflictedItems } = await createReservations({
                         items: cartItems,
@@ -502,14 +879,22 @@ const Checkout = () => {
                         }
                       }
 
-                      // Handle restaurant booking failures
+                      const failureMessages = [];
                       if (restaurantFailures.length > 0) {
-                        toast.error(`${restaurantFailures.length} restaurant booking(s) failed. Please contact support.`);
+                        failureMessages.push(
+                          restaurantFailures[0]?.error ||
+                            `${restaurantFailures.length} restaurant booking(s) failed. Please review them from your cart or profile.`,
+                        );
+                      }
+                      if (activityFailures.length > 0) {
+                        failureMessages.push(
+                          activityFailures[0]?.error ||
+                            `${activityFailures.length} activity booking(s) failed. Please review them from your cart or profile.`,
+                        );
                       }
 
-                      // Handle activity booking failures
-                      if (activityFailures.length > 0) {
-                        toast.error(`${activityFailures.length} activity booking(s) failed. Please contact support.`);
+                      if (failureMessages.length > 0) {
+                        toast.error(failureMessages.join('\n'), { autoClose: 8000 });
                       }
 
                       // Calculate total successful items
@@ -531,14 +916,23 @@ const Checkout = () => {
                       );
 
                       const restaurantTotal = restaurantBookings.reduce((sum, booking) => {
-                        return sum + (booking.lineItems?.reduce((itemSum, item) => itemSum + (item.price * item.qty), 0) || 0);
+                        return sum + (booking.lineItems?.reduce((itemSum, item) => {
+                          const unitPrice = Number(item?.price ?? item?.unitPrice ?? 0);
+                          return itemSum + (unitPrice * Number(item?.qty ?? 0));
+                        }, 0) || 0);
                       }, 0);
 
                       const activityTotal = activityBookings.reduce((sum, booking) => {
-                        return sum + (booking.price * booking.guests || 0);
+                        const unitPrice = Number(booking.price ?? booking.unitPrice ?? 0);
+                        const guests = Number(booking.guests || 1);
+                        const totalPrice = Number(booking.totalPrice ?? 0);
+                        return sum + (totalPrice || unitPrice * guests);
                       }, 0);
 
                       const finalTotal = roomTotal + restaurantTotal + activityTotal;
+
+                      await refreshUserSnapshot({ dispatch, axiosPrivate });
+                      await queryClient.invalidateQueries({ queryKey: ['notifications', 'inbox'] });
 
                       setOrderReceived(buildOrderReceived(data, allSuccessfulItems, finalTotal, 'cash'));
                       setIsModalOpen(true);
@@ -559,14 +953,21 @@ const Checkout = () => {
                       
                       toast.success(
                         hasConflicts
-                          ? `${successMessages.join(', ')} successfully. Some items could not be processed.`
+                          ? `${successMessages.join(', ')} successfully. Some items are still waiting for you in cart/profile.`
                           : successMessages.length > 1
                           ? 'All your bookings have been confirmed successfully!'
                           : `${successMessages[0]} successfully!`
                       );
                     } catch (err) {
                       console.error('Booking failed:', err);
-                      toast.error('Reservation failed. Please check your details and try again.');
+                      toast.error(
+                        normalizeCheckoutErrorMessage(
+                          err,
+                          'Reservation failed. Please check your details and try again.',
+                        ),
+                      );
+                    } finally {
+                      setIsFinalizingCheckout(false);
                     }
                   }}
                   resetForm={reset}
@@ -613,7 +1014,10 @@ const Checkout = () => {
           </div>
 
           <div className="-mt-12 px-8 pb-[max(3rem,env(safe-area-inset-bottom,0px))] md:px-16 md:pb-20">
-            <OrderReceived orderReceived={orderReceived} />
+            <OrderReceived
+              orderReceived={orderReceived}
+              onDownloadComplete={handleCloseOrderModal}
+            />
           </div>
         </MotionDiv>
       </AppModal>

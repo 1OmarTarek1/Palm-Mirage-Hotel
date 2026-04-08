@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { BedDouble, Maximize2, Users, ShoppingCart, Heart } from "lucide-react";
 
@@ -71,7 +71,6 @@ const resolveRoomImage = (room) => {
 
 export default function RoomCard({ room, className }) {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { flyToCart } = useFlyToCart();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const isHydrating = useSelector((state) => state.auth.isHydrating);
@@ -94,11 +93,11 @@ export default function RoomCard({ room, className }) {
 
   const handleOpenBookingModal = (e) => {
     e.preventDefault();
-    if (isHydrating) {
-      toast.info("Loading your saved room selections...");
-      return;
-    }
     if (!isAuthenticated) {
+      if (isHydrating) {
+        toast.info("Loading your saved room selections...");
+        return;
+      }
       toast.info("Please sign in first to use cart.");
       return;
     }
@@ -125,19 +124,15 @@ export default function RoomCard({ room, className }) {
     
     toast.success(cartItem ? `${roomName} booking updated in cart` : `${roomName} added to cart`);
     
-    // Navigate to cart page
-    setTimeout(() => {
-      navigate('/cart');
-    }, 500);
   };
 
   const handleToggleWishlist = (e) => {
     e.preventDefault();
-    if (isHydrating) {
-      toast.info("Loading your saved room selections...");
-      return;
-    }
     if (!isAuthenticated) {
+      if (isHydrating) {
+        toast.info("Loading your saved room selections...");
+        return;
+      }
       toast.info("Please sign in first to use wishlist.");
       return;
     }
@@ -240,11 +235,11 @@ export default function RoomCard({ room, className }) {
             <Button 
               onClick={() => {
                 if (!isAuthenticated) {
+                  if (isHydrating) {
+                    toast.info("Loading your saved room selections...");
+                    return;
+                  }
                   toast.info("Please sign in first to book.");
-                  return;
-                }
-                if (isHydrating) {
-                  toast.info("Loading your saved room selections...");
                   return;
                 }
                 // Add room to cart with default dates and navigate to cart
@@ -266,9 +261,6 @@ export default function RoomCard({ room, className }) {
                 );
                 
                 toast.success(`${roomName} added to cart`);
-                setTimeout(() => {
-                  navigate('/cart');
-                }, 300);
               }}
               variant="palmSecondary" 
               size="sm" 

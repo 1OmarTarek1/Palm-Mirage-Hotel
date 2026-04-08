@@ -152,5 +152,8 @@ export function calculateCartItemTotal(item) {
 }
 
 export function isCartItemReady(item) {
-  return Boolean(item?.checkInDate && item?.checkOutDate && item?.availabilityStatus === "available");
+  const hasValidDates = Boolean(item?.checkInDate && item?.checkOutDate);
+  const nights = calculateNights(item?.checkInDate, item?.checkOutDate);
+  const statusOk = !item?.availabilityStatus || item?.availabilityStatus !== "unavailable";
+  return hasValidDates && nights > 0 && statusOk;
 }

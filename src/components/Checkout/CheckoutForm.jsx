@@ -3,6 +3,87 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import axiosInstance from '@/services/axiosInstance';
 
+const buildCheckoutPayload = ({
+  checkoutItems,
+  restaurantBookings,
+  activityBookings,
+  customerEmail,
+  bookingNotes,
+}) => ({
+  items: Array.isArray(checkoutItems)
+    ? checkoutItems.map((item) => ({
+        roomId: item.roomId,
+        checkInDate: item.checkInDate,
+        checkOutDate: item.checkOutDate,
+        guests: item.guests || 1,
+      }))
+    : [],
+  restaurantBookings: Array.isArray(restaurantBookings)
+    ? restaurantBookings.map((booking) => {
+        const normalizedBooking = {
+          bookingMode: booking.bookingMode,
+          date: booking.date,
+          time: booking.time,
+          guests: Number(booking.guests) || 1,
+          lineItems: Array.isArray(booking.lineItems)
+            ? booking.lineItems.map((lineItem) => ({
+                menuItemId: lineItem.menuItemId,
+                qty: Number(lineItem.qty) || 0,
+                name: lineItem.name,
+                price: Number(lineItem.price) || 0,
+                image: lineItem.image || '',
+              }))
+            : [],
+          lineItemsTotal: Number(booking.lineItemsTotal) || 0,
+        };
+
+        if (booking.bookingMode === 'room_service') {
+          normalizedBooking.roomNumber = Number(booking.roomNumber) || null;
+        }
+
+        if (booking.bookingMode === 'table_only' || booking.bookingMode === 'dine_in') {
+          normalizedBooking.number = Number(booking.number) || null;
+        }
+
+        return normalizedBooking;
+      })
+    : [],
+  activityBookings: Array.isArray(activityBookings)
+    ? activityBookings.map((booking) => ({
+        activityId: booking.activityId,
+        activityTitle: booking.activityTitle,
+        scheduleId: booking.scheduleId,
+        scheduleDate: booking.scheduleDate,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        guests: booking.guests,
+        contactPhone: booking.contactPhone,
+        pricingType: booking.pricingType,
+        price: booking.price,
+        notes: booking.notes || '',
+        activityImage: booking.activityImage || '',
+      }))
+    : [],
+  customerEmail,
+  bookingNotes,
+});
+
+const getErrorMessage = (err) => {
+  const statusCode = err?.response?.status;
+  const validationDetails = err?.response?.data?.details;
+  const firstValidationMessage =
+    Array.isArray(validationDetails) && validationDetails.length > 0
+      ? validationDetails[0]?.message
+      : null;
+  const apiMessage = err?.response?.data?.message;
+
+  if (statusCode === 401) {
+    return 'Please login before continuing to checkout.';
+  }
+
+  return firstValidationMessage || apiMessage || 'An error occurred while processing your order. Please try again.';
+};
+
 const CheckoutForm = ({
   paymentMethod,
   resetForm,
@@ -11,15 +92,21 @@ const CheckoutForm = ({
   getValues,
   handleSubmitHook,
   checkoutItems,
+  restaurantBookings,
+  activityBookings,
   onBeforeStripeRedirect,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const isCartEmpty = !Array.isArray(checkoutItems) || checkoutItems.length === 0;
+
+  const hasRooms = Array.isArray(checkoutItems) && checkoutItems.length > 0;
+  const hasRestaurant = Array.isArray(restaurantBookings) && restaurantBookings.length > 0;
+  const hasActivities = Array.isArray(activityBookings) && activityBookings.length > 0;
+  const isCartEmpty = !hasRooms && !hasRestaurant && !hasActivities;
 
   const onSubmit = async () => {
     if (isCartEmpty) {
-      const message = 'Your cart is empty. Please add a room before checkout.';
+      const message = 'Your cart is empty. Please add at least one booking before checkout.';
       setError(message);
       toast.error(message);
       return;
@@ -33,11 +120,15 @@ const CheckoutForm = ({
 
       if (paymentMethod === 'card') {
         onBeforeStripeRedirect(data);
-
-        const response = await axiosInstance.post('/payment/create-checkout-session', {
-          items: checkoutItems,
+        const payload = buildCheckoutPayload({
+          checkoutItems,
+          restaurantBookings,
+          activityBookings,
           customerEmail: data.email,
+          bookingNotes: data.orderNotes || '',
         });
+
+        const response = await axiosInstance.post('/payment/create-checkout-session', payload);
 
         const checkoutStatus = response?.data?.data?.status;
         const redirectUrl = response?.data?.data?.url;
@@ -61,12 +152,7 @@ const CheckoutForm = ({
       resetForm();
     } catch (err) {
       await onError?.(err);
-      const statusCode = err?.response?.status;
-      const apiMessage = err?.response?.data?.message;
-      const fallbackMessage =
-        statusCode === 401
-          ? 'Please login before continuing to checkout.'
-          : apiMessage || 'An error occurred while processing your order. Please try again.';
+      const fallbackMessage = getErrorMessage(err);
 
       setError(fallbackMessage);
       console.error('Order error:', err);

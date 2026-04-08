@@ -29,14 +29,21 @@ export default function GoogleAuthButton() {
       const response = await axiosInstance.post("/auth/login-google", {
         idToken: credentialResponse.credential,
       });
+      const authData = response?.data?.data ?? {};
+      const accessToken = authData?.accessToken ?? authData?.token?.accessToken ?? null;
+      const refreshToken = authData?.refreshToken ?? authData?.token?.refreshToken ?? null;
 
       dispatch(
         setCredentials({
-          user: response?.data?.data?.user ?? null,
-          token: response?.data?.data?.accessToken ?? null,
-          refreshToken: response?.data?.data?.refreshToken ?? null,
+          user: authData?.user ?? null,
+          token: accessToken,
+          refreshToken,
         }),
       );
+
+      if (!accessToken) {
+        throw new Error("Google login succeeded without access token. Please try again.");
+      }
 
       toast.success("Signed in with Google successfully.");
       navigate("/", { replace: true });
@@ -55,6 +62,7 @@ export default function GoogleAuthButton() {
         size="large"
         width={200}
         text="continue_with"
+        locale="en"
         shape="rectangular"
         theme={isDark ? "filled_black" : "outline"}
       />

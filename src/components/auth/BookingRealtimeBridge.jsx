@@ -26,9 +26,28 @@ const getSocketUrl = () => {
 const BASE_URL = getSocketUrl();
 
 const SOCKET_SERVER_URL = BASE_URL;
+let sharedSocket = null;
+let sharedSocketAuthKey = null;
+let sharedSocketConsumers = 0;
 
 const isUnauthorizedSocketError = (error) =>
   /unauthorized/i.test(error?.message || "");
+
+const getSocketAuthPayload = () => {
+  const accessToken =
+    typeof window !== "undefined" ? window.localStorage.getItem("accessToken") : null;
+
+  if (!accessToken) {
+    return null;
+  }
+
+  return {
+    accessToken,
+    token: accessToken,
+    authScheme: "Bearer",
+    scheme: "Bearer",
+  };
+};
 
 export default function BookingRealtimeBridge() {
   const dispatch = useDispatch();
@@ -37,6 +56,7 @@ export default function BookingRealtimeBridge() {
   const { isAuthenticated, isHydrating } = useSelector((state) => state.auth);
   const refreshTimeoutRef = useRef(null);
   const refreshingSocketAuthRef = useRef(false);
+  const seenEventKeysRef = useRef(new Set());
 
   useEffect(() => {
     if (isHydrating || !isAuthenticated) {
@@ -44,12 +64,32 @@ export default function BookingRealtimeBridge() {
     }
 
     let isMounted = true;
+    const socketAuth = getSocketAuthPayload();
 
-    const socket = io(SOCKET_SERVER_URL, {
-      transports: ["websocket"],
-      withCredentials: true,
-      autoConnect: false,
-    });
+    if (!socketAuth?.accessToken) {
+      return;
+    }
+
+    const socketAuthKey = socketAuth.accessToken;
+    if (!sharedSocket || sharedSocketAuthKey !== socketAuthKey) {
+      if (sharedSocket) {
+        sharedSocket.removeAllListeners();
+        sharedSocket.disconnect();
+      }
+
+      sharedSocket = io(SOCKET_SERVER_URL, {
+        transports: ["websocket"],
+        withCredentials: true,
+        autoConnect: false,
+        auth: socketAuth,
+      });
+      sharedSocketAuthKey = socketAuthKey;
+    } else {
+      sharedSocket.auth = socketAuth;
+    }
+
+    sharedSocketConsumers += 1;
+    const socket = sharedSocket;
 
     const queueSnapshotRefresh = () => {
       if (refreshTimeoutRef.current) {
@@ -65,21 +105,66 @@ export default function BookingRealtimeBridge() {
       }, 250);
     };
 
-    const handlePaymentCheckoutUpdated = () => {
+    const markEventAsSeen = (key) => {
+      if (!key) return false;
+      if (seenEventKeysRef.current.has(key)) return true;
+      seenEventKeysRef.current.add(key);
+      if (seenEventKeysRef.current.size > 200) {
+        const iterator = seenEventKeysRef.current.values();
+        const first = iterator.next().value;
+        if (first) seenEventKeysRef.current.delete(first);
+      }
+      return false;
+    };
+
+    const toastNewNotification = ({ title, message, severity = "info", toastId }) => {
+      const body = title ? `${title}: ${message}` : message;
+      if (severity === "warning") {
+        toast.warning(body, { toastId });
+        return;
+      }
+      if (severity === "success") {
+        toast.success(body, { toastId });
+        return;
+      }
+      toast.info(body, { toastId });
+    };
+
+    const handlePaymentCheckoutUpdated = (payload) => {
+      const eventKey = `payment:${payload?.checkoutId || payload?.sessionId || "unknown"}:${payload?.status || "updated"}:${payload?.paymentStatus || "unknown"}`;
+      if (!markEventAsSeen(eventKey)) {
+        const paymentKind = payload?.kind || "checkout";
+        const status = payload?.status || "updated";
+        const paymentStatus = payload?.paymentStatus || "updated";
+        const severity =
+          paymentStatus === "paid" || status === "fulfilled"
+            ? "success"
+            : status === "expired" || status === "failed"
+              ? "warning"
+              : "info";
+        toastNewNotification({
+          title: "New notification",
+          message: `${paymentKind} payment is now ${status}${paymentStatus ? ` (${paymentStatus})` : ""}.`,
+          severity,
+          toastId: eventKey,
+        });
+      }
       void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
       queueSnapshotRefresh();
     };
 
     const handleBookingUpdated = (payload) => {
-      const title = payload?.title || "Booking update";
-      const message = payload?.message || "Your bookings were refreshed.";
-      const severity = payload?.severity || "info";
-      if (severity === "warning") {
-        toast.warning(message, { toastId: `booking:${payload?.bookingId}:${payload?.action}` });
-      } else if (severity === "success") {
-        toast.success(message, { toastId: `booking:${payload?.bookingId}:${payload?.action}` });
-      } else {
-        toast.info(`${title}: ${message}`, { toastId: `booking:${payload?.bookingId}:${payload?.action}` });
+      const eventKey = `booking:${payload?.resource || "booking"}:${payload?.bookingId || payload?.bookingIds?.join(",") || "unknown"}:${payload?.action || "updated"}:${payload?.occurredAt || ""}`;
+      if (!markEventAsSeen(eventKey)) {
+        const title = payload?.title || "New notification";
+        const message = payload?.message || "Your bookings were refreshed.";
+        const severity = payload?.severity || "info";
+        toastNewNotification({
+          title: "New notification",
+          message: title === "New notification" ? message : `${title}: ${message}`,
+          severity,
+          toastId: eventKey,
+        });
       }
       void queryClient.invalidateQueries({ queryKey: ["notifications", "inbox"] });
       queueSnapshotRefresh();
@@ -94,34 +179,32 @@ export default function BookingRealtimeBridge() {
         return;
       }
 
+      // Refresh-token flow is disabled on the Website. Let the user re-login if needed.
       refreshingSocketAuthRef.current = true;
-
-      try {
-        await axiosInstance.get("/auth/refresh-token");
-        if (isMounted && !socket.connected) {
-          socket.connect();
-        }
-      } catch (refreshError) {
-        if (isMounted) {
-          console.error("Failed to refresh socket authentication for realtime booking updates:", refreshError);
-        }
-      } finally {
-        refreshingSocketAuthRef.current = false;
+      if (isMounted) {
+        console.warn("Realtime socket unauthorized; refresh is disabled. Please login again.");
       }
+      refreshingSocketAuthRef.current = false;
     };
 
     socket.on("user.booking.updated", handleBookingUpdated);
     socket.on("payment.checkout.updated", handlePaymentCheckoutUpdated);
 
     socket.on("connect_error", handleConnectError);
-    socket.connect();
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     return () => {
       isMounted = false;
       socket.off("user.booking.updated", handleBookingUpdated);
       socket.off("payment.checkout.updated", handlePaymentCheckoutUpdated);
       socket.off("connect_error", handleConnectError);
-      socket.disconnect();
+
+      sharedSocketConsumers = Math.max(0, sharedSocketConsumers - 1);
+      if (sharedSocketConsumers === 0 && socket.connected) {
+        socket.disconnect();
+      }
 
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);

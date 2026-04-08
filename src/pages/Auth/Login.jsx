@@ -30,14 +30,21 @@ export default function Login() {
   const onSubmit = async (formData) => {
     try {
       const response = await axiosInstance.post("/auth/login", formData);
+      const authData = response?.data?.data ?? {};
+      const accessToken = authData?.accessToken ?? authData?.token?.accessToken ?? null;
+      const refreshToken = authData?.refreshToken ?? authData?.token?.refreshToken ?? null;
       
       dispatch(
         setCredentials({
-          user: response?.data?.data?.user ?? null,
-          token: response?.data?.data?.accessToken ?? null,
-          refreshToken: response?.data?.data?.refreshToken ?? null,
+          user: authData?.user ?? null,
+          token: accessToken,
+          refreshToken,
         }),
       );
+
+      if (!accessToken) {
+        throw new Error("Login succeeded without access token. Please try again.");
+      }
 
       toast.success("Signed in successfully.");
       navigate(from, { replace: true });

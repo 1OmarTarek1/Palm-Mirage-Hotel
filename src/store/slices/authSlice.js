@@ -2,6 +2,18 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const AUTH_STORAGE_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
+const USER_STORAGE_KEY = "user";
+
+const forceClearAuthStorage = () => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+    window.localStorage.removeItem(USER_STORAGE_KEY);
+  } catch (error) {
+    console.error("Failed to force-clear auth storage:", error);
+  }
+};
 
 const loadPersistedAuth = () => {
   if (typeof window === 'undefined') {
@@ -11,7 +23,7 @@ const loadPersistedAuth = () => {
   try {
     const token = window.localStorage.getItem(AUTH_STORAGE_KEY);
     const refreshToken = window.localStorage.getItem(REFRESH_TOKEN_KEY);
-    const userStr = window.localStorage.getItem("user");
+    const userStr = window.localStorage.getItem(USER_STORAGE_KEY);
     
     if (token && userStr) {
       const user = JSON.parse(userStr);
@@ -38,13 +50,11 @@ const persistAuth = (user, token, refreshToken) => {
         // Keep storage shape predictable when token exists but no refresh token is available.
         window.localStorage.removeItem(REFRESH_TOKEN_KEY);
       }
-      window.localStorage.setItem("user", JSON.stringify(user));
+      window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
       return;
     }
 
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
-    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
-    window.localStorage.removeItem("user");
+    forceClearAuthStorage();
   } catch (error) {
     console.error('Failed to persist auth token to localStorage:', error);
   }
@@ -54,8 +64,9 @@ const persistedAuth = loadPersistedAuth();
 
 const initialState = {
   user: persistedAuth.user,
+  // Demo/prod friendly: if token+user exist in localStorage, consider session active.
   isAuthenticated: persistedAuth.isAuthenticated,
-  isHydrating: true,
+  isHydrating: false,
 };
 
 const authSlice = createSlice({
@@ -72,11 +83,15 @@ const authSlice = createSlice({
       // Allow profile-only refreshes to update user data without dropping existing session tokens.
       const effectiveToken = token || persistedToken;
       const effectiveRefreshToken = refreshToken || persistedRefreshToken;
+      const hasValidSession = Boolean(user && effectiveToken);
 
-      state.user = user;
-      state.isAuthenticated = Boolean(user);
+      state.user = hasValidSession ? user : null;
+      state.isAuthenticated = hasValidSession;
       state.isHydrating = false;
-      persistAuth(user, effectiveToken, effectiveRefreshToken);
+      persistAuth(hasValidSession ? user : null, effectiveToken, effectiveRefreshToken);
+      if (!hasValidSession) {
+        forceClearAuthStorage();
+      }
     },
     finishHydration: (state) => {
       state.isHydrating = false;
@@ -86,6 +101,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.isHydrating = false;
       persistAuth(null, null, null);
+      forceClearAuthStorage();
     },
   },
 });

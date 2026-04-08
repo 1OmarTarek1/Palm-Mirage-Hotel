@@ -88,6 +88,9 @@ export default function ChangePasswordForm({
       // Continue local logout even if server-side global logout fails.
     }
     void axiosInstance.post("/auth/logout").catch(() => null).finally(() => {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
       dispatch(logout());
       onSuccess?.();
       navigate("/auth/login", { replace: true });

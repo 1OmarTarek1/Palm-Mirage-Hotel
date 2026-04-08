@@ -10,6 +10,7 @@ export function ProfilePageSkeleton() {
       <ProfileHeroSkeleton />
 
       <div className="mt-8 space-y-6">
+        {/* Overview */}
         <section>
           <ProfileSectionHeaderSkeleton withAction={false} />
           <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -17,40 +18,32 @@ export function ProfilePageSkeleton() {
               <ProfileOverviewCardSkeleton key={`profile-overview-card-${index}`} />
             ))}
           </div>
-          <div className="mt-6 flex items-center justify-end gap-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <Skeleton className="h-10 w-10 rounded-full" />
-          </div>
+          <ProfileCarouselNavSkeleton />
         </section>
 
-        <div className="py-4 sm:py-5" aria-hidden="true">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-border/70 to-transparent" />
-        </div>
+        <ProfileDividerSkeleton />
 
+        {/* Room Bookings */}
         <ProfileSectionSkeleton />
 
-        <div className="py-4 sm:py-5" aria-hidden="true">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-border/70 to-transparent" />
-        </div>
+        <ProfileDividerSkeleton />
 
+        {/* Activity Bookings */}
         <ProfileSectionSkeleton />
 
-        <div className="py-4 sm:py-5" aria-hidden="true">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-border/70 to-transparent" />
-        </div>
+        <ProfileDividerSkeleton />
 
+        {/* Restaurant Bookings */}
         <ProfileSectionSkeleton />
 
-        <div className="py-4 sm:py-5" aria-hidden="true">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-border/70 to-transparent" />
-        </div>
+        <ProfileDividerSkeleton />
 
+        {/* Wishlist */}
         <ProfileSectionSkeleton />
 
-        <div className="py-4 sm:py-5" aria-hidden="true">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-border/70 to-transparent" />
-        </div>
+        <ProfileDividerSkeleton />
 
+        {/* Cart Sections (Unified) */}
         <ProfileCartSectionSkeleton />
       </div>
     </section>
@@ -58,7 +51,7 @@ export function ProfilePageSkeleton() {
 }
 
 // Helper skeletons for profile
-function ProfileHeroSkeleton() {
+export function ProfileHeroSkeleton() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-end gap-2 px-1 sm:px-0">
@@ -87,7 +80,7 @@ function ProfileHeroSkeleton() {
   );
 }
 
-function ProfileSectionHeaderSkeleton({ withAction = true }) {
+export function ProfileSectionHeaderSkeleton({ withAction = true }) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-4">
@@ -108,7 +101,7 @@ function ProfileSectionHeaderSkeleton({ withAction = true }) {
   );
 }
 
-function ProfileOverviewCardSkeleton() {
+export function ProfileOverviewCardSkeleton() {
   return (
     <div className="flex h-full min-h-[9.5rem] flex-col rounded-[1.75rem] border border-border/50 bg-card/70 p-5 shadow-sm backdrop-blur-sm">
       <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:justify-between">
@@ -128,7 +121,7 @@ function ProfileOverviewCardSkeleton() {
   );
 }
 
-function ProfileBookingCardSkeleton() {
+export function ProfileBookingCardSkeleton() {
   return (
     <div className="flex h-full flex-col rounded-[1.75rem] border border-border/40 bg-background/45 p-5 shadow-sm backdrop-blur-sm">
       <div className="relative">
@@ -164,7 +157,7 @@ function ProfileBookingCardSkeleton() {
   );
 }
 
-function ProfileSectionSkeleton({ cardCount = 3, showAction = true }) {
+export function ProfileSectionSkeleton({ cardCount = 3, showAction = true }) {
   return (
     <section>
       <ProfileSectionHeaderSkeleton withAction={showAction} />
@@ -184,7 +177,7 @@ function ProfileSectionSkeleton({ cardCount = 3, showAction = true }) {
 }
 
 // Dish line card - matches profile restaurant cart carousel shape
-function ProfileRestaurantCartLineSkeleton() {
+export function ProfileRestaurantCartLineSkeleton() {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border/40 bg-background/45 shadow-sm backdrop-blur-sm">
       <Skeleton className="aspect-[4/3] w-full shrink-0 rounded-none" />
@@ -200,7 +193,7 @@ function ProfileRestaurantCartLineSkeleton() {
   );
 }
 
-function ProfileCarouselNavSkeleton() {
+export function ProfileCarouselNavSkeleton() {
   return (
     <div className="mt-6 flex items-center justify-end gap-3">
       <Skeleton className="h-10 w-10 rounded-full" />
@@ -209,8 +202,16 @@ function ProfileCarouselNavSkeleton() {
   );
 }
 
+export function ProfileDividerSkeleton() {
+  return (
+    <div className="py-4 sm:py-5" aria-hidden="true">
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-border/70 to-transparent" />
+    </div>
+  );
+}
+
 // Cart section: restaurant sub-carousel + room sub-carousel (matches ProfileContentSections)
-function ProfileCartSectionSkeleton() {
+export function ProfileCartSectionSkeleton() {
   return (
     <section>
       <ProfileSectionHeaderSkeleton withAction />
@@ -228,6 +229,33 @@ function ProfileCartSectionSkeleton() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <ProfileRestaurantCartLineSkeleton key={`profile-cart-restaurant-${index}`} />
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-primary/15 bg-primary/8 px-5 py-4">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-32 rounded-full" />
+              <Skeleton className="h-8 w-28 rounded-lg" />
+            </div>
+            <Skeleton className="h-9 min-w-[10rem] rounded-full" />
+          </div>
+
+          <ProfileCarouselNavSkeleton />
+        </div>
+
+        {/* Activity Cart Subsection */}
+        <div className="border-t border-border/40 pt-10">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-36 rounded-full" />
+              <Skeleton className="h-4 w-full max-w-md rounded-full" />
+            </div>
+            <Skeleton className="h-9 w-40 shrink-0 rounded-full sm:ms-auto" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <ProfileRestaurantCartLineSkeleton key={`profile-cart-activity-${index}`} />
             ))}
           </div>
 

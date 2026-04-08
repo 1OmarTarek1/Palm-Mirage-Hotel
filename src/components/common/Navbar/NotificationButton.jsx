@@ -1,11 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import { useSelector } from "react-redux";
 import NavTooltip from "./NavTooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -66,6 +68,39 @@ function formatRelativeTime(iso) {
   return d.toLocaleDateString();
 }
 
+function getProfileSectionTarget(resource) {
+  if (resource === "room") return "/profile#room-bookings-section";
+  if (resource === "activity") return "/profile#activity-bookings-section";
+  if (resource === "restaurant") return "/profile#table-bookings-section";
+  return "/profile";
+}
+
+function resolveNotificationHref(notification) {
+  if (!notification) return null;
+
+  if (notification.resource === "payment_checkout") {
+    const kind = notification.metadata?.kind;
+    const status = notification.metadata?.status;
+    const paymentStatus = notification.metadata?.paymentStatus;
+
+    if (status === "fulfilled" || paymentStatus === "paid") {
+      return getProfileSectionTarget(kind);
+    }
+
+    if (notification.metadata?.sessionId || notification.metadata?.checkoutId) {
+      return "/cart/checkout";
+    }
+
+    return kind ? getProfileSectionTarget(kind) : null;
+  }
+
+  if (["room", "activity", "restaurant"].includes(notification.resource)) {
+    return getProfileSectionTarget(notification.resource);
+  }
+
+  return null;
+}
+
 function useIsMdUp() {
   const [isMdUp, setIsMdUp] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false,
@@ -85,9 +120,11 @@ function useIsMdUp() {
 export default function NotificationButton() {
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [panelOpen, setPanelOpen] = useState(false);
   const containerRef = useRef(null);
   const isMdUp = useIsMdUp();
+  const isAuthenticated = useSelector((state) => state.auth?.isAuthenticated);
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: NOTIFICATIONS_QUERY_KEY,
@@ -96,6 +133,7 @@ export default function NotificationButton() {
       return res.data?.data ?? { notifications: [], unreadCount: 0 };
     },
     staleTime: 30_000,
+    enabled: Boolean(isAuthenticated),
   });
 
   const notifications = data?.notifications ?? [];
@@ -134,7 +172,6 @@ export default function NotificationButton() {
   const markRead = useCallback(
     async (id) => {
       try {
-        // Optimistic update to avoid full-list loading flash/re-render.
         queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) =>
           applyReadPatchToInboxCache(old, id, { id, readAt: new Date().toISOString() }),
         );
@@ -145,7 +182,6 @@ export default function NotificationButton() {
         );
       } catch (e) {
         console.error("Failed to mark notification read:", e);
-        // Re-sync only on failure.
         await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
       }
     },
@@ -154,12 +190,10 @@ export default function NotificationButton() {
 
   const markAllRead = useCallback(async () => {
     try {
-      // Optimistic update to keep panel stable.
       queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, (old) => markAllReadInInboxCache(old));
       await axiosPrivate.post("/notifications/read-all");
     } catch (e) {
       console.error("Failed to mark all notifications read:", e);
-      // Re-sync only on failure.
       await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
     }
   }, [axiosPrivate, queryClient]);
@@ -190,6 +224,24 @@ export default function NotificationButton() {
       await queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
     }
   }, [axiosPrivate, queryClient]);
+
+  const handleNotificationClick = useCallback(
+    async (notification) => {
+      if (!notification?.id) return;
+
+      if (!notification.readAt) {
+        await markRead(notification.id);
+      }
+
+      const href = resolveNotificationHref(notification);
+      closePanel();
+
+      if (href) {
+        navigate(href);
+      }
+    },
+    [closePanel, markRead, navigate],
+  );
 
   useBodyScrollLock(panelOpen && !isMdUp);
 
@@ -256,6 +308,7 @@ export default function NotificationButton() {
                       busy={listBusy}
                       onMarkRead={markRead}
                       onDeleteOne={deleteOne}
+                      onNotificationClick={handleNotificationClick}
                     />
                   </div>
                 </MotionDiv>
@@ -348,6 +401,7 @@ export default function NotificationButton() {
                   busy={listBusy}
                   onMarkRead={markRead}
                   onDeleteOne={deleteOne}
+                  onNotificationClick={handleNotificationClick}
                 />
               </div>
             </MotionDiv>
@@ -359,7 +413,13 @@ export default function NotificationButton() {
   );
 }
 
-function NotificationListBody({ notifications, busy, onMarkRead, onDeleteOne }) {
+function NotificationListBody({
+  notifications,
+  busy,
+  onMarkRead,
+  onDeleteOne,
+  onNotificationClick,
+}) {
   if (busy && notifications.length === 0) {
     return (
       <ul className="space-y-1 p-2 md:max-h-[min(60vh,18rem)] md:overflow-y-auto">
@@ -392,47 +452,64 @@ function NotificationListBody({ notifications, busy, onMarkRead, onDeleteOne }) 
   return (
     <ul className="space-y-1 p-2 md:max-h-[min(60vh,18rem)] md:overflow-y-auto">
       <AnimatePresence initial={false}>
-      {notifications.map((n) => (
-        <motion.li
-          layout
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.18 }}
-          key={n.id}
-          className={`rounded-xl px-3 py-2.5 transition-colors hover:bg-primary/10 ${
-            n.readAt ? "cursor-default" : "cursor-pointer"
-          }`}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium leading-snug text-foreground">{n.title}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{n.message}</p>
-              <p className="mt-1 text-[10px] text-muted-foreground/80">
-                {formatRelativeTime(n.createdAt)}
-                {n.readAt ? " · Read" : ""}
-              </p>
-            </div>
-            {!n.readAt ? (
-              <button
-                type="button"
-                onClick={() => void onMarkRead(n.id)}
-                className="shrink-0 cursor-pointer text-[10px] font-medium uppercase tracking-wide text-primary hover:underline"
-              >
-                Mark read
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => void onDeleteOne(n.id)}
-                className="shrink-0 cursor-pointer text-[10px] font-medium uppercase tracking-wide text-primary hover:underline"
-              >
-                Remove
-              </button>
-            )}
-          </div>
-        </motion.li>
-      ))}
+        {notifications.map((n) => {
+          const href = resolveNotificationHref(n);
+          const isClickable = Boolean(href) || !n.readAt;
+
+          return (
+            <motion.li
+              layout
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              key={n.id}
+              onClick={() => void onNotificationClick?.(n)}
+              className={`rounded-xl px-3 py-2.5 transition-colors hover:bg-primary/10 ${
+                isClickable ? "cursor-pointer" : "cursor-default"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium leading-snug text-foreground">{n.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{n.message}</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground/80">
+                    {formatRelativeTime(n.createdAt)}
+                    {n.readAt ? " آ· Read" : ""}
+                  </p>
+                  {href ? (
+                    <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-primary/80">
+                      Open details
+                    </p>
+                  ) : null}
+                </div>
+                {!n.readAt ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void onMarkRead(n.id);
+                    }}
+                    className="shrink-0 cursor-pointer text-[10px] font-medium uppercase tracking-wide text-primary hover:underline"
+                  >
+                    Mark read
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void onDeleteOne(n.id);
+                    }}
+                    className="shrink-0 cursor-pointer text-[10px] font-medium uppercase tracking-wide text-primary hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </motion.li>
+          );
+        })}
       </AnimatePresence>
     </ul>
   );

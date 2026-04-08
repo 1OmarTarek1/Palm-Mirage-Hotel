@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { fadeUp, getStatusTone } from "./profileUtils";
 
-export function SectionCard({ children, className, index = 0, id }) {
+export function SectionCard({ children, className, index = 0, id, highlighted = false }) {
   return (
     <motion.section
       id={id}
@@ -21,7 +21,11 @@ export function SectionCard({ children, className, index = 0, id }) {
       variants={fadeUp}
       initial="hidden"
       animate="visible"
-      className={cn(className)}
+      className={cn(
+        "scroll-mt-24 rounded-[2rem] transition-[background-color,border-color,box-shadow] duration-500",
+        highlighted && "border border-primary/20 bg-primary/[0.045] shadow-[0_0_0_1px_hsl(var(--primary)/0.10)]",
+        className,
+      )}
     >
       {children}
     </motion.section>
@@ -235,7 +239,7 @@ export function CarouselCard({ children, className }) {
   return (
     <div
       className={cn(
-        "flex w-full flex-col self-start rounded-[1.75rem] border border-border/40 bg-background/45 p-5 shadow-sm backdrop-blur-sm",
+        "flex w-full h-full flex-col rounded-[1.75rem] border border-border/40 bg-background/45 p-5 shadow-sm backdrop-blur-sm",
         className,
       )}
     >

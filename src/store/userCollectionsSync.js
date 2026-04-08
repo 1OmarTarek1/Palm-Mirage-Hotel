@@ -10,6 +10,8 @@ import {
   closeCart,
   hydrateCart,
   hydrateRestaurantMenuCart,
+  hydratePendingRestaurantBookings,
+  hydratePendingActivityBookings,
   removeItem,
   resetCartState,
   resetRestaurantMenuCart,
@@ -17,6 +19,14 @@ import {
   updateItemBookingDates,
   updateQuantity,
   upsertRoomBooking,
+  addPendingRestaurantBooking,
+  updatePendingRestaurantBooking,
+  removePendingRestaurantBooking,
+  clearPendingRestaurantBookings,
+  addPendingActivityBooking,
+  updatePendingActivityBooking,
+  removePendingActivityBooking,
+  clearPendingActivityBookings,
 } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
@@ -84,23 +94,32 @@ userCollectionsListenerMiddleware.startListening({
       listenerApi.dispatch(hydrateCart(mergedCartItems));
       listenerApi.dispatch(hydrateWishlist(mergedWishlistItems));
       listenerApi.dispatch(hydrateRestaurantMenuCart(mergedRestaurantMenu));
+      listenerApi.dispatch(hydratePendingRestaurantBookings(preferences?.pendingRestaurantBookings ?? []));
+      listenerApi.dispatch(hydratePendingActivityBookings(preferences?.pendingActivityBookings ?? []));
 
       const hadLocalRestaurant =
         Object.keys(state.cart?.restaurantMenuCart ?? {}).length > 0;
+      const hadLocalPendingRestaurant = (state.cart?.pendingRestaurantBookings?.length ?? 0) > 0;
+      const hadLocalPendingActivity = (state.cart?.pendingActivityBookings?.length ?? 0) > 0;
 
       if (
         (state.cart?.items?.length ?? 0) > 0 ||
         (state.wishlist?.items?.length ?? 0) > 0 ||
-        hadLocalRestaurant
+        hadLocalRestaurant ||
+        hadLocalPendingRestaurant ||
+        hadLocalPendingActivity
       ) {
         await updateUserPreferences({
           cartItems: mergedCartItems,
           wishlistItems: mergedWishlistItems,
           restaurantCart: mergedRestaurantMenu,
+          pendingRestaurantBookings: preferences?.pendingRestaurantBookings ?? state.cart?.pendingRestaurantBookings ?? [],
+          pendingActivityBookings: preferences?.pendingActivityBookings ?? state.cart?.pendingActivityBookings ?? [],
         });
       }
     } catch (error) {
-      console.error("Failed to hydrate user collections from the database:", error);
+      // For local-first demos, don't let a failing preferences endpoint break the UX.
+      console.warn("Preferences sync skipped (server unavailable):", error?.response?.status ?? error);
     }
   },
 });
@@ -121,8 +140,17 @@ userCollectionsListenerMiddleware.startListening({
     upsertRoomBooking,
     removeItem,
     updateQuantity,
+    updateQuantity,
     updateItemBookingDates,
     clearCart,
+    addPendingRestaurantBooking,
+    updatePendingRestaurantBooking,
+    removePendingRestaurantBooking,
+    clearPendingRestaurantBookings,
+    addPendingActivityBooking,
+    updatePendingActivityBooking,
+    removePendingActivityBooking,
+    clearPendingActivityBookings,
   ),
   effect: async (_, listenerApi) => {
     const state = listenerApi.getState();
@@ -136,9 +164,11 @@ userCollectionsListenerMiddleware.startListening({
       await updateUserPreferences({
         cartItems: state.cart?.items ?? [],
         restaurantCart: state.cart?.restaurantMenuCart ?? {},
+        pendingRestaurantBookings: state.cart?.pendingRestaurantBookings ?? [],
+        pendingActivityBookings: state.cart?.pendingActivityBookings ?? [],
       });
     } catch (error) {
-      console.error("Failed to sync cart items to the database:", error);
+      console.warn("Cart sync skipped (server unavailable):", error?.response?.status ?? error);
     }
   },
 });
@@ -156,9 +186,10 @@ userCollectionsListenerMiddleware.startListening({
       clearLegacyStorage();
       await updateUserPreferences({
         restaurantCart: state.cart?.restaurantMenuCart ?? {},
+        pendingRestaurantBookings: state.cart?.pendingRestaurantBookings ?? [],
       });
     } catch (error) {
-      console.error("Failed to sync restaurant menu cart to the database:", error);
+      console.warn("Restaurant cart sync skipped (server unavailable):", error?.response?.status ?? error);
     }
   },
 });
@@ -183,7 +214,7 @@ userCollectionsListenerMiddleware.startListening({
         wishlistItems: state.wishlist?.items ?? [],
       });
     } catch (error) {
-      console.error("Failed to sync wishlist items to the database:", error);
+      console.warn("Wishlist sync skipped (server unavailable):", error?.response?.status ?? error);
     }
   },
 });

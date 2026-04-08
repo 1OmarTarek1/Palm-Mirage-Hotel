@@ -23,7 +23,12 @@ import {
   selectCartSidebarTab,
   setCartSidebarTab,
   selectPendingActivityBookings,
+  selectPendingRestaurantBookings,
+  selectPendingRestaurantTotal,
+  selectPendingActivityTotal,
   clearPendingActivityBookings,
+  removePendingActivityBooking,
+  clearPendingRestaurantBookings,
 } from "@/store/slices/cartSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -34,7 +39,7 @@ import RoomNumberBadge from "@/components/rooms/RoomNumberBadge";
 import { calculateCartItemTotal, formatBookingDateLabel } from "@/utils/roomBooking";
 import { resolveCartRoomDetailId } from "@/utils/resolveCartRoomDetailId";
 import { useRestaurantCart } from "@/context/RestaurantCartContext";
-import { RestaurantOrderSidebarSection } from "@/components/restaurant/RestaurantCartChrome";
+import { RestaurantOrderSidebarSection, useMenuFlat } from "@/components/restaurant/RestaurantCartChrome";
 
 export default function CartSidebar() {
   const dispatch = useDispatch();
@@ -44,12 +49,38 @@ export default function CartSidebar() {
   const items = useSelector(selectCartItems);
   const total = useSelector(selectCartTotal);
   const pendingActivityBookings = useSelector(selectPendingActivityBookings);
-  const { cart: restaurantCart } = useRestaurantCart();
+  const { cart: restaurantCart, resetCart: resetRestaurantCart, goToBookingWithOrder } = useRestaurantCart();
   const reduceMotion = useReducedMotion();
 
+  const pendingRestaurantBookings = useSelector(selectPendingRestaurantBookings);
+  const roomsTotal = useSelector(selectCartTotal);
+  const bundledRestaurantTotal = useSelector(selectPendingRestaurantTotal);
+  const activityTotal = useSelector(selectPendingActivityTotal);
+  const menuItems = useMenuFlat();
+
+  const unbundledRestaurantTotal = useMemo(() => {
+    return Object.entries(restaurantCart).reduce((sum, [id, qty]) => {
+      const item = menuItems.find((m) => m.id === id);
+      return sum + (item?.price ?? 0) * (qty ?? 0);
+    }, 0);
+  }, [restaurantCart, menuItems]);
+
+  const restaurantTotal = bundledRestaurantTotal + unbundledRestaurantTotal;
+  const grandTotal = roomsTotal + restaurantTotal + activityTotal;
+
+  const activeTabTotal = useMemo(() => {
+    if (sidebarTab === "rooms") return roomsTotal;
+    if (sidebarTab === "restaurant") return restaurantTotal;
+    if (sidebarTab === "activities") return activityTotal;
+    return 0;
+  }, [sidebarTab, roomsTotal, restaurantTotal, activityTotal]);
+
+  // Individual food items (per qty) + each completed order counts as 1
   const restaurantCount = useMemo(
-    () => Object.values(restaurantCart).reduce((s, q) => s + (typeof q === "number" ? q : 0), 0),
-    [restaurantCart],
+    () =>
+      Object.values(restaurantCart).reduce((s, q) => s + (typeof q === "number" ? q : 0), 0) +
+      pendingRestaurantBookings.length,
+    [restaurantCart, pendingRestaurantBookings],
   );
 
   const activityCount = useMemo(
@@ -166,7 +197,7 @@ export default function CartSidebar() {
                   <span>Rooms</span>
                   {items.length > 0 ? (
                     <span className={cn(
-                      "min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary transition-all duration-300",
+                      "absolute -top-1.5 right-2 min-w-[1rem] rounded-full bg-primary/15 px-1 py-0 text-[9px] leading-4 font-bold tabular-nums text-primary transition-all duration-300",
                       sidebarTab === "rooms" ? "scale-110" : "scale-100"
                     )}>
                       {items.length}
@@ -194,7 +225,7 @@ export default function CartSidebar() {
                   <span>Restaurant</span>
                   {restaurantCount > 0 ? (
                     <span className={cn(
-                      "min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary transition-all duration-300",
+                      "absolute -top-1.5 right-2 min-w-[1rem] rounded-full bg-primary/15 px-1 py-0 text-[9px] leading-4 font-bold tabular-nums text-primary transition-all duration-300",
                       sidebarTab === "restaurant" ? "scale-110" : "scale-100"
                     )}>
                       {restaurantCount > 99 ? "99+" : restaurantCount}
@@ -222,7 +253,7 @@ export default function CartSidebar() {
                   <span>Activities</span>
                   {activityCount > 0 ? (
                     <span className={cn(
-                      "min-w-[1.25rem] rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary transition-all duration-300",
+                      "absolute -top-1.5 right-2 min-w-[1rem] rounded-full bg-primary/15 px-1 py-0 text-[9px] leading-4 font-bold tabular-nums text-primary transition-all duration-300",
                       sidebarTab === "activities" ? "scale-110" : "scale-100"
                     )}>
                       {activityCount > 99 ? "99+" : activityCount}
@@ -232,9 +263,9 @@ export default function CartSidebar() {
               </div>
             </div>
 
-            <div className="relative min-h-0 flex-1 overflow-hidden">
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
               <motion.div
-                className="flex h-full w-[300%]"
+                className="flex min-h-0 flex-1 w-[300%]"
                 animate={{ 
                   x: sidebarTab === "rooms" ? "0%" : 
                        sidebarTab === "restaurant" ? "-33.33%" : "-66.66%"
@@ -298,15 +329,6 @@ export default function CartSidebar() {
                                   <div className="flex shrink-0 items-center gap-0.5">
                                     {roomDetailId ? (
                                       <>
-                                        <Link
-                                          to={`/rooms/${roomDetailId}`}
-                                          onClick={() => dispatch(closeCart())}
-                                          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/70 hover:text-primary"
-                                          aria-label="View room details"
-                                          title="View room"
-                                        >
-                                          <Eye size={14} strokeWidth={2} />
-                                        </Link>
                                         <Link
                                           to={`/rooms/${roomDetailId}`}
                                           onClick={() => dispatch(closeCart())}
@@ -403,16 +425,56 @@ export default function CartSidebar() {
                           className="space-y-4"
                         >
                           {pendingActivityBookings.map((booking) => (
-                            <div key={booking.id} className="rounded-xl border border-border/50 bg-card p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h4 className="font-medium text-foreground">{booking.activityTitle}</h4>
-                                  <p className="text-sm text-muted-foreground">{booking.scheduleDate}</p>
-                                  <p className="text-sm text-muted-foreground">{booking.startTime} - {booking.endTime}</p>
-                                  <p className="text-sm text-muted-foreground">{booking.guests} guests</p>
+                            <div key={booking.id} className="flex gap-3 rounded-2xl border border-border/30 bg-muted/40 p-3">
+                              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/20 bg-muted/50">
+                                {booking.activityImage ? (
+                                  <img src={booking.activityImage} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center text-primary/40">
+                                    <Activity size={24} strokeWidth={1.5} />
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="min-w-0 flex-1 flex flex-col justify-between">
+                                <div>
+                                  <div className="flex items-start justify-between gap-1">
+                                    <p className="truncate text-xs font-bold text-foreground">
+                                      {booking.activityTitle}
+                                    </p>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        dispatch(removePendingActivityBooking(booking.id));
+                                        toast.success("Activity removed");
+                                      }}
+                                      className="h-6 w-6 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 -mt-1 -mr-1"
+                                      aria-label="Remove activity"
+                                    >
+                                      <Trash2 size={12} />
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="mt-0.5 space-y-0.5">
+                                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                      <CalendarDays size={10} className="text-secondary" />
+                                      {booking.scheduleDate}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground">
+                                      {booking.startTime} - {booking.endTime}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="font-bold text-primary">${(booking.price * booking.guests).toFixed(2)}</p>
+                                
+                                <div className="mt-2 flex items-center justify-between">
+                                  <p className="text-[10px] font-medium text-foreground">
+                                    {booking.guests} guest{booking.guests === 1 ? "" : "s"}
+                                  </p>
+                                  <p className="text-sm font-black text-primary tabular-nums">
+                                    ${(booking.price * booking.guests).toFixed(2)}
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -425,38 +487,65 @@ export default function CartSidebar() {
               </motion.div>
               
               {/* Fixed Footer */}
-              <div className="flex-shrink-0 border-t border-border/40 bg-card/95 px-6 py-4 backdrop-blur-sm">
+              <div className="flex-shrink-0 border-t border-border/40 bg-card/95 px-6 py-5 backdrop-blur-md">
+                <div className="mb-5 space-y-3">
+                  {/* Current Tab Total */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        {sidebarTab === "rooms" ? "Rooms Subtotal" : 
+                         sidebarTab === "restaurant" ? "Restaurant Subtotal" : "Activities Subtotal"}
+                      </p>
+                    </div>
+                    <p className="text-sm font-bold text-foreground">
+                      ${activeTabTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  {/* Grand Total - All Carts Combined */}
+                  <div className="flex items-center justify-between rounded-xl bg-primary/10 px-4 py-3 border border-primary/20">
+                    <div className="flex flex-col">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                        Total Amount (Global)
+                      </p>
+                    </div>
+                    <p className="text-lg font-black text-primary">
+                      ${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex gap-3">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => {
-                      // Reset current tab data only
                       if (sidebarTab === "rooms") {
                         dispatch(clearCart());
                         toast.success("Rooms cart cleared");
                       } else if (sidebarTab === "restaurant") {
-                        // Reset restaurant cart via context
-                        // This will need to be handled differently
-                        toast.success("Restaurant cart cleared");
+                        resetRestaurantCart();
+                        dispatch(clearPendingRestaurantBookings());
+                        toast.success("Restaurant cart and orders cleared");
                       } else if (sidebarTab === "activities") {
                         dispatch(clearPendingActivityBookings());
                         toast.success("Activities cart cleared");
                       }
                     }}
-                    className="h-12 flex-1 rounded-2xl px-5 text-sm font-medium"
+                    className="h-11 flex-1 rounded-xl border border-border/50 text-[11px] font-bold uppercase tracking-wider hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20"
                   >
-                    <span>Reset</span>
+                    <span>Clear</span>
                   </Button>
+                  
                   <Link
                     to="/cart"
                     onClick={() => dispatch(closeCart())}
                     className={cn(
-                      buttonVariants({ variant: "default" }),
-                      "flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold",
+                      buttonVariants({ variant: "palmPrimary" }),
+                      "flex h-11 flex-[1.8] items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20",
                     )}
                   >
-                    <span>View Cart</span>
+                    <span>View In Cart</span>
                     <ArrowRight size={16} />
                   </Link>
                 </div>

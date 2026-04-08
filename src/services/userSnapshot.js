@@ -8,13 +8,22 @@ import {
   fetchMyTableBookings,
 } from "@/services/restaurantBookings/restaurantBookingsSlice";
 import { fetchUserPreferences } from "@/services/userPreferencesApi";
-import { hydrateCart, hydrateRestaurantMenuCart } from "@/store/slices/cartSlice";
+import {
+  hydrateCart,
+  hydrateRestaurantMenuCart,
+  hydratePendingActivityBookings,
+  hydratePendingRestaurantBookings,
+} from "@/store/slices/cartSlice";
 import { logout, setCredentials } from "@/store/slices/authSlice";
 import { hydrateWishlist } from "@/store/slices/wishlistSlice";
 
 const isAuthFailure = (error) => {
   const status = error?.response?.status;
-  return status === 400 || status === 401 || status === 403;
+  if (status === 401 || status === 403) return true;
+  if (status !== 400) return false;
+
+  const message = String(error?.response?.data?.message || "").toLowerCase();
+  return /authorization|token|credential|in-valid|invalid account|deleted/.test(message);
 };
 
 const buildSnapshotRequests = ({ dispatch, axiosPrivate }) => [
@@ -57,11 +66,21 @@ const runSnapshotRequests = async ({ dispatch, axiosPrivate }) => {
 
 const hasAuthFailure = (entries = []) =>
   entries.some(
-    ({ result }) => result.status === "rejected" && isAuthFailure(result.reason),
+    ({ key, result }) =>
+      (key === "account" || key === "preferences") &&
+      result.status === "rejected" &&
+      isAuthFailure(result.reason),
   );
 
 const getSnapshotEntry = (entries = [], key) =>
   entries.find((entry) => entry.key === key);
+
+const clearSessionAndLogout = (dispatch) => {
+  dispatch(logout());
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+};
 
 export const applyUserSnapshot = ({ dispatch, user, entries = [] }) => {
   const preferencesEntry = getSnapshotEntry(entries, "preferences");
@@ -71,6 +90,8 @@ export const applyUserSnapshot = ({ dispatch, user, entries = [] }) => {
     dispatch(hydrateCart(preferences.cartItems ?? []));
     dispatch(hydrateWishlist(preferences.wishlistItems ?? []));
     dispatch(hydrateRestaurantMenuCart(preferences.restaurantCart ?? {}));
+    dispatch(hydratePendingRestaurantBookings(preferences.pendingRestaurantBookings ?? []));
+    dispatch(hydratePendingActivityBookings(preferences.pendingActivityBookings ?? []));
   } else if (preferencesEntry?.result.status === "rejected") {
     console.error(
       "Failed to refresh user preferences during snapshot sync:",
@@ -94,48 +115,20 @@ export const applyUserSnapshot = ({ dispatch, user, entries = [] }) => {
 export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
   let entries = await runSnapshotRequests({ dispatch, axiosPrivate });
 
+  // No refresh-token flow on the Website: if auth fails, treat it as a logged-out session.
   if (hasAuthFailure(entries)) {
-    try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      // Create separate axios instance for refresh
-      const refreshAxios = axios.create({
-        baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
-        headers: { "Content-Type": "application/json" },
-        withCredentials: false,
-      });
-
-      const refreshResponse = await refreshAxios.get("/auth/refresh-token", {
-        headers: {
-          Authorization: `Bearer ${refreshToken}`
-        }
-      });
-      
-      const newAccessToken = refreshResponse?.data?.data?.token?.accessToken;
-      
-      if (newAccessToken) {
-        localStorage.setItem('accessToken', newAccessToken);
-        // Retry the snapshot requests with new token
-        entries = await runSnapshotRequests({ dispatch, axiosPrivate });
-      }
-    } catch (error) {
-      // Don't automatically logout on refresh failure
-      // Just log the error and continue with existing tokens
-      console.warn("Failed to refresh user snapshot, keeping existing session:", error);
-      return { status: "partial", entries };
-    }
+    console.warn("Snapshot requests failed with an auth error; signing out:", entries);
+    clearSessionAndLogout(dispatch);
+    return { status: "unauthenticated", entries };
   }
 
   const accountEntry = getSnapshotEntry(entries, "account");
 
   if (accountEntry?.result.status === "rejected") {
     if (isAuthFailure(accountEntry.result.reason)) {
-      // Don't automatically logout on account fetch failure
-      console.warn("Failed to fetch account, keeping existing session:", accountEntry.result.reason);
-      return { status: "partial", entries };
+      console.warn("Failed to fetch account, signing out stale session:", accountEntry.result.reason);
+      clearSessionAndLogout(dispatch);
+      return { status: "unauthenticated", entries };
     }
 
     throw accountEntry.result.reason;
@@ -144,10 +137,7 @@ export const refreshUserSnapshot = async ({ dispatch, axiosPrivate }) => {
   const user = accountEntry?.result.value?.data?.data?.user ?? null;
 
   if (!user) {
-    dispatch(logout());
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem("user");
+    clearSessionAndLogout(dispatch);
     return { status: "unauthenticated", entries };
   }
 

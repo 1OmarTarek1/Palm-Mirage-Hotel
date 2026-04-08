@@ -44,14 +44,20 @@ export default function ConfirmEmail() {
           email: payload.email,
           password,
         });
+        const authData = loginResponse?.data?.data ?? {};
+        const accessToken = authData?.accessToken ?? authData?.token?.accessToken ?? null;
+        const refreshToken = authData?.refreshToken ?? authData?.token?.refreshToken ?? null;
 
         dispatch(
           setCredentials({
-            user: loginResponse?.data?.data?.user ?? null,
-            token: loginResponse?.data?.data?.accessToken ?? null,
-            refreshToken: loginResponse?.data?.data?.refreshToken ?? null,
+            user: authData?.user ?? null,
+            token: accessToken,
+            refreshToken,
           }),
         );
+        if (!accessToken) {
+          throw new Error("Auto-login failed: missing access token.");
+        }
         toast.success("Email confirmed successfully.");
         navigate("/profile", { replace: true });
         return;

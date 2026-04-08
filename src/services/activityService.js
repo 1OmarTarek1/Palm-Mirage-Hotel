@@ -104,11 +104,14 @@ export async function fetchActivityById(activityId) {
 
 export async function fetchActivitySchedules(activityId) {
   try {
-    const endpoint = activityId
-      ? `/activity/${activityId}/schedules`
-      : "/activity-schedules";
+    const isGlobal = !activityId;
+    const endpoint = isGlobal
+      ? "/activity-schedules"
+      : `/activity/${activityId}/schedules`;
 
-    const { data } = await axiosInstance.get(endpoint);
+    const { data } = await axiosInstance.get(endpoint, {
+      params: isGlobal ? { limit: 100 } : {},
+    });
     return (data?.data?.schedules ?? []).map(mapSchedule);
   } catch (error) {
     if (axios.isAxiosError(error)) {

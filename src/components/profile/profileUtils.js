@@ -1,5 +1,40 @@
 import { Calendar, Clock3, ShoppingBag, ShoppingCart, Ticket, User, UtensilsCrossed } from "lucide-react";
 
+export const getRestaurantBookingModeLabel = (mode) => {
+  switch (mode) {
+    case "table_only":
+      return "Table Only";
+    case "dine_in":
+      return "Dine In";
+    case "room_service":
+      return "Room Service";
+    case "pickup":
+      return "Pickup";
+    default:
+      return "Restaurant Booking";
+  }
+};
+
+export const getRestaurantBookingLocationLabel = (booking) => {
+  if (booking?.bookingMode === "room_service") {
+    return booking?.roomNumber ? `Room ${booking.roomNumber}` : "Room not selected";
+  }
+
+  if (booking?.bookingMode === "pickup") {
+    return "Restaurant pickup counter";
+  }
+
+  if (booking?.bookingMode === "table_only" || booking?.bookingMode === "dine_in") {
+    const tableNumber = booking?.number ?? booking?.tableNumber;
+    return tableNumber ? `Table ${tableNumber}` : "Table not selected";
+  }
+
+  return "Palm Mirage Restaurant";
+};
+
+export const isRestaurantTableMode = (bookingMode) =>
+  bookingMode === "table_only" || bookingMode === "dine_in";
+
 export const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: (index = 0) => ({
@@ -224,6 +259,13 @@ export const tableBookingMeta = (booking) => [
   },
   {
     icon: UtensilsCrossed,
-    label: booking?.tableNumber === null ? "Pending assignment" : "Table assigned",
+    label:
+      booking?.bookingMode === "pickup"
+        ? "Collect from restaurant"
+        : booking?.bookingMode === "room_service"
+          ? "Delivered to your room"
+          : booking?.tableNumber === null
+            ? "Pending assignment"
+            : "Table assigned",
   },
 ];

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export function Skeleton({ className, ...props }) {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-muted/80", className)}
+      className={cn("app-skeleton rounded-md", className)}
       {...props}
     />
   );

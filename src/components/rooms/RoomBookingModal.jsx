@@ -48,6 +48,14 @@ export default function RoomBookingModal({
       : "";
 
   useEffect(() => {
+    if (isOpen && initialDraft) {
+      setDraft(buildInitialDraft(initialDraft));
+      setAvailability(null);
+      setAvailabilityRangeKey("");
+    }
+  }, [isOpen, initialDraft]);
+
+  useEffect(() => {
     if (!shouldLoadAvailability) return;
 
     const controller = new AbortController();
@@ -173,7 +181,7 @@ export default function RoomBookingModal({
       onClose={onClose}
       layout="card"
       zIndex={80}
-      closeOnBackdrop={false}
+      closeOnBackdrop={true}
       showTint
       tintClassName="bg-black/55 px-4 py-6 backdrop-blur-sm max-sm:p-0"
       maxWidthClassName="max-w-[620px] sm:max-w-[620px]"
@@ -281,6 +289,24 @@ export default function RoomBookingModal({
             </div>
           </div>
         </div>
+
+        {/* Total Price */}
+        {nightCount > 0 && room?.price && (
+          <div className="mx-6 mb-2 rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Total Price</p>
+                <p className="text-xs text-muted-foreground">
+                  {nightCount} night{nightCount > 1 ? "s" : ""} × ${Number(room.price).toFixed(2)}
+                  {Number(draft.roomsCount) > 1 ? ` × ${draft.roomsCount} rooms` : ""}
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-primary">
+                ${(nightCount * Number(room.price) * Number(draft.roomsCount || 1)).toFixed(2)}
+              </p>
+            </div>
+          </div>
+        )}
 
       <div className="flex shrink-0 flex-col gap-3 border-t border-border bg-card px-6 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] sm:flex-row sm:justify-end sm:pb-5">
         <Button type="button" variant="palmSecondary" className="h-11 px-6" onClick={onClose}>

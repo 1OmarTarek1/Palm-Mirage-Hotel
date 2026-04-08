@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { Button } from '@/components/ui/button';
 import RoomCard from '@/components/rooms/RoomCard';
 import { Trash2, Heart } from 'lucide-react';
+import { WishlistPageSkeleton } from '@/components/common/loading/AppPageSkeletons';
 
 export default function Wishlist() {
   const dispatch = useDispatch();
@@ -20,7 +21,7 @@ export default function Wishlist() {
     toast.success('Wishlist cleared');
   };
 
-  if (isHydrating) return null;
+  if (isHydrating) return <WishlistPageSkeleton />;
 
   return (
     <div className="min-h-screen py-3 px-4 sm:px-6 lg:px-8">
@@ -69,7 +70,7 @@ export default function Wishlist() {
         ) : (
           <>
             {/* Wishlist Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               {wishlistItems.map((room) => (
                 <RoomCard key={room.id} room={room} className="h-full" />
               ))}

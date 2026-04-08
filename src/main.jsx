@@ -10,6 +10,10 @@ import { queryClient } from "./lib/queryClient.js";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
+import { setupInterceptors } from "./services/axiosInstance.js";
+
+setupInterceptors(store);
+
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 createRoot(document.getElementById("root")).render(
@@ -17,7 +21,7 @@ createRoot(document.getElementById("root")).render(
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         {googleClientId ? (
-          <GoogleOAuthProvider clientId={googleClientId}>
+          <GoogleOAuthProvider clientId={googleClientId} language="en">
             <App />
           </GoogleOAuthProvider>
         ) : (

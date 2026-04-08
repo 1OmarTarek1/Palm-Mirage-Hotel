@@ -19,6 +19,9 @@ import OrderSummary from "@/components/shopcart/OrderSummary";
 import RoomBookingModal from "@/components/rooms/RoomBookingModal";
 import PendingRestaurantBookingCard from "@/components/shopcart/PendingRestaurantBookingCard";
 import PendingActivityBookingCard from "@/components/shopcart/PendingActivityBookingCard";
+import { ShopCartWithItemsSkeleton } from "@/components/shopcart/loading/ShopCartSkeleton";
+
+import { useCartConflicts } from "@/hooks/useCartConflicts";
 
 export default function ShopCart() {
   const dispatch = useDispatch();
@@ -28,6 +31,7 @@ export default function ShopCart() {
   const pendingRestaurantBookings = useSelector(selectPendingRestaurantBookings);
   const pendingActivityBookings = useSelector(selectPendingActivityBookings);
   const [editingItem, setEditingItem] = useState(null);
+  const { conflicts, hasConflicts, conflictList } = useCartConflicts();
 
   const removePendingRestaurantBooking = (id) => {
     dispatch(removePendingRestaurantBooking(id));
@@ -96,7 +100,7 @@ export default function ShopCart() {
     setEditingItem(null);
   };
 
-  if (isHydrating) return null;
+  if (isHydrating) return <ShopCartWithItemsSkeleton />;
 
   const hasAnyItems = cartItems.length > 0 || pendingRestaurantBookings.length > 0 || pendingActivityBookings.length > 0;
 
@@ -126,6 +130,7 @@ export default function ShopCart() {
                   key={booking.id}
                   booking={booking}
                   onRemove={() => removePendingRestaurantBooking(booking.id)}
+                  conflict={conflicts[booking.id] || null}
                 />
               ))}
 
@@ -135,6 +140,7 @@ export default function ShopCart() {
                   key={booking.id}
                   booking={booking}
                   onRemove={() => removePendingActivityBooking(booking.id)}
+                  conflict={conflicts[booking.id] || null}
                 />
               ))}
             </div>
@@ -146,6 +152,8 @@ export default function ShopCart() {
                   cartItems={allItems} 
                   totalPrice={totalWithPending}
                   pendingTotals={calculatePendingTotals}
+                  hasConflicts={hasConflicts}
+                  conflictList={conflictList}
                 />
               </div>
             </div>

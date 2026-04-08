@@ -238,17 +238,16 @@ export default function Rooms() {
           </Sidebar>
         </div>
 
-        <div className="col-span-12">
-          <SharedPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            pageSize={roomsPerPage}
-            totalEntries={filteredRooms.length}
-            className="mt-2"
-          />
-        </div>
       </div>
+
+      <SharedPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={roomsPerPage}
+        totalEntries={filteredRooms.length}
+        className="mt-6"
+      />
 
       <MobileDrawer
         isOpen={isFilterOpen && !isLgUp}

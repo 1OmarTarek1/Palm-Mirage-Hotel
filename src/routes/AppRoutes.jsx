@@ -5,8 +5,16 @@ import AuthLayout from "@/layouts//AuthLayout";
 import MainLayout from "@/layouts/MainLayout.jsx";
 import NotFound from "@/pages/NotFound/NotFound";
 import ProtectedRoute from "@/routes/ProtectedRoute";
-import { ContactPageSkeleton } from "@/components/Contact/loading/ContactPageSkeleton";
+
 import { HomeHeroSkeleton } from "@/components/common/loading/WebsiteSkeletons";
+import { ContactPageSkeleton } from "@/components/Contact/loading/ContactPageSkeleton";
+import { ActivitiesPageSkeleton } from "@/components/activities/loading/ActivitiesPageSkeleton";
+import { ProfilePageSkeleton } from "@/components/profile/loading/ProfilePageSkeleton";
+import { RestaurantPageSkeleton } from "@/components/restaurant/loading/RestaurantPageSkeleton";
+import { RoomsPageSkeleton } from "@/components/rooms/loading/RoomsPageSkeleton";
+import { ShopCartWithItemsSkeleton } from "@/components/shopcart/loading/ShopCartSkeleton";
+import { MenuPageSkeleton } from "@/components/menu/loading/MenuPageSkeleton";
+import { WishlistPageSkeleton } from "@/components/common/loading/AppPageSkeletons";
 
 const About = lazy(() => import("@/pages/About/About"));
 const Blog = lazy(() => import("@/pages/Blog/Blog"));
@@ -33,7 +41,15 @@ const ChangePassword = lazy(() => import("@/pages/Auth/ChangePassword"));
 const Restaurant = lazy(() => import("@/pages/Services/Restaurant.jsx"));
 const ConfirmEmail = lazy(() => import("@/pages/Auth/ConfirmEmail.jsx"));
 
-const routeFallback = <HomeHeroSkeleton />;
+const routeFallback = (
+  <div className="flex min-h-screen w-full items-center justify-center">
+    <div className="flex flex-col items-center gap-4">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
+      <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading page...</p>
+    </div>
+  </div>
+);
+
 const authFallback = (
   <div className="w-full max-w-md space-y-4">
     <div className="h-8 w-40 animate-pulse rounded-lg bg-muted/50" />
@@ -56,28 +72,28 @@ export const routes = createBrowserRouter([
     element: <MainLayout />,
     errorElement: <NotFound />,
     children: [
-      { index: true, element: withSuspense(Home) },
-      { path: "rooms", element: withSuspense(Rooms) },
-      { path: "rooms/:id", element: withSuspense(RoomDetails) },
+      { index: true, element: withSuspense(Home, <HomeHeroSkeleton />) },
+      { path: "rooms", element: withSuspense(Rooms, <RoomsPageSkeleton />) },
+      { path: "rooms/:id", element: withSuspense(RoomDetails) }, // Falls back to generic
       { path: "services", element: withSuspense(Wellness) },
       { path: "services/wellness", element: withSuspense(Wellness) },
       { path: "services/Meetings", element: withSuspense(Meetings) },
-      { path: "services/menu", element: withSuspense(Menu) },
-      { path: "services/restaurant", element: withSuspense(Restaurant) },
+      { path: "services/menu", element: withSuspense(Menu, <MenuPageSkeleton />) },
+      { path: "services/restaurant", element: withSuspense(Restaurant, <RestaurantPageSkeleton />) },
       { path: "blog", element: withSuspense(Blog) },
       { path: "blog/:id", element: withSuspense(BlogDetails) },
-      { path: "services/activities", element: withSuspense(Activities) },
+      { path: "services/activities", element: withSuspense(Activities, <ActivitiesPageSkeleton />) },
       { path: "services/activities/:id", element: withSuspense(ActivityDetailPage) },
       { path: "about", element: withSuspense(About) },
       { path: "contact", element: withSuspense(Contact, <ContactPageSkeleton />) },
-      { path: "profile", element: withSuspense(Profile) },
+      { path: "profile", element: withSuspense(Profile, <ProfilePageSkeleton />) },
       { path: "settings", element: withSuspense(Settings) },
       {
         element: <ProtectedRoute />,
         children: [
-          { path: "cart", element: withSuspense(ShopCart) },
+          { path: "cart", element: withSuspense(ShopCart, <ShopCartWithItemsSkeleton />) },
           { path: "cart/checkout", element: withSuspense(Checkout) },
-          { path: "wishlist", element: withSuspense(Wishlist) },
+          { path: "wishlist", element: withSuspense(Wishlist, <WishlistPageSkeleton />) },
         ],
       },
     ],
