@@ -30,6 +30,7 @@ const mapSchedule = (schedule) => ({
   activityId: schedule.activity?._id ?? schedule.activity?.id,
   activityTitle: schedule.activity?.title ?? "",
   activityLabel: schedule.activity?.label ?? "",
+  activityImage: resolveImage(schedule.activity?.image),
   date: schedule.date?.slice(0, 10) ?? "",
   startTime: schedule.startTime,
   endTime: schedule.endTime,

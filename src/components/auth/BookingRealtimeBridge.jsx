@@ -5,8 +5,8 @@ import { io } from "socket.io-client";
 import { toast } from "react-toastify";
 
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import axiosInstance from "@/services/axiosInstance";
 import { refreshUserSnapshot } from "@/services/userSnapshot";
+import { queryKeys } from "@/lib/queryKeys";
 
 const getSocketUrl = () => {
   const url = import.meta.env.VITE_API_BASE_URL;
@@ -117,6 +117,32 @@ export default function BookingRealtimeBridge() {
       }, 450);
     };
 
+    const queueCatalogRefresh = (resource) => {
+      window.setTimeout(() => {
+        if (resource === "activity") {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all() });
+          void queryClient.refetchQueries({ queryKey: queryKeys.activities.all(), type: "active" });
+          return;
+        }
+
+        if (resource === "room") {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.rooms.all() });
+          void queryClient.refetchQueries({ queryKey: queryKeys.rooms.all(), type: "active" });
+          return;
+        }
+
+        if (resource === "restaurant") {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.menu.all() });
+          void queryClient.refetchQueries({ queryKey: queryKeys.menu.all(), type: "active" });
+          return;
+        }
+
+        void queryClient.invalidateQueries({ queryKey: queryKeys.rooms.all() });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all() });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.menu.all() });
+      }, 150);
+    };
+
     const markEventAsSeen = (key) => {
       if (!key) return false;
       if (seenEventKeysRef.current.has(key)) return true;
@@ -168,6 +194,7 @@ export default function BookingRealtimeBridge() {
       }
       queueNotificationsRefresh();
       queueSnapshotRefresh();
+      queueCatalogRefresh(payload?.kind);
     };
 
     const handleBookingUpdated = (payload) => {
@@ -185,6 +212,7 @@ export default function BookingRealtimeBridge() {
       }
       queueNotificationsRefresh();
       queueSnapshotRefresh();
+      queueCatalogRefresh(payload?.resource);
     };
 
     const handleConnectError = async (error) => {

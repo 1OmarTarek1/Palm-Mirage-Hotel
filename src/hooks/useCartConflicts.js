@@ -6,6 +6,7 @@ import {
   selectPendingActivityBookings,
 } from "@/store/slices/cartSlice";
 import { isRestaurantTableMode } from "@/components/profile/profileUtils";
+import { selectActiveActivityBookings } from "@/services/activityBookings/activityBookingsSlice";
 
 /**
  * Returns a map of { [bookingId]: conflictReason } for every item
@@ -21,6 +22,7 @@ export function useCartConflicts() {
   const cartItems = useSelector(selectCartItems);
   const restaurantBookings = useSelector(selectPendingRestaurantBookings);
   const activityBookings = useSelector(selectPendingActivityBookings);
+  const existingActivityBookings = useSelector(selectActiveActivityBookings);
 
   const conflicts = useMemo(() => {
     const map = {}; // { id -> { type, message } }
@@ -86,8 +88,25 @@ export function useCartConflicts() {
       }
     });
 
+    const existingSchedules = new Set(
+      existingActivityBookings
+        .filter((booking) => booking?.status !== "cancelled")
+        .map((booking) => String(booking?.schedule?.id || booking?.schedule?._id || booking?.schedule))
+        .filter(Boolean)
+    );
+
+    activityBookings.forEach((booking) => {
+      const sid = String(booking?.scheduleId || "");
+      if (!sid || !existingSchedules.has(sid)) return;
+
+      map[booking.id] = {
+        type: "schedule_already_booked",
+        message: `"${booking.activityTitle || "This activity"}" is already booked on this session.`,
+      };
+    });
+
     return map;
-  }, [cartItems, restaurantBookings, activityBookings]);
+  }, [cartItems, restaurantBookings, activityBookings, existingActivityBookings]);
 
   const conflictCount = Object.keys(conflicts).length;
   const hasConflicts = conflictCount > 0;

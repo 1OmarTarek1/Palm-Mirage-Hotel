@@ -6,6 +6,7 @@ export default function ActivitySessionsSection({
   schedules,
   emptyState,
   onBook,
+  getScheduleConflict,
 }) {
   return (
     <div className="pt-14">
@@ -24,7 +25,12 @@ export default function ActivitySessionsSection({
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {schedules.map((schedule) => (
-          <ActivitySessionCard key={schedule.id} schedule={schedule} onBook={onBook} />
+          <ActivitySessionCard
+            key={schedule.id}
+            schedule={schedule}
+            onBook={onBook}
+            conflict={getScheduleConflict?.(schedule) || null}
+          />
         ))}
       </div>
 

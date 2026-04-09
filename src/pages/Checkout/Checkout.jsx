@@ -40,15 +40,14 @@ import {
 } from '@/services/booking/bookingSlice';
 import { 
   createTableBooking,
-  createRestaurantCheckoutSession,
 } from '@/services/restaurantBookings/restaurantBookingsSlice';
 import {
   createActivityBooking,
-  createActivityCheckoutSession,
   fetchMyActivityBookings,
 } from '@/services/activityBookings/activityBookingsSlice';
 import { toast } from 'react-toastify';
 import { store } from '@/store/store';
+import { queryKeys } from '@/lib/queryKeys';
 
 const PENDING_CHECKOUT_KEY = 'pendingCheckoutSession';
 const PENDING_PAYMENT_SYNC_KEY = 'pendingPaymentSync';
@@ -88,6 +87,7 @@ const Checkout = () => {
   const hasRestaurantBookings = pendingRestaurantBookings.length > 0;
   const hasActivityBookings = pendingActivityBookings.length > 0;
   const isCheckoutEmpty = !hasRoomBookings && !hasRestaurantBookings && !hasActivityBookings;
+  const blockingActivityStatuses = new Set(['pending', 'awaiting_payment', 'confirmed', 'completed']);
   
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderReceived, setOrderReceived] = useState(null);
@@ -192,7 +192,44 @@ const Checkout = () => {
       })
     );
 
+    const activeActivityBookings = await dispatch(fetchMyActivityBookings(axiosPrivate))
+      .unwrap()
+      .catch(() => []);
+
+    const bookedScheduleIds = new Set(
+      (activeActivityBookings || [])
+        .filter((booking) => blockingActivityStatuses.has(booking?.status))
+        .map((booking) => String(booking?.schedule?.id || booking?.schedule?._id || booking?.schedule))
+        .filter(Boolean)
+    );
+
+    pendingActivityBookings.forEach((booking) => {
+      const scheduleId = String(booking?.scheduleId || '');
+      if (!scheduleId || !bookedScheduleIds.has(scheduleId)) return;
+
+      preflightConflicts.push({
+        id: booking.id,
+        name: booking.activityTitle || 'Activity',
+        reason: `You already booked this session on ${booking.scheduleDate} from ${booking.startTime} to ${booking.endTime}.`,
+      });
+    });
+
     return preflightConflicts;
+  };
+
+  const handleBeforeCheckoutSubmit = async () => {
+    const preflightConflicts = await runPreflightChecks();
+    if (preflightConflicts.length === 0) {
+      return true;
+    }
+
+    const names = preflightConflicts.map((c) => `\u2022 ${c.name}: ${c.reason}`).join('\n');
+    toast.error(
+      `Some items need attention before checkout:\n${names}\n\nPlease update or remove them from your cart first.`,
+      { autoClose: 8000 }
+    );
+    navigate('/cart', { replace: true });
+    return false;
   };
 
   const handleCloseOrderModal = () => {
@@ -402,7 +439,7 @@ const Checkout = () => {
     });
   };
 
-  const createReservations = async ({ items, data, method }) => {
+  const createReservations = async ({ items, method }) => {
     if (items.some((item) => !item.checkInDate || !item.checkOutDate || item.availabilityStatus !== 'available')) {
       throw new Error('Some rooms are missing valid available dates.');
     }
@@ -555,15 +592,6 @@ const Checkout = () => {
           result.reason,
           'Failed to create activity booking',
         );
-
-        if (/already booked this activity session/i.test(normalizedError)) {
-          successfulBookings.push({
-            ...pendingActivityBookings[index],
-            _recovered: true,
-          });
-          dispatch(removePendingActivityBookingAction(pendingActivityBookings[index].id));
-          return;
-        }
 
         failedBookings.push({
           booking: pendingActivityBookings[index],
@@ -805,7 +833,6 @@ const Checkout = () => {
     };
 
     void finalizeStripeCheckout();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [axiosPrivate, dispatch, isHydrating, navigate, queryClient, searchParams, sessionId]);
 
   if (isHydrating || isResolvingCheckoutCart) return <CheckoutPageSkeleton />;
@@ -851,6 +878,7 @@ const Checkout = () => {
                   getValues={getValues}
                   paymentMethod={paymentMethod}
                   onError={handleCheckoutError}
+                  onBeforeSubmit={handleBeforeCheckoutSubmit}
                   checkoutItems={cartItems.map((item) => ({
                     roomId: item.id,
                     checkInDate: item.checkInDate,
@@ -865,17 +893,6 @@ const Checkout = () => {
                   onSuccess={async (data) => {
                     setIsFinalizingCheckout(true);
                     try {
-                      // Pre-flight: verify availability before sending anything to backend
-                      const preflightConflicts = await runPreflightChecks();
-                      if (preflightConflicts.length > 0) {
-                        const names = preflightConflicts.map((c) => `\u2022 ${c.name}: ${c.reason}`).join('\n');
-                        toast.error(
-                          `Some items are no longer available:\n${names}\n\nPlease update or remove them before checkout.`,
-                          { autoClose: 8000 }
-                        );
-                        return;
-                      }
-
                       // Create room reservations
                       const { successfulItems, conflictedItems } = await createReservations({
                         items: cartItems,
@@ -888,10 +905,6 @@ const Checkout = () => {
 
                       // Create pending activity bookings  
                       const { successfulBookings: activityBookings, failedBookings: activityFailures } = await createPendingActivityBookings('cash');
-
-                      if (activityBookings.some((booking) => booking?._recovered)) {
-                        await dispatch(fetchMyActivityBookings(axiosPrivate)).unwrap().catch(() => []);
-                      }
 
                       // Handle room booking conflicts
                       if (conflictedItems.length > 0) {
@@ -957,6 +970,12 @@ const Checkout = () => {
                       await syncCartCollectionsToServer();
                       await refreshUserSnapshot({ dispatch, axiosPrivate });
                       await queryClient.invalidateQueries({ queryKey: ['notifications', 'inbox'] });
+                      await queryClient.invalidateQueries({ queryKey: queryKeys.rooms.all() });
+                      await queryClient.invalidateQueries({ queryKey: queryKeys.activities.all() });
+                      await queryClient.invalidateQueries({ queryKey: queryKeys.menu.all() });
+                      await queryClient.refetchQueries({ queryKey: queryKeys.rooms.all(), type: 'active' });
+                      await queryClient.refetchQueries({ queryKey: queryKeys.activities.all(), type: 'active' });
+                      await queryClient.refetchQueries({ queryKey: queryKeys.menu.all(), type: 'active' });
 
                       setOrderReceived(buildOrderReceived(data, allSuccessfulItems, finalTotal, 'cash'));
                       setIsModalOpen(true);

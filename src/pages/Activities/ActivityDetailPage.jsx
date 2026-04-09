@@ -10,11 +10,17 @@ import {
   useActivitySchedulesQuery,
 } from "@/hooks/useCatalogQueries";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectPendingActivityBookings } from "@/store/slices/cartSlice";
+import { selectActiveActivityBookings } from "@/services/activityBookings/activityBookingsSlice";
+import { resolveActivityScheduleConflict } from "@/utils/activityBookingConflicts";
 
 export default function ActivityDetailPage() {
   const { id } = useParams();
   const bookingRef = useRef(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
+  const pendingActivityBookings = useSelector(selectPendingActivityBookings);
+  const activeActivityBookings = useSelector(selectActiveActivityBookings);
 
   const { data: activity, isLoading: activityLoading } = useActivityDetailQuery(id);
   const { data: schedules = [], isLoading: schedulesLoading } = useActivitySchedulesQuery(id);
@@ -22,6 +28,7 @@ export default function ActivityDetailPage() {
   const isLoading = activityLoading || schedulesLoading;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedScheduleId("");
   }, [id]);
 
@@ -45,6 +52,13 @@ export default function ActivityDetailPage() {
     setSelectedScheduleId(scheduleId);
     bookingRef.current?.selectActivity(id, scheduleId);
   };
+
+  const getScheduleConflict = (schedule) =>
+    resolveActivityScheduleConflict({
+      scheduleId: schedule?.id,
+      activeActivityBookings,
+      pendingActivityBookings,
+    });
 
   if (isLoading) {
     return <ActivityDetailPageSkeleton />;
@@ -72,6 +86,7 @@ export default function ActivityDetailPage() {
           schedules={availableSchedules}
           emptyState="No available sessions right now. Guests can still review the activity details below."
           onBook={handleBookSchedule}
+          getScheduleConflict={getScheduleConflict}
         />
 
         {fullSchedules.length ? (
@@ -79,6 +94,7 @@ export default function ActivityDetailPage() {
             title="Filled Or Closed Sessions"
             schedules={fullSchedules}
             onBook={handleBookSchedule}
+            getScheduleConflict={getScheduleConflict}
           />
         ) : null}
       </section>

@@ -1,13 +1,30 @@
 import { CalendarDays, Clock3, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function ActivitySessionCard({ schedule, onBook }) {
+export default function ActivitySessionCard({ schedule, onBook, conflict = null }) {
   const isAvailable = schedule.status !== "cancelled" && schedule.availableSeats > 0;
+  const isBookedByGuest = conflict?.type === "existing_booking";
+  const isInCart = conflict?.type === "pending_cart";
+  const isDisabled = !isAvailable || isBookedByGuest || isInCart;
+  const statusLabel = isBookedByGuest
+    ? "Already Booked"
+    : isInCart
+      ? "In Your Cart"
+      : isAvailable
+        ? "Available"
+        : "Fully Booked";
+  const statusClassName = isBookedByGuest
+    ? "bg-amber-500/12 text-amber-700"
+    : isInCart
+      ? "bg-sky-500/12 text-sky-700"
+      : isAvailable
+        ? "bg-emerald-500/12 text-emerald-600"
+        : "bg-red-500/12 text-red-500";
 
   return (
     <div
       className={`rounded-[2rem] border p-6 transition-colors ${
-        isAvailable ? "border-border bg-card" : "border-border/60 bg-muted/35 opacity-80"
+        isDisabled ? "border-border/60 bg-muted/35 opacity-80" : "border-border bg-card"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -39,11 +56,9 @@ export default function ActivitySessionCard({ schedule, onBook }) {
           </div>
 
           <span
-            className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
-              isAvailable ? "bg-emerald-500/12 text-emerald-600" : "bg-red-500/12 text-red-500"
-            }`}
+            className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${statusClassName}`}
           >
-            {isAvailable ? "Available" : "Fully Booked"}
+            {statusLabel}
           </span>
         </div>
       </div>
@@ -54,14 +69,26 @@ export default function ActivitySessionCard({ schedule, onBook }) {
         </p>
       ) : null}
 
+      {conflict ? (
+        <p className="mt-5 border-t border-border/50 pt-5 text-sm leading-relaxed text-muted-foreground">
+          {conflict.message}
+        </p>
+      ) : null}
+
       <div className="mt-5">
         <Button
-          variant={isAvailable ? "palmPrimary" : "palmSecondary"}
+          variant={isDisabled ? "palmSecondary" : "palmPrimary"}
           type="button"
-          disabled={!isAvailable}
+          disabled={isDisabled}
           onClick={() => onBook(schedule.id)}
         >
-          {isAvailable ? "Book This Session" : "Session Full"}
+          {isBookedByGuest
+            ? "Already Booked"
+            : isInCart
+              ? "Already In Cart"
+              : isAvailable
+                ? "Book This Session"
+                : "Session Full"}
         </Button>
       </div>
     </div>

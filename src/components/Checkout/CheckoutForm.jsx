@@ -89,6 +89,7 @@ const CheckoutForm = ({
   resetForm,
   onSuccess,
   onError,
+  onBeforeSubmit,
   getValues,
   handleSubmitHook,
   checkoutItems,
@@ -117,6 +118,10 @@ const CheckoutForm = ({
 
     try {
       const data = getValues();
+      const canContinue = await onBeforeSubmit?.(data);
+      if (canContinue === false) {
+        return;
+      }
 
       if (paymentMethod === 'card') {
         onBeforeStripeRedirect(data);

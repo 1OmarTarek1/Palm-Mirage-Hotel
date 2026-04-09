@@ -125,6 +125,7 @@ export const getStatusTone = (status) => {
     case "confirmed":
     case "paid":
       return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    case "awaiting_payment":
     case "pending":
     case "unpaid":
       return "bg-amber-500/10 text-amber-600 border-amber-500/20";
@@ -140,6 +141,51 @@ export const getStatusTone = (status) => {
     default:
       return "bg-muted text-muted-foreground border-border";
   }
+};
+
+const roomOnlinePaymentMethods = new Set(["card", "stripe", "online"]);
+const roomTerminalStatuses = new Set(["completed", "cancelled", "rejected", "refunded", "no-show"]);
+
+export const isAwaitingRoomPayment = (booking) => {
+  const paymentMethod = String(booking?.paymentMethod || "").toLowerCase();
+  const paymentStatus = String(booking?.paymentStatus || "").toLowerCase();
+  const status = String(booking?.status || "").toLowerCase();
+
+  return (
+    roomOnlinePaymentMethods.has(paymentMethod) &&
+    paymentStatus !== "paid" &&
+    !roomTerminalStatuses.has(status)
+  );
+};
+
+export const getRoomBookingDisplayStatus = (booking) => {
+  if (isAwaitingRoomPayment(booking)) {
+    return {
+      label: "awaiting payment",
+      tone: "awaiting_payment",
+    };
+  }
+
+  const status = booking?.status || "unknown";
+  return {
+    label: status,
+    tone: status,
+  };
+};
+
+export const getRoomBookingDisplayPaymentStatus = (booking) => {
+  if (isAwaitingRoomPayment(booking)) {
+    return {
+      label: "awaiting payment",
+      tone: "awaiting_payment",
+    };
+  }
+
+  const paymentStatus = booking?.paymentStatus || "unknown";
+  return {
+    label: paymentStatus,
+    tone: paymentStatus,
+  };
 };
 
 export const isRoomBookingCancellable = (booking) => {

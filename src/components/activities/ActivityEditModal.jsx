@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { CalendarDays, X, Activity } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -14,6 +15,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchActivitySchedules } from "@/services/activityService";
+import {
+  selectPendingActivityBookings,
+} from "@/store/slices/cartSlice";
+import { selectActiveActivityBookings } from "@/services/activityBookings/activityBookingsSlice";
+import { resolveActivityScheduleConflict } from "@/utils/activityBookingConflicts";
 
 const createDefaultDraft = () => {
   return {
@@ -37,12 +43,15 @@ export default function ActivityEditModal({
   onClose,
   onConfirm,
 }) {
+  const pendingActivityBookings = useSelector(selectPendingActivityBookings);
+  const activeActivityBookings = useSelector(selectActiveActivityBookings);
   const [draft, setDraft] = useState(() => buildInitialDraft(booking));
   const [schedules, setSchedules] = useState([]);
   const [schedulesLoading, setSchedulesLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDraft(buildInitialDraft(booking));
     }
   }, [isOpen, booking]);
@@ -51,6 +60,7 @@ export default function ActivityEditModal({
     if (!isOpen) return;
     
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSchedulesLoading(true);
     
     void fetchActivitySchedules()
@@ -79,6 +89,7 @@ export default function ActivityEditModal({
     
     const selectedSchedule = schedules.find((schedule) => schedule.id === draft.scheduleId);
     if (selectedSchedule && !draft.activityId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDraft(current => ({ ...current, activityId: selectedSchedule.activityId }));
     }
   }, [draft.scheduleId, schedules, draft.activityId]);
@@ -94,6 +105,14 @@ export default function ActivityEditModal({
     [filteredSchedules, draft.scheduleId]
   );
 
+  const getScheduleConflict = (scheduleId) =>
+    resolveActivityScheduleConflict({
+      scheduleId,
+      activeActivityBookings,
+      pendingActivityBookings,
+      excludePendingBookingId: booking?.id,
+    });
+
   const totalPrice = useMemo(() => {
     if (!selectedScheduleData) return 0;
 
@@ -103,6 +122,17 @@ export default function ActivityEditModal({
 
     return selectedScheduleData.resolvedPrice * Number(draft.guests || 0);
   }, [selectedScheduleData, draft.guests]);
+
+  const scheduleConflict = useMemo(
+    () =>
+      resolveActivityScheduleConflict({
+        scheduleId: draft.scheduleId,
+        activeActivityBookings,
+        pendingActivityBookings,
+        excludePendingBookingId: booking?.id,
+      }),
+    [draft.scheduleId, activeActivityBookings, pendingActivityBookings, booking?.id]
+  );
 
   const handleChange = (key, value) => {
     setDraft((current) => ({
@@ -134,6 +164,11 @@ export default function ActivityEditModal({
       return;
     }
 
+    if (scheduleConflict) {
+      toast.info(scheduleConflict.message);
+      return;
+    }
+
     if (guestCount > Number(selectedScheduleData.availableSeats || 0)) {
       toast.info("Selected guests exceed the available seats for this session.");
       return;
@@ -157,6 +192,7 @@ export default function ActivityEditModal({
       ...draft,
       activityId: selectedScheduleData.activityId,
       activityTitle: selectedScheduleData.activityTitle,
+      activityImage: selectedScheduleData.activityImage || draft.activityImage || "",
       scheduleId: selectedScheduleData.id,
       scheduleDate: selectedScheduleData.date,
       startTime: selectedScheduleData.startTime,
@@ -165,20 +201,13 @@ export default function ActivityEditModal({
       contactPhone: normalizedPhone,
       notes: draft.notes.trim(),
       paymentMethod: draft.paymentMethod,
-      price: selectedScheduleData.price || 0,
+      price: selectedScheduleData.resolvedPrice || 0,
       totalPrice: totalPrice,
       updatedAt: new Date().toISOString(),
     });
   };
 
   if (!isOpen) return null;
-
-  const phonePattern = /^[\d\s()+-]+$/;
-
-  const paymentMethods = [
-    { value: "cash", label: "Cash" },
-    { value: "card", label: "Card" },
-  ];
 
   return (
     <AppModal
@@ -248,11 +277,20 @@ export default function ActivityEditModal({
                 />
               </SelectTrigger>
               <SelectContent>
-                {filteredSchedules.map((schedule) => (
-                  <SelectItem key={schedule.id} value={schedule.id}>
-                    {schedule.date} - {schedule.startTime} to {schedule.endTime}
-                  </SelectItem>
-                ))}
+                {filteredSchedules.map((schedule) => {
+                  const conflict = getScheduleConflict(schedule.id);
+                  return (
+                    <SelectItem
+                      key={schedule.id}
+                      value={schedule.id}
+                      disabled={Boolean(conflict)}
+                    >
+                      {schedule.date} - {schedule.startTime} to {schedule.endTime}
+                      {conflict?.type === "existing_booking" ? " - already booked" : ""}
+                      {conflict?.type === "pending_cart" ? " - in your cart" : ""}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             {filteredSchedules.length === 0 && !schedulesLoading && draft.activityId && (
@@ -288,6 +326,17 @@ export default function ActivityEditModal({
               </div>
             </div>
           )}
+
+          {scheduleConflict ? (
+            <div className="rounded-[20px] border border-destructive/40 bg-destructive/10 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-destructive">
+                Needs Update
+              </p>
+              <p className="mt-2 text-sm text-foreground">
+                {scheduleConflict.message} Choose another session before saving this booking.
+              </p>
+            </div>
+          ) : null}
 
           {/* Guests */}
           <label className="space-y-2 block">
@@ -367,6 +416,7 @@ export default function ActivityEditModal({
           type="button"
           variant="palmPrimary"
           onClick={handleConfirm}
+          disabled={Boolean(scheduleConflict)}
           className="h-11 px-6"
         >
           Save Changes

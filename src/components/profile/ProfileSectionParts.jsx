@@ -137,14 +137,15 @@ export function StatCard({ icon: Icon, label, value, subtitle, index, className 
   );
 }
 
-export function StatusBadge({ status, className }) {
-  const normalizedStatus = status || "unknown";
+export function StatusBadge({ status, label, toneStatus, className }) {
+  const normalizedStatus = label || status || "unknown";
+  const toneKey = toneStatus || status || normalizedStatus;
 
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]",
-        getStatusTone(normalizedStatus),
+        getStatusTone(toneKey),
         className,
       )}
     >

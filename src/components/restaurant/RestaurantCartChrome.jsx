@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useMemo } from "react";
 import {
   Trash2,
@@ -63,6 +64,8 @@ function formatPrice(val) {
   return `$${Number(val ?? 0).toFixed(2)}`;
 }
 
+const MotionDiv = motion.div;
+
 /**
  * Restaurant tab in the unified cart sidebar.
  * - Section 1: Individual food items (before booking) — shows per-item controls
@@ -102,7 +105,7 @@ export function RestaurantOrderSidebarSection({ className }) {
 
           {/* ── Empty State ── */}
           {isEmpty && (
-            <motion.div
+            <MotionDiv
               key="restaurant-empty"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -113,17 +116,17 @@ export function RestaurantOrderSidebarSection({ className }) {
               <p className="text-sm font-medium">Your restaurant cart is empty</p>
               <Link
                 onClick={() => dispatch(closeCart())}
-                to="/services/restaurant"
+                to="/services/menu"
                 className="cursor-pointer text-sm font-semibold text-primary hover:underline"
               >
                 Browse Menu →
               </Link>
-            </motion.div>
+            </MotionDiv>
           )}
 
           {/* ── Section 1: Unbundled food items (before booking) ── */}
           {hasFood && (
-            <motion.div
+            <MotionDiv
               key="food-items"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -212,12 +215,12 @@ export function RestaurantOrderSidebarSection({ className }) {
                 </Link>{" "}
                 to bundle these items with a table, room, or pickup order.
               </p>
-            </motion.div>
+            </MotionDiv>
           )}
 
           {/* ── Section 2: Completed order bundles ── */}
           {hasBookings && (
-            <motion.div
+            <MotionDiv
               key="bookings-section"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -233,7 +236,7 @@ export function RestaurantOrderSidebarSection({ className }) {
                     const total = lineItems.reduce((s, li) => s + li.price * li.qty, 0);
 
                     return (
-                      <motion.div
+                      <MotionDiv
                         key={booking.id}
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -334,12 +337,12 @@ export function RestaurantOrderSidebarSection({ className }) {
                             </span>
                           </div>
                         )}
-                      </motion.div>
+                      </MotionDiv>
                     );
                   })}
                 </AnimatePresence>
               </div>
-            </motion.div>
+            </MotionDiv>
           )}
 
         </AnimatePresence>

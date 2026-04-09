@@ -1,7 +1,9 @@
 /**
  * Stable TanStack Query keys for public catalog / display data.
- * Invalidation: website has few mutations; rely on staleTime + refetchOnWindowFocus.
- * Socket (BookingRealtimeBridge) invalidates notifications only — catalog is unchanged by bookings.
+ * Invalidation: booking and payment events can affect public availability
+ * (for example room inventory, activity seat counts, and restaurant capacity).
+ * BookingRealtimeBridge and checkout success flows invalidate these keys so
+ * active screens refresh without waiting for a manual reload.
  */
 
 export const queryKeys = {

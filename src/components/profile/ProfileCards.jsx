@@ -34,9 +34,12 @@ import {
   getWishlistRoomId,
   getWishlistRoomName,
   getWishlistRoomType,
+  getRoomBookingDisplayPaymentStatus,
+  getRoomBookingDisplayStatus,
   isRestaurantTableMode,
   isActivityBookingCancellable,
   isRoomBookingCancellable,
+  isAwaitingRoomPayment,
   isTableBookingCancellable,
   resolveImage,
   roomBookingMeta,
@@ -139,7 +142,6 @@ export function CartCard({ item }) {
   const image = resolveImage(item);
   const requiresReview = item.availabilityStatus !== "available";
   const roomLink = item.id ? `/rooms/${item.id}` : "/rooms";
-  const cartLink = requiresReview ? "/cart" : "/cart/checkout";
   const itemTotal = formatCurrency(calculateCartItemTotal(item));
   const handleRemoveFromCart = () => {
     if (!item?.id || isRemoving) return;
@@ -585,7 +587,9 @@ export function RoomBookingCard({
     booking?.room?.roomName || `Room ${booking?.room?.roomNumber || ""}`.trim();
   const image = resolveImage(booking?.room);
   const canCancel = isRoomBookingCancellable(booking);
-  const needsPayment = booking?.paymentStatus === "awaiting_payment";
+  const needsPayment = isAwaitingRoomPayment(booking);
+  const statusBadge = getRoomBookingDisplayStatus(booking);
+  const paymentStatusBadge = getRoomBookingDisplayPaymentStatus(booking);
 
   const handleCompletePayment = () => {
     // Navigate to checkout with the booking ID to complete payment
@@ -621,10 +625,14 @@ export function RoomBookingCard({
           <div className="flex max-w-[min(100%,calc(100%-3.5rem))] flex-wrap gap-2">
             <StatusBadge
               status={booking?.status}
+              label={statusBadge.label}
+              toneStatus={statusBadge.tone}
               className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
             />
             <StatusBadge
               status={booking?.paymentStatus}
+              label={paymentStatusBadge.label}
+              toneStatus={paymentStatusBadge.tone}
               className="border-white/20 bg-white/12 px-2.5 py-1 text-[9px] tracking-[0.12em] text-white shadow-sm backdrop-blur-md"
             />
           </div>
