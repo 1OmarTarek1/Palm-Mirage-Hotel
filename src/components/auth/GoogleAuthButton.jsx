@@ -6,6 +6,7 @@ import { selectIsDark } from "@/store/slices/themeSlice";
 import { setCredentials } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
 import axiosInstance from "@/services/axiosInstance";
+import { consumePostLogoutRedirect } from "@/utils/authRedirect";
 
 export default function GoogleAuthButton() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function GoogleAuthButton() {
       }
 
       toast.success("Signed in with Google successfully.");
-      navigate("/", { replace: true });
+      navigate(consumePostLogoutRedirect() || "/", { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || "Google sign-in failed. Try again.";
       setError(msg);

@@ -114,7 +114,11 @@ const cartSlice = createSlice({
   reducers: {
     openCart: (state, action) => {
       state.isOpen = true;
-      if (action.payload?.tab === "rooms" || action.payload?.tab === "restaurant") {
+      if (
+        action.payload?.tab === "rooms" ||
+        action.payload?.tab === "restaurant" ||
+        action.payload?.tab === "activities"
+      ) {
         state.sidebarTab = action.payload.tab;
       }
     },

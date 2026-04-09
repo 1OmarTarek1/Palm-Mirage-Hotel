@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
 import axiosInstance from "@/services/axiosInstance";
+import { markPostLogoutRedirect } from "@/utils/authRedirect";
 
 const MotionDiv = motion.div;
 
@@ -27,6 +28,7 @@ export default function LoginButton() {
     } catch {
       // Clear frontend auth state even if the server logout request fails.
     } finally {
+      markPostLogoutRedirect("/");
       navigate("/", { replace: true });
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");

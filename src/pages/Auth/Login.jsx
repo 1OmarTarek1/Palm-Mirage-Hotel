@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -12,12 +13,14 @@ import PasswordField from "@/components/auth/PasswordField";
 import { loginSchema } from "@/features/auth/authSchema";
 import { setCredentials } from "@/store/slices/authSlice";
 import axiosInstance from "@/services/axiosInstance";
+import { consumePostLogoutRedirect } from "@/utils/authRedirect";
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const from = location.state?.from?.pathname || "/";
+  const postLogoutRedirectRef = useRef(consumePostLogoutRedirect());
+  const from = postLogoutRedirectRef.current || location.state?.from?.pathname || "/";
   const {
     register,
     handleSubmit,
